@@ -7,7 +7,7 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-frame-links-test")
 
 (opencog-test-runner)
 
@@ -25,35 +25,35 @@
 
 	; Splatter some atoms into the various spaces.
 	(cog-set-atomspace! base-space)
-	(Concept "foo" (ctv 1 0 3))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 3))
 
 	(cog-set-atomspace! mid1-space)
-	(ListLink (Concept "foo") (Concept "bar") (ctv 1 0 11))
-	(Concept "foo" (ctv 1 0 33))
-	(Concept "bar" (ctv 1 0 4))
+	(set-cnt! (ListLink (Concept "foo") (Concept "bar")) (FloatValue 1 0 11))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 33))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 4))
 
 	(cog-set-atomspace! mid2-space)
-	(Concept "foo" (ctv 1 0 333))
-	(Evaluation (Predicate "zing") (ctv 1 0 12)
-		(ListLink (Concept "foo") (Concept "bar")))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 333))
+	(set-cnt! (Evaluation (Predicate "zing")
+		(ListLink (Concept "foo") (Concept "bar"))) (FloatValue 1 0 12))
 
 	(cog-set-atomspace! mid3-space)
-	(AndLink (ctv 1 0 13)
+	(set-cnt! (AndLink
 		(Evaluation (Predicate "zing")
-			(ListLink (Concept "foo") (Concept "bar"))))
+			(ListLink (Concept "foo") (Concept "bar")))) (FloatValue 1 0 13))
 
 	(cog-set-atomspace! mid4-space)
-	(Evaluation (Predicate "zing") (ctv 1 0 14)
-		(ListLink (Concept "foo") (Concept "bar")))
+	(set-cnt! (Evaluation (Predicate "zing")
+		(ListLink (Concept "foo") (Concept "bar"))) (FloatValue 1 0 14))
 
 	(cog-set-atomspace! mid5-space)
-	(ListLink (Concept "foo") (Concept "bar") (ctv 1 0 15))
-	(Concept "foo" (ctv 1 0 555))
+	(set-cnt! (ListLink (Concept "foo") (Concept "bar")) (FloatValue 1 0 15))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 555))
 
 	(cog-set-atomspace! surface-space)
 
 	; Store all content.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-frame-links-test"))
 	(cog-open storage)
 	(store-frames surface-space)
 	(cog-set-atomspace! base-space)
@@ -73,15 +73,13 @@
 	(cog-close storage)
 )
 
-(define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
-
 ; -------------------------------------------------------------------
 ; Test that load of a series of nested links is done correctly.
 
 (define (test-load-links)
 	(setup-and-store)
 
-	; (cog-rocks-open "rocks:///tmp/cog-rocks-unit-test")
+	; (cog-rocks-open "rocks:///tmp/cog-rocks-frame-links-test")
 	; (cog-rocks-stats)
 	; (cog-rocks-get "")
 	; (cog-rocks-close)
@@ -90,7 +88,7 @@
 	(cog-set-atomspace! (cog-new-atomspace))
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-frame-links-test"))
 	(cog-open storage)
 	(define top-space (car (load-frames)))
 	(cog-set-atomspace! top-space)
@@ -193,5 +191,5 @@
 (test-end load-links)
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-frame-links-test")
 (opencog-test-end)
