@@ -7,30 +7,30 @@
 	(PutLink
 		(LambdaLink
 			(VariableList (Variable "x") (Variable "y"))
-			(EvaluationLink
+			(EdgeLink
 				(PredicateNode "relatives")
 				(ListLink
 					(Variable "x")
 					(Variable "y")
 					(Concept "mom and pop"))))
 		(ListLink
-			(GetLink (TypedVariable (Variable "$X") (Type 'ConceptNode))
-				(Inheritance (Variable "$X") (Concept "Father")))
-			(GetLink (TypedVariable (Variable "$X") (Type 'ConceptNode))
-				(Inheritance (Variable "$X") (Concept "Mother"))))))
+			(CollectionOf (MeetLink (TypedVariable (Variable "$X") (Type 'ConceptNode))
+				(Inheritance (Variable "$X") (Concept "Father"))))
+			(CollectionOf (MeetLink (TypedVariable (Variable "$X") (Type 'ConceptNode))
+				(Inheritance (Variable "$X") (Concept "Mother")))))))
 
 (define put-get-multi-empty
 	(PutLink
 		(LambdaLink
 			(VariableList (Variable "x") (Variable "y"))
-			(EvaluationLink
+			(EdgeLink
 				(PredicateNode "relatives")
 				(ListLink
 					(Variable "x")
 					(Variable "y")
 					(Concept "mom and pop"))))
 		(ListLink
-			(GetLink (TypedVariable (Variable "$X") (Type 'ConceptNode))
-				(Inheritance (Variable "$X") (Concept "Father")))
-			(GetLink (TypedVariable (Variable "$X") (Type 'ConceptNode))
-				(Inheritance (Variable "$X") (Concept "XeZir"))))))
+			(CollectionOf (MeetLink (TypedVariable (Variable "$X") (Type 'ConceptNode))
+				(Inheritance (Variable "$X") (Concept "Father"))))
+			(CollectionOf (MeetLink (TypedVariable (Variable "$X") (Type 'ConceptNode))
+				(Inheritance (Variable "$X") (Concept "XeZir")))))))

@@ -27,7 +27,6 @@
 #include <opencog/atomspace/AtomSpace.h>
 #include <opencog/atoms/core/PutLink.h>
 #include <opencog/atoms/execution/Instantiator.h>
-#include <opencog/atoms/truthvalue/CountTruthValue.h>
 
 #include <cxxtest/TestSuite.h>
 
@@ -39,17 +38,17 @@ class PutLinkUTest: public CxxTest::TestSuite
 {
 private:
 	AtomSpacePtr _asp;
-	SchemeEval _eval;
+	SchemeEval* _eval;
 
 public:
-	PutLinkUTest() : _asp(createAtomSpace()), _eval(_asp)
+	PutLinkUTest() : _asp(createAtomSpace()), _eval(SchemeEval::get_scheme_evaluator(_asp))
 	{
 		logger().set_print_to_stdout_flag(true);
 		logger().set_level(Logger::INFO);
 		logger().set_timestamp_flag(false);
 		logger().set_sync_flag(true); // interleave with printf correctly
 
-		_eval.eval("(add-to-load-path \"" PROJECT_SOURCE_DIR "\")");
+		_eval->eval("(add-to-load-path \"" PROJECT_SOURCE_DIR "\")");
 
 	}
 
@@ -103,7 +102,6 @@ public:
 	void test_get_multi();
 	void test_multi_set();
 	void test_full_quotation();
-	void test_count();
 };
 
 #define N _asp->add_node
@@ -283,7 +281,7 @@ void PutLinkUTest::test_filtering()
 				N(NUMBER_NODE, "42"),
 				foo = N(CONCEPT_NODE, "foo"),
 				N(PREDICATE_NODE, "biffle"),
-				L(EVALUATION_LINK,
+				L(EDGE_LINK,
 					N(CONCEPT_NODE, "thingy")),
 				N(SCHEMA_NODE, "finagle"),
 				bar = N(CONCEPT_NODE, "bar")));
@@ -647,7 +645,7 @@ void PutLinkUTest::test_compose()
 	//
 	Handle gee =
 		L(LAMBDA_LINK,
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(PREDICATE_NODE, "P"),
 				N(VARIABLE_NODE, "$x")));
 	Handle eff =
@@ -663,7 +661,7 @@ void PutLinkUTest::test_compose()
 
 	Handle expected_putted =
 		L(LAMBDA_LINK,
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(PREDICATE_NODE, "P"),
 				L(INHERITANCE_LINK,
 					N(VARIABLE_NODE, "$x"),
@@ -880,7 +878,7 @@ void PutLinkUTest::test_typed_compose()
 			L(TYPED_VARIABLE_LINK,
 				N(VARIABLE_NODE, "$x"),
 				N(TYPE_NODE, "InheritanceLink")),
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(PREDICATE_NODE, "P"),
 				N(VARIABLE_NODE, "$x")));
 	Handle eff =
@@ -910,7 +908,7 @@ void PutLinkUTest::test_typed_compose()
 				L(TYPED_VARIABLE_LINK,
 					N(VARIABLE_NODE, "$v"),
 					N(TYPE_NODE, "ConceptNode"))),
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(PREDICATE_NODE, "P"),
 				L(INHERITANCE_LINK,
 					N(VARIABLE_NODE, "$u"),
@@ -925,7 +923,7 @@ void PutLinkUTest::test_typed_compose()
 			L(TYPED_VARIABLE_LINK,
 				N(VARIABLE_NODE, "$x"),
 				N(TYPE_NODE, "SimilarityLink")), // type mismatch here!
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(PREDICATE_NODE, "P"),
 				N(VARIABLE_NODE, "$x")));
 
@@ -964,7 +962,7 @@ void PutLinkUTest::test_ident_compose()
 	//
 	Handle gee =
 		L(LAMBDA_LINK,
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(VARIABLE_NODE, "$x"),
 				N(VARIABLE_NODE, "$y")));
 	Handle eff =
@@ -993,7 +991,7 @@ void PutLinkUTest::test_ident_compose()
 				N(VARIABLE_NODE, "$x"),
 				N(VARIABLE_NODE, "$y"),
 				N(VARIABLE_NODE, "$z")),
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(VARIABLE_NODE, "$w"),
 				L(INHERITANCE_LINK,
 					N(VARIABLE_NODE, "$y"),
@@ -1040,7 +1038,7 @@ void PutLinkUTest::test_recursive_compose()
 	//
 	Handle gee =
 		L(LAMBDA_LINK,
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(VARIABLE_NODE, "$x"),
 				N(VARIABLE_NODE, "$y")));
 	Handle eff =
@@ -1075,7 +1073,7 @@ void PutLinkUTest::test_recursive_compose()
 				N(VARIABLE_NODE, "A"),
 				N(VARIABLE_NODE, "B"),
 				N(VARIABLE_NODE, "C")),
-			L(EVALUATION_LINK,
+			L(EDGE_LINK,
 				N(VARIABLE_NODE, "A"),
 				L(INHERITANCE_LINK,
 					N(VARIABLE_NODE, "B"),
@@ -1144,10 +1142,10 @@ void PutLinkUTest::test_eval_inheritance()
 		Y_human = L(INHERITANCE_LINK, Y, human),
 		Self_human = L(INHERITANCE_LINK, Self, human),
 		Bob_human = L(INHERITANCE_LINK, Bob, human),
-		X_Y_acquainted = L(EVALUATION_LINK,
+		X_Y_acquainted = L(EDGE_LINK,
 		                   acquainted,
 		                   L(LIST_LINK, X, Y)),
-		Self_Bob_acquainted = L(EVALUATION_LINK,
+		Self_Bob_acquainted = L(EDGE_LINK,
 		                        acquainted,
 		                        L(LIST_LINK, Self, Bob)),
 		vardecl = L(VARIABLE_LIST,
@@ -1201,8 +1199,8 @@ void PutLinkUTest::test_eval_implication_1()
 		A = N(CONCEPT_NODE, "A"),
 		CT = N(TYPE_NODE, "ConceptNode"),
 		P = N(PREDICATE_NODE, "P"),
-		P_X = L(EVALUATION_LINK, P, X),
-		P_A = L(EVALUATION_LINK, P, A),
+		P_X = L(EDGE_LINK, P, X),
+		P_A = L(EDGE_LINK, P, A),
 		body = L(QUOTE_LINK,
 		         L(RULE_LINK,
 		           L(UNQUOTE_LINK, P_X),
@@ -1278,10 +1276,10 @@ void PutLinkUTest::test_eval_implication_2()
 		Y_human = L(IMPLICATION_LINK, Y, human),
 		Self_human = L(IMPLICATION_LINK, Self, human),
 		Bob_human = L(IMPLICATION_LINK, Bob, human),
-		X_Y_acquainted = L(EVALUATION_LINK,
+		X_Y_acquainted = L(EDGE_LINK,
 		                   acquainted,
 		                   L(LIST_LINK, X, Y)),
-		Self_Bob_acquainted = L(EVALUATION_LINK,
+		Self_Bob_acquainted = L(EDGE_LINK,
 		                        acquainted,
 		                        L(LIST_LINK, Self, Bob)),
 		vardecl = L(VARIABLE_LIST,
@@ -1335,7 +1333,7 @@ void PutLinkUTest::test_ill_unquote()
 		put = L(PUT_LINK,
 		        L(LAMBDA_LINK,
 		          X,
-		          L(EVALUATION_LINK, P, X)),
+		          L(EDGE_LINK, P, X)),
 		        L(LAMBDA_LINK,
 		          L(UNQUOTE_LINK, x),
 		          L(UNQUOTE_LINK, g)));
@@ -1378,13 +1376,13 @@ void PutLinkUTest::test_nested_1()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle nested_put = _eval.eval_h("nested-put-1"),
+	Handle nested_put = _eval->eval_h("nested-put-1"),
 		result = HandleCast(inst.execute(nested_put)),
-		expected = _eval.eval_h("expected-1");
+		expected = _eval->eval_h("expected-1");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -1435,11 +1433,11 @@ void PutLinkUTest::test_nested_2()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
 	logger().debug() << "rs = " << rs;
 
-	Handle nested = _eval.eval_h("nested-put-2");
-	Handle expected = _eval.eval_h("expected-2");
+	Handle nested = _eval->eval_h("nested-put-2");
+	Handle expected = _eval->eval_h("expected-2");
 
 	Instantiator inst(_asp.get());
 	Handle result = HandleCast(inst.execute(nested));
@@ -1474,11 +1472,11 @@ void PutLinkUTest::test_nested_3()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle nested_put = _eval.eval_h("nested-put-3");
+	Handle nested_put = _eval->eval_h("nested-put-3");
 
 	TS_ASSERT_THROWS_ANYTHING(HandleCast(inst.execute(nested_put, true)));
 
@@ -1506,11 +1504,11 @@ void PutLinkUTest::test_nested_4()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle nested_put = _eval.eval_h("nested-put-4");
+	Handle nested_put = _eval->eval_h("nested-put-4");
 
 	TS_ASSERT_THROWS_ANYTHING(HandleCast(inst.execute(nested_put, true)));
 
@@ -1564,20 +1562,20 @@ void PutLinkUTest::test_nested_5()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-nested.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle simple_put = _eval.eval_h("simple-put-5");
+	Handle simple_put = _eval->eval_h("simple-put-5");
 	Handle result = HandleCast(inst.execute(simple_put));
-	Handle expected = _eval.eval_h("expected-5");
+	Handle expected = _eval->eval_h("expected-5");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
 
 	TS_ASSERT_EQUALS(result, expected);
 
-	Handle nested_put = _eval.eval_h("nested-put-5");
+	Handle nested_put = _eval->eval_h("nested-put-5");
 	result = HandleCast(inst.execute(nested_put));
 
 	logger().debug() << "result = " << oc_to_string(result);
@@ -1623,12 +1621,12 @@ void PutLinkUTest::test_and_compose_1()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-and.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-and.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle top = _eval.eval_h("top"),
-		and_sha_abs = _eval.eval_h("and-shallow-abstraction"),
+	Handle top = _eval->eval_h("top"),
+		and_sha_abs = _eval->eval_h("and-shallow-abstraction"),
 		put_top_and = L(PUT_LINK, top,
 		                and_sha_abs),
 		result = HandleCast(inst.execute(put_top_and)),
@@ -1683,12 +1681,12 @@ void PutLinkUTest::test_and_compose_2()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-and.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-and.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle inh_sha_abs = _eval.eval_h("inheritance-shallow-abstraction"),
-		and_sha_abs = _eval.eval_h("and-shallow-abstraction"),
+	Handle inh_sha_abs = _eval->eval_h("inheritance-shallow-abstraction"),
+		and_sha_abs = _eval->eval_h("and-shallow-abstraction"),
 		spe_var = N(VARIABLE_NODE, "$spe-0"),
 		sha_var_1 = N(VARIABLE_NODE, "$sha-arg-0"),
 		sha_var_2 = N(VARIABLE_NODE, "$sha-arg-1"),
@@ -1765,13 +1763,13 @@ void PutLinkUTest::test_tricky_put_1()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-1"),
+	Handle put = _eval->eval_h("put-1"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("expected-1");
+		expected = _eval->eval_h("expected-1");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -1798,13 +1796,13 @@ void PutLinkUTest::test_tricky_put_2()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-2"),
+	Handle put = _eval->eval_h("put-2"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("expected-2");
+		expected = _eval->eval_h("expected-2");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -1832,24 +1830,24 @@ void PutLinkUTest::test_tricky_put_3()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-3");
+	Handle put = _eval->eval_h("put-3");
 	Handle result = HandleCast(inst.execute(put));
-	Handle expected = _eval.eval_h("expected-3");
+	Handle expected = _eval->eval_h("expected-3");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
 
 	TS_ASSERT_EQUALS(result, expected);
 
-	expected = _eval.eval_h("expected-3-alt");
+	expected = _eval->eval_h("expected-3-alt");
 	logger().debug() << "alternative expected = " << oc_to_string(expected);
 	TS_ASSERT_EQUALS(result, expected);
 
-	expected = _eval.eval_h("expected-3-alt-b");
+	expected = _eval->eval_h("expected-3-alt-b");
 	logger().debug() << "alt-b expected = " << oc_to_string(expected);
 	TS_ASSERT_EQUALS(result, expected);
 
@@ -1873,14 +1871,14 @@ void PutLinkUTest::test_tricky_put_4()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-4");
+	Handle put = _eval->eval_h("put-4");
 	Handle result = HandleCast(inst.execute(put));
-	Handle expected = _eval.eval_h("expected-4");
-	Handle unexpected = _eval.eval_h("unexpected-4");
+	Handle expected = _eval->eval_h("expected-4");
+	Handle unexpected = _eval->eval_h("unexpected-4");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -1922,13 +1920,13 @@ void PutLinkUTest::test_tricky_put_5()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-5"),
+	Handle put = _eval->eval_h("put-5"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("expected-5");
+		expected = _eval->eval_h("expected-5");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -1946,13 +1944,13 @@ void PutLinkUTest::test_tricky_put_6()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-6"),
+	Handle put = _eval->eval_h("put-6"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("expected-6");
+		expected = _eval->eval_h("expected-6");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -1970,13 +1968,13 @@ void PutLinkUTest::test_tricky_put_7()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-tricky.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-7"),
+	Handle put = _eval->eval_h("put-7"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("expected-7");
+		expected = _eval->eval_h("expected-7");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -2017,13 +2015,13 @@ void PutLinkUTest::test_quoted_exec()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-quoted.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-quoted.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-quoted-exec"),
+	Handle put = _eval->eval_h("put-quoted-exec"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("quoted-exec");
+		expected = _eval->eval_h("quoted-exec");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -2064,13 +2062,13 @@ void PutLinkUTest::test_quoted_eval()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-quoted.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-quoted.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-quoted-eval"),
+	Handle put = _eval->eval_h("put-quoted-eval"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("quoted-eval");
+		expected = _eval->eval_h("quoted-eval");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -2125,13 +2123,13 @@ void PutLinkUTest::test_quoted_lambda()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-quoted-lambda.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-quoted-lambda.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-quoted-conjuction-lambda"),
+	Handle put = _eval->eval_h("put-quoted-conjuction-lambda"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("put-quoted-conjuction-lambda-result");
+		expected = _eval->eval_h("put-quoted-conjuction-lambda-result");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -2156,7 +2154,7 @@ void PutLinkUTest::test_quoted_lambda()
  *    (ListLink
  *    (VariableNode "x")
  *     (VariableNode "A"))))
- *  (GetLink
+ *  (MeetLink
  *   (Inheritance (Variable "$X") (Concept "Parent"))))
  *
  * which should return
@@ -2177,13 +2175,13 @@ void PutLinkUTest::test_get()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-get.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-get.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-get"),
+	Handle put = _eval->eval_h("put-get"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("expected-put-get");
+		expected = _eval->eval_h("expected-put-get");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -2208,7 +2206,7 @@ void PutLinkUTest::test_get()
  *    (ListLink
  *    (VariableNode "x")
  *     (VariableNode "A"))))
- *  (GetLink
+ *  (MeetLink
  *   (Inheritance (Variable "$X") (Concept "Parent"))))
  *
  * which should return
@@ -2229,13 +2227,13 @@ void PutLinkUTest::test_get_lambda()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-get-lambda.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-get-lambda.scm\")");
 	logger().debug() << "rs = " << rs;
 
 	Instantiator inst(_asp.get());
-	Handle put = _eval.eval_h("put-get-lambda"),
+	Handle put = _eval->eval_h("put-get-lambda"),
 		result = HandleCast(inst.execute(put)),
-		expected = _eval.eval_h("expected-put-get-lambda");
+		expected = _eval->eval_h("expected-put-get-lambda");
 
 	logger().debug() << "result = " << oc_to_string(result);
 	logger().debug() << "expected = " << oc_to_string(expected);
@@ -2252,13 +2250,13 @@ void PutLinkUTest::test_get_multi()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-get-multi.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-get-multi.scm\")");
 	logger().debug() << "rs = " << rs;
 
-	Handle result = _eval.eval_h("(cog-execute! put-get-multi)");
+	Handle result = _eval->eval_h("(cog-execute! put-get-multi)");
 
 	Handle expected =
-		L(EVALUATION_LINK,
+		L(EDGE_LINK,
 			N(PREDICATE_NODE, "relatives"),
 			L(LIST_LINK,
 				N(CONCEPT_NODE, "Jim"),
@@ -2271,7 +2269,7 @@ void PutLinkUTest::test_get_multi()
 	TS_ASSERT_EQUALS(result, expected);
 
 	TS_ASSERT_THROWS_ANYTHING(
-		_eval.eval_h("(cog-execute! put-get-multi-empty)"));
+		_eval->eval_h("(cog-execute! put-get-multi-empty)"));
 
 	logger().info("END TEST: %s", __FUNCTION__);
 }
@@ -2283,13 +2281,13 @@ void PutLinkUTest::test_multi_set()
 {
 	logger().info("BEGIN TEST: %s", __FUNCTION__);
 
-	std::string rs = _eval.eval("(load-from-path \"tests/atoms/core/put-multi-set.scm\")");
+	std::string rs = _eval->eval("(load-from-path \"tests/atoms/core/put-multi-set.scm\")");
 	logger().debug() << "rs = " << rs;
 
-	Handle result = _eval.eval_h("(cog-execute! put-multi-set)");
+	Handle result = _eval->eval_h("(cog-execute! put-multi-set)");
 
 	Handle expected =
-		L(EVALUATION_LINK,
+		L(EDGE_LINK,
 			N(PREDICATE_NODE, "relatives"),
 			L(LIST_LINK,
 				N(CONCEPT_NODE, "Jim"),
@@ -2322,33 +2320,6 @@ void PutLinkUTest::test_full_quotation()
 	                             unquoted_vardecl,
 	                             unquoted_body,
 	                             unquoted_args)));
-
-	logger().info("END TEST: %s", __FUNCTION__);
-}
-
-/*
- * Test that CountOf works.
- */
-void PutLinkUTest::test_count()
-{
-	logger().info("BEGIN TEST: %s", __FUNCTION__);
-
-	Handle cona = N(CONCEPT_NODE, "aaa");
-	cona->setTruthValue(createCountTruthValue(1,0,42));
-
-	Handle put =
-		L(PUT_LINK,
-			L(COUNT_OF_LINK, N(VARIABLE_NODE, "$x")),
-			cona);
-
-	Instantiator inst(_asp.get());
-	ValuePtr result = inst.execute(put);
-	ValuePtr expected = createFloatValue(42.0);
-
-	logger().debug() << "result = " << oc_to_string(result);
-	logger().debug() << "expected = " << oc_to_string(expected);
-
-	TS_ASSERT(*result == *expected);
 
 	logger().info("END TEST: %s", __FUNCTION__);
 }
