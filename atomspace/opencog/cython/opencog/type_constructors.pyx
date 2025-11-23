@@ -6,8 +6,6 @@
 #
 # This imports all the python wrappers for atom creation.
 #
-from opencog.atomspace cimport strength_t, confidence_t
-
 import warnings
 
 from opencog.atomspace import (createBoolValue,
@@ -15,19 +13,19 @@ from opencog.atomspace import (createBoolValue,
                                createLinkValue,
                                createQueueValue,
                                createStringValue,
-                               createTruthValue,
                                createUnisetValue,
-                               # createVoidValue,
+                               createVoidValue,
                                # createRandomStream
                                )
 from opencog.atomspace import types, AtomSpace
-from opencog.utilities import add_node, add_link
+from opencog.type_ctors import add_node, add_link
 
 # The code below never uses these imports, but users do, when they say
 #    from opencog.type_constructors import *
-# and expect to get the four functions below.
-from opencog.utilities import get_default_atomspace, set_default_atomspace
-from opencog.utilities import push_default_atomspace, pop_default_atomspace
+# and expect to get these functions below.
+from opencog.type_ctors import push_thread_atomspace, pop_thread_atomspace
+from opencog.type_ctors import get_thread_atomspace, set_thread_atomspace
+from opencog.type_ctors import get_default_atomspace, set_default_atomspace  # deprecated
 
 # -----------------------------------------------------------------
 # The core Atom types are taken from an auto-generated file
@@ -57,12 +55,9 @@ def StringValue(arg):
 def UnisetValue(arg=None):
     return createUnisetValue(arg)
 
-def TruthValue(strength_t strength=1.0, confidence_t confidence=1.0):
-    return createTruthValue(strength, confidence)
+def VoidValue():
+    return createVoidValue()
 
-# Argh. Need to hand-craft a pyx file for these. XXX FIXME
-# def VoidValue():
-#     return createVoidValue()
-#
+# Argh. Need to hand-craft a pyx file for this. XXX FIXME
 # def RandomStream(arg):
 #     return createRandomStream(arg)
