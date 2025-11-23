@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include <opencog/util/Config.h>
 #include <opencog/util/Logger.h>
 #include <opencog/util/misc.h>
 
@@ -16,7 +15,8 @@
 
 using namespace opencog;
 
-ConsoleSocket::ConsoleSocket(void)
+ConsoleSocket::ConsoleSocket(SocketManager* mgr) :
+    ServerSocket(mgr)
 {
     _shell = nullptr;
     _use_count = 0;
@@ -24,7 +24,7 @@ ConsoleSocket::ConsoleSocket(void)
 
 ConsoleSocket::~ConsoleSocket()
 {
-    logger().debug("[ConsoleSocket] destructor");
+    logger().debug("[ConsoleSocket] enter destructor");
 
     // We need the use-count and the condition variables because
     // the design of asio is broken. Basically, the asio
@@ -49,12 +49,22 @@ ConsoleSocket::~ConsoleSocket()
     logger().debug("[ConsoleSocket] destructor finished");
 }
 
-void ConsoleSocket::SetShell(GenericShell *g)
+void ConsoleSocket::SetShell(GenericShell* g)
 {
+    std::unique_lock<std::mutex> lck(_in_use_mtx);
     _shell = g;
+}
 
-	// Push out a new prompt, when the shell closes.
-	if (nullptr == g) OnLine("");
+/// Return true, if we have a shell, and it's busy. We have
+/// to do this under a lock, because the shell could disapear
+/// out from under us, destroyed in a differrent thread.
+/// Before it is destroyed, though, the SetShell() above will
+/// be called with a nullptr. So we are sae, under a lock.
+bool ConsoleSocket::busyShell(void)
+{
+    std::unique_lock<std::mutex> lck(_in_use_mtx);
+    if (nullptr == _shell) return false;
+    return (_shell->queued() > 0 or not _shell->eval_done());
 }
 
 // ==================================================================

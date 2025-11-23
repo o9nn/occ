@@ -65,7 +65,7 @@ CogServer::CogServer(AtomSpacePtr as) :
 /// overflows the ulimit max of 1024.)
 void CogServer::set_max_open_sockets(int max_open_socks)
 {
-    ServerSocket::set_max_open_sockets(max_open_socks);
+    _socket_manager.set_max_open_sockets(max_open_socks);
 }
 
 /// Open the given port number for network service.
@@ -74,7 +74,7 @@ void CogServer::enableNetworkServer(int port)
     if (_consoleServer) return;
     try
     {
-        _consoleServer = new NetworkServer(port, "Telnet Server");
+        _consoleServer = new NetworkServer(port, "Telnet Server", &_socket_manager);
     }
     catch (const std::system_error& ex)
     {
@@ -85,8 +85,8 @@ void CogServer::enableNetworkServer(int port)
         std::rethrow_exception(std::current_exception());
     }
 
-    auto make_console = [](void)->ServerSocket*
-            { return new ServerConsole(cogserver()); };
+    auto make_console = [](SocketManager* mgr)->ServerSocket*
+            { return new ServerConsole(cogserver(), mgr); };
     _consoleServer->run(make_console);
     _running = true;
     logger().info("Network server running on port %d", port);
@@ -99,7 +99,7 @@ void CogServer::enableWebServer(int port)
     if (_webServer) return;
     try
     {
-        _webServer = new NetworkServer(port, "WebSocket Server");
+        _webServer = new NetworkServer(port, "WebSocket Server", &_socket_manager);
     }
     catch (const std::system_error& ex)
     {
@@ -110,8 +110,8 @@ void CogServer::enableWebServer(int port)
         std::rethrow_exception(std::current_exception());
     }
 
-    auto make_console = [](void)->ServerSocket* {
-        ServerSocket* ss = new WebServer(cogserver());
+    auto make_console = [](SocketManager* mgr)->ServerSocket* {
+        ServerSocket* ss = new WebServer(cogserver(), mgr);
         ss->act_as_http_socket();
         return ss;
     };
@@ -131,7 +131,7 @@ void CogServer::enableMCPServer(int port)
     if (_mcpServer) return;
     try
     {
-        _mcpServer = new NetworkServer(port, "Model Context Protocol Server");
+        _mcpServer = new NetworkServer(port, "Model Context Protocol Server", &_socket_manager);
     }
     catch (const std::system_error& ex)
     {
@@ -142,8 +142,8 @@ void CogServer::enableMCPServer(int port)
         std::rethrow_exception(std::current_exception());
     }
 
-    auto make_console = [](void)->ServerSocket* {
-        ServerSocket* ss = new MCPServer(cogserver());
+    auto make_console = [](SocketManager* mgr)->ServerSocket* {
+        ServerSocket* ss = new MCPServer(cogserver(), mgr);
         ss->act_as_mcp();
         return ss;
     };
@@ -173,6 +173,9 @@ void CogServer::disableMCPServer()
 void CogServer::stop()
 {
     _running = false;
+
+    // Cancel the request queue to wake up barrier() in serverLoop().
+    requestQueue.cancel();
 }
 
 void CogServer::serverLoop()
@@ -181,23 +184,29 @@ void CogServer::serverLoop()
     logger().info("Starting CogServer loop.");
     while (_running)
     {
-        while (0 < getRequestQueueSize())
-            runLoopStep();
-
-        // XXX FIXME. terrible terrible hack. What we should be
-        // doing is running in our own thread, waiting on a semaphore,
-        // until some request is queued. Spinning is .. just wrong.
-        usleep(20000);
+        try
+        {
+            requestQueue.barrier();
+            while (0 < getRequestQueueSize())
+                runLoopStep();
+        }
+        catch (const concurrent_queue<Request*>::Canceled& ex)
+        {
+            break;
+        }
     }
 
     // Prevent the Network server from accepting any more connections,
-    // and from queing any more Requests. I think. This might be racey.
+    // and from queueing any more Requests. I think. This might be racey.
     if (_mcpServer)
         _mcpServer->stop();
     if (_webServer)
         _webServer->stop();
     if (_consoleServer)
         _consoleServer->stop();
+
+    // Reset queue cancellation to allow draining remaining requests.
+    requestQueue.cancel_reset();
 
     // Drain whatever is left in the queue.
     while (0 < getRequestQueueSize())
@@ -228,7 +237,8 @@ void CogServer::runLoopStep(void)
 std::string CogServer::display_stats(int nlines)
 {
     if (_consoleServer)
-        return _consoleServer->display_stats(nlines);
+        return _socket_manager.display_stats_full(
+            _consoleServer->get_name(), _consoleServer->get_start_time(), nlines);
     else
         return "Console server is not running";
 }
@@ -236,7 +246,8 @@ std::string CogServer::display_stats(int nlines)
 std::string CogServer::display_web_stats(void)
 {
     if (_webServer)
-        return _webServer->display_stats();
+        return _socket_manager.display_stats_full(
+            _webServer->get_name(), _webServer->get_start_time());
     else
         return "Web server is not running";
 }
@@ -264,7 +275,8 @@ std::string CogServer::stats_legend(void)
        "  STATE -- several states possible; `iwait` means waiting for input.\n"
        "  NLINE -- number of newlines received by the shell.\n"
        "  LAST-ACTIVITY -- the last time anything was received.\n"
-       "  K -- socket kind. `T` for telnet, `W` for WebSocket, 'M' for MCP.\n"
+       "  K -- socket kind. `T` for telnet, `W` for WebSocket,\n"
+       "                    `H` for http, 'M' for MCP.\n"
        "  U -- use count. The number of active handlers for the socket.\n"
        "  SHEL -- the current shell processor for the socket.\n"
        "  QZ -- size of the unprocessed (pending) request queue.\n"

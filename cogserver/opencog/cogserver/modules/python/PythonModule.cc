@@ -7,7 +7,6 @@
 #include <opencog/cython/PyIncludeWrapper.h>
 #include <opencog/cython/PythonEval.h>
 
-#include <opencog/util/Config.h>
 #include <opencog/util/misc.h>
 #include <opencog/atomspace/AtomSpace.h>
 
@@ -94,27 +93,9 @@ void PythonModule::init()
     // Many python libraries (e.g. ROS) expect sys.argv to be set. So,
     // avoid the error print, and let them know who we are.
     PyRun_SimpleString("import sys; sys.argv='cogserver'\n");
-
-    if (opencog::config().has("PYTHON_PRELOAD")) preloadModules();
     do_load_py_register();
 
     PyGILState_Release(gstate);
-}
-
-bool PythonModule::preloadModules()
-{
-    // requires GIL
-    std::vector<std::string> pythonmodules;
-    tokenize(opencog::config()["PYTHON_PRELOAD"], std::back_inserter(pythonmodules), ", ");
-    for (std::vector<std::string>::const_iterator it = pythonmodules.begin();
-         it != pythonmodules.end(); ++it) {
-        std::list<std::string> args;
-        args.push_back(*it);
-        logger().info("[PythonModule] Preloading python module " + *it);
-        std::string result = do_load_py(NULL,args);
-        logger().info("[PythonModule] " + result);
-    }
-    return true;
 }
 
 /// do_load_py -- load python code, given a file name. (Implements the
@@ -122,7 +103,7 @@ bool PythonModule::preloadModules()
 ///
 /// It is expected that the file contains a python module. The module
 /// should contain a 'request' (shell command, written in python).
-/// Requests/commnds must inherit from opencog.cogserver.Request
+/// Requests/commands must inherit from opencog.cogserver.Request
 //
 std::string PythonModule::do_load_py(Request *dummy, std::list<std::string> args)
 {
