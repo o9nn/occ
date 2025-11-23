@@ -40,7 +40,7 @@ public:
 		logger().set_print_to_stdout_flag(true);
 
 		as = createAtomSpace();
-		eval = new SchemeEval(as);
+		eval = SchemeEval::get_scheme_evaluator(as);
 		eval->eval("(add-to-load-path \"" PROJECT_SOURCE_DIR "\")");
 
 		eval->eval("(use-modules (opencog exec))");
@@ -48,7 +48,6 @@ public:
 
 	~DefineLinkUTest()
 	{
-		delete eval;
 		// Erase the log file if no assertions failed.
 		if (!CxxTest::TestTracker::tracker().suiteFailed())
 				std::remove(logger().get_filename().c_str());
@@ -82,13 +81,13 @@ void DefineLinkUTest::test_basic(void)
 
 	eval->eval("(load-from-path \"tests/query/define.scm\")");
 
-	Handle items = eval->eval_h("(cog-execute! get-elect)");
+	Handle items = eval->eval_h("(cog-execute! (CollectionOf get-elect))");
 	TS_ASSERT_EQUALS(2, getarity(items));
 
-	items = eval->eval_h("(cog-execute! get-elect-bound)");
+	items = eval->eval_h("(cog-execute! (CollectionOf get-elect-bound))");
 	TS_ASSERT_EQUALS(2, getarity(items));
 
-	items = eval->eval_h("(cog-execute! get-parts)");
+	items = eval->eval_h("(cog-execute! (CollectionOf get-parts))");
 	TS_ASSERT_EQUALS(2, getarity(items));
 }
 
@@ -107,7 +106,7 @@ void DefineLinkUTest::test_schema(void)
 	TS_ASSERT_EQUALS(2, getarity(timestamp));
 
 	// Executing the above should return something like this:
-	// (EvaluationLink
+	// (EdgeLink
 	//	 (PredicateNode "start-interaction-timestamp")
 	//	 (ListLink
 	//		 (NumberNode "1442342173.000000")))

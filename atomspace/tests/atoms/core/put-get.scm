@@ -3,22 +3,23 @@
 
 (define put-get
  (PutLink
-   (EvaluationLink
+   (EdgeLink
     (PredicateNode "relation")
     (ListLink
      (VariableNode "x")
      (ConceptNode "A")))
-  (GetLink
-   (Inheritance (Variable "$X") (Concept "Parent")))))
+  (CollectionOf
+   (MeetLink
+    (Inheritance (Variable "$X") (Concept "Parent"))))))
 
 (define expected-put-get
  (SetLink
-  (EvaluationLink
+  (EdgeLink
    (PredicateNode "relation")
    (ListLink
     (ConceptNode "B")
     (ConceptNode "A")))
-  (EvaluationLink
+  (EdgeLink
    (PredicateNode "relation")
    (ListLink
     (ConceptNode "C")
