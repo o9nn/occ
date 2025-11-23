@@ -7,7 +7,7 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-frame-values-test")
 
 (opencog-test-runner)
 
@@ -26,19 +26,19 @@
 	; Splatter some atoms into the various spaces.
 	(cog-set-atomspace! base-space)
 	(cog-set-value! (Concept "foo") (Predicate "key-0")
-		(ctv 1 0 0))
+		(FloatValue 1 0 0))
 
 	(cog-set-atomspace! mid1-space)
 	(cog-set-value! (Concept "foo") (Predicate "key-1")
-		(ctv 1 0 1))
+		(FloatValue 1 0 1))
 
 	(cog-set-atomspace! mid2-space)
 	(cog-set-value! (Concept "foo") (Predicate "key-2")
-		(ctv 1 0 2))
+		(FloatValue 1 0 2))
 
 	(cog-set-atomspace! mid3-space)
 	(cog-set-value! (Concept "foo") (Predicate "key-3")
-		(ctv 1 0 3))
+		(FloatValue 1 0 3))
 
 	(cog-set-atomspace! mid4-space)
 	(cog-set-value! (Concept "foo") (Predicate "key-0") #f)
@@ -50,7 +50,7 @@
 	(cog-set-value! (Concept "foo") (Predicate "key-2") #f)
 
 	; Store all content.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-frame-values-test"))
 	(cog-open storage)
 	(store-frames surface-space)
 	(cog-set-atomspace! base-space)
@@ -81,7 +81,7 @@
 (define (test-load-values)
 	(setup-and-store)
 
-	; (cog-rocks-open "rocks:///tmp/cog-rocks-unit-test")
+	; (cog-rocks-open "rocks:///tmp/cog-rocks-frame-values-test")
 	; (cog-rocks-stats)
 	; (cog-rocks-get "")
 	; (cog-rocks-close)
@@ -90,7 +90,7 @@
 	(cog-set-atomspace! (cog-new-atomspace))
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-frame-values-test"))
 	(cog-open storage)
 	(define top-space (car (load-frames)))
 	(cog-set-atomspace! top-space)
@@ -166,5 +166,5 @@
 (test-end load-values)
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-frame-values-test")
 (opencog-test-end)

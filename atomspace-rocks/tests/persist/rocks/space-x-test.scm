@@ -7,7 +7,7 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-space-x-test")
 
 (opencog-test-runner)
 
@@ -23,24 +23,24 @@
 
 	; Splatter some atoms into the various spaces.
 	(cog-set-atomspace! left-space)
-	(Concept "foo" (ctv 1 0 3))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 3))
 
 	; Put different variants of the same atom in two parallel spaces
 	(cog-set-atomspace! right-space)
-	(Concept "bar" (ctv 1 0 4))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 4))
 
 	(cog-set-atomspace! mid-space)
-	(ListLink (Concept "foo") (Concept "bar") (ctv 1 0 8))
+	(set-cnt! (ListLink (Concept "foo") (Concept "bar")) (FloatValue 1 0 8))
 
 	(cog-set-atomspace! top1-space)
-	(Concept "bar" (ctv 1 0 5))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 5))
 
 	(cog-set-atomspace! top2-space)
-	(Concept "bar" (ctv 1 0 6))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 6))
 
 	; Store the content. Store the Concepts as well as the link,
 	; as otherwise, the TV's on the Concepts aren't stored.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-x-test"))
 	(cog-open storage)
 	(store-frames top1-space)
 	(store-frames top2-space)
@@ -55,15 +55,13 @@
 	(cog-close storage)
 )
 
-(define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
-
 ; -------------------------------------------------------------------
 ; Test ability to restore the above.
 
 (define (test-exe)
 	(setup-and-store)
 
-	; (cog-rocks-open "rocks:///tmp/cog-rocks-unit-test")
+	; (cog-rocks-open "rocks:///tmp/cog-rocks-space-x-test")
 	; (cog-rocks-stats)
 	; (cog-rocks-get "")
 	; (cog-rocks-close)
@@ -72,7 +70,7 @@
 	(cog-set-atomspace! new-base)
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-x-test"))
 	(cog-open storage)
 
 	; Load all of the Frames.
@@ -140,5 +138,5 @@
 (test-end exe)
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-space-x-test")
 (opencog-test-end)
