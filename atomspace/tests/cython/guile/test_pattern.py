@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from opencog.atomspace import AtomSpace, Atom
-from opencog.type_constructors import TruthValue
+from opencog.atomspace import AtomSpace, Atom, tvkey
+from opencog.type_constructors import FloatValue
 from opencog.atomspace import types, is_a, get_type, get_type_name
-from opencog.scheme import scheme_eval, scheme_eval_h
+from opencog.scheme import *
 import os
 
 
@@ -46,9 +46,9 @@ class SchemeTest(TestCase):
 
         print("Added atom\n")
         # Make sure the truth value is what's in the SCM file.
-        expected = TruthValue(0.5, 0.5)
-        self.assertEqual(a1.tv, expected)
-        print(f"Got={str(a1.tv)} expected={str(expected)}")
+        expected = FloatValue([0.5, 0.5])
+        self.assertEqual(a1.get_value(tvkey), expected)
+        print(f"Got={str(a1.get_value(tvkey))} expected={str(expected)}")
 
     # Create lots of large, random strings, try to trick guile gc
     # into running, while in the python context. We want to make
@@ -77,21 +77,21 @@ class SchemeTest(TestCase):
 
     # Run some basic evaluation tests
     def test_d_eval(self):
-        basic = scheme_eval_h(self.space,
-                              "(ConceptNode \"whatever\" (stv 0.5 0.5))")
+        basic = scheme_eval_v(self.space,
+            "(cog-set-value! (ConceptNode \"whatever\") (Predicate \"*-TruthValueKey-*\") (FloatValue 0.5 0.5))")
 
         a1 = self.space.add_node(types.ConceptNode, "whatever")
         self.assertTrue(a1)
 
         # Make sure the truth value is what's in the SCM file.
-        expected = TruthValue(0.5, 0.5)
-        self.assertEqual(a1.tv, expected)
+        expected = FloatValue([0.5, 0.5])
+        self.assertEqual(a1.get_value(tvkey), expected)
 
         # Actually, the atoms overall should compare.
         self.assertEqual(a1, basic)
 
         # Do it again, from a define in the scm file.
-        again = scheme_eval_h(self.space, "wobbly")
+        again = scheme_eval_v(self.space, "wobbly")
         a2 = self.space.add_node(types.ConceptNode, "wobbly")
         self.assertTrue(a2)
         self.assertEqual(a2, again)
@@ -101,12 +101,12 @@ class SchemeTest(TestCase):
     def test_unifier(self):
 
         scheme_eval(self.space, "(use-modules (opencog exec))")
-        question = scheme_eval_h(self.space, "find-animals")
+        question = scheme_eval_v(self.space, "find-animals")
         self.assertTrue(question)
-        print(("\nThe question is:", question))
+        print ("\nThe question is:", question)
 
-        answer = scheme_eval_h(self.space, "(cog-execute! find-animals)")
+        answer = scheme_eval_v(self.space, "(cog-execute! find-animals)")
         self.assertTrue(answer)
-        print(("\nThe answer is:", answer))
+        print ("\nThe answer is:", answer)
         self.assertEqual(answer.type, types.SetLink)
         self.assertEqual(answer.arity, 3)
