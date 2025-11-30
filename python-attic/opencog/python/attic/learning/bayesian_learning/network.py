@@ -23,7 +23,7 @@ class Link(list):
 
     def __repr__(self):
         return str(self.first_node) + self.repr_separator_symbol + \
-            str(self.second_node)
+               str(self.second_node)
 
 
 class DirectedLink(Link):
@@ -125,7 +125,7 @@ class Node(object):
     @property
     def edges(self):
         return self.incoming_links | \
-            self.outgoing_links | self.links_to_neighbours
+               self.outgoing_links | self.links_to_neighbours
 
     @property
     def neighbours(self):
@@ -138,7 +138,7 @@ class Node(object):
 
     def __len__(self):
         return len(self.incoming_links) + \
-            len(self.outgoing_links) + len(self._neighbours)
+               len(self.outgoing_links) + len(self._neighbours)
 
     def __eq__(self, other):
         return self.name == other.name
@@ -437,9 +437,9 @@ if __name__ == '__main__':
     # network.moralise()
     # print len(network['G'])
 
-    print('Original Bayes Net:')
-    print(network, '\n---------------\n')
-    print(network.moralise(), '\n---------------\n')
+    print 'Original Bayes Net:'
+    print network, '\n---------------\n'
+    print network.moralise(), '\n---------------\n'
     jt, links = network.triangulate()
-    print(links, '\n---------------\n')
-    print(jt, '\n---------------\n')
+    print links, '\n---------------\n'
+    print jt, '\n---------------\n'

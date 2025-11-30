@@ -44,7 +44,7 @@ class Individual(dict):
         )
 
         self.formula = FormulaCreator(self)
-
+    
     def compare(self, dist_1_key=dist_1_beginning, dist_2_key=dist_2_beginning):
         before, same = self[dist_1_key, dist_2_key]
         return before, same, 1 - before

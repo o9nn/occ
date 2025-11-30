@@ -33,7 +33,7 @@ Newly blended node:
 [(ConceptNode "car-man" (av 0 0 0) (stv 1.000000 0.000000)) ; [307]
 ]
 """
-print("--------Start first example--------")
+print "--------Start first example--------"
 
 a = AtomSpace()
 initialize_opencog(a)
@@ -43,11 +43,11 @@ car = ConceptNode("car")
 man = ConceptNode("man")
 a.set_av(car.h, 17)
 a.set_av(man.h, 13)
-print("Source data:\n" + \)
-str(car) + \
-    str(man)
+print "Source data:\n" + \
+      str(car) + \
+      str(man)
 
 # Start Conceptual Blending.
 result = ConceptualBlending(a).run()
-print("Newly blended node: \n" + \)
-str(result)
+print "Newly blended node: \n" + \
+      str(result)

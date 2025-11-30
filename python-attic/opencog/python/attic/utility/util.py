@@ -94,7 +94,7 @@ def pp(x):
 # From AIMA logic.py
 def ppdict(d):
     """Print the dictionary d.
-
+    
     Prints a string representation of the dictionary
     with keys in sorted order according to their string
     representation: {a: A, d: D, ...}.
@@ -149,11 +149,11 @@ class OrderedSet(collections.OrderedDict, collections.MutableSet):
 
         for s in args:
             for e in s:
-                self.add(e)
+                 self.add(e)
 
     def add(self, elem):
         self[elem] = None
-
+        
     def append(self, elem):
         self.add(elem)
 
@@ -165,7 +165,7 @@ class OrderedSet(collections.OrderedDict, collections.MutableSet):
 
     def pop_first(self):
         return self.popitem(last=False)[0]
-
+    
     def __le__(self, other):
         return all(e in other for e in self)
 
@@ -226,32 +226,32 @@ class Logger(object):
         #
         self.trace = False
         self.ident = 0
-
+    
     def debug(self,msg):
         """docstring for debug"""
         if self.trace and self.DEBUG in self._leves:
-            print(>>self._file, "[DEBUG]:"  + msg)
+            print >>self._file, "[DEBUG]:"  + msg
             if self.to_stdout:
-                print("[DEBUG]:" +  msg)
+                print "[DEBUG]:" +  msg 
     def info(self, msg):
         if self.trace and self.INFO in self._leves:
-            print(>>self._file, "[INFO]:"  + msg)
+            print >>self._file, "[INFO]:"  + msg
             if self.to_stdout:
-                print("[INFO]:" +  msg)
+                print "[INFO]:" +  msg 
     def warning(self,msg):
         """docstring for debug"""
         if self.trace and self.WARNING in self._leves:
-            print(>>self._file, "[WARNING]:"  + msg)
+            print >>self._file, "[WARNING]:"  + msg
             if self.to_stdout:
-                print("[WARNING]:" +  msg)
+                print "[WARNING]:" +  msg 
     def error(self, msg):
         if self.trace and self.ERROR in self._leves:
-            print(>>self._file, "[ERROR]:"  + msg)
+            print >>self._file, "[ERROR]:"  + msg
             if self.to_stdout:
-                print("[ERROR]:" +  msg)
+                print "[ERROR]:" +  msg 
     def flush(self):
         self._file.flush()
-
+    
     def use_stdout(self, use):
         self.to_stdout = use
     def setLevel(self, level):
@@ -259,16 +259,16 @@ class Logger(object):
 
 log = Logger()
 #class Logger(object):
-#def __init__(self, f = 'opencog-python.log'):
-#self._file = open(f,'w')
-
-#def info(self, msg):
-#print >>self._file, msg
-#self._file.flush()
-##pass
-
-#def use_stdout(self, use):
-#pass
+    #def __init__(self, f = 'opencog-python.log'):
+        #self._file = open(f,'w')
+    
+    #def info(self, msg):
+        #print >>self._file, msg
+        #self._file.flush()
+        ##pass
+    
+    #def use_stdout(self, use):
+        #pass
 
 #log = Logger()
 
@@ -299,31 +299,31 @@ log = Logger()
 # AtomSpace internals)
 def _atom_from_json(space, s):
     d = json.loads(s)
-
+    
     return _atom_from_dict(space, d)
-
+    
 def _atom_from_dict(space, d):
     (type_name,) = d['type'],
     (name,) = d['name'],
     (out,) = d['outgoing'],
     (tv,) = _tv_from_dict(d['truthvalue']),
-
+    
     out = [_atom_from_dict(space, o) for o in out]
-
+    
     if out == []:
         out = None
     if type_name.endswith('Link'):
         name = None
-
+    
     #print get_type(type_name), name, out, tv
     atom =space.add(get_type(type_name), name=name,
-                    out = out, tv = tv)
+              out = out, tv = tv)
     return atom
 
 def _json_from_atom(atom):
     d = _dict_from_atom(atom)
     return json.dumps(d) + '\r\n'
-
+    
 def _dict_from_atom(a):
     out = map(_dict_from_atom, a.out)
     d = {
@@ -332,7 +332,7 @@ def _dict_from_atom(a):
         'outgoing':out,
         'truthvalue':{'simple':{'str':a.tv.mean,'count':a.tv.count}},
         # TODO set sti and lti
-    }
+        }
 
     return d
 
