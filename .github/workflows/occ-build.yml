@@ -1329,8 +1329,7 @@ jobs:
           python3-nose \
           python3-dev \
           valgrind \
-          doxygen \
-          liboctomap-dev
+          doxygen
     
     - name: Rebuild and Install CogUtil
       run: |
@@ -1394,11 +1393,11 @@ jobs:
         sudo make install
         sudo ldconfig
 
-  # Stage 12: Build PLN (depends on URE and SpaceTime)
+  # Stage 12: Build PLN (depends on URE)
   build-pln:
     runs-on: ubuntu-latest
     name: Build PLN (Probabilistic Logic Networks)
-    needs: [build-ure, build-spacetime]
+    needs: build-ure
     
     steps:
     - name: Checkout Repository
@@ -1425,8 +1424,7 @@ jobs:
           python3-nose \
           python3-dev \
           valgrind \
-          doxygen \
-          liboctomap-dev
+          doxygen
     
     - name: Rebuild and Install CogUtil
       run: |
@@ -1461,16 +1459,6 @@ jobs:
       run: |
         mkdir -p ure/build
         cd ure/build
-        cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-        make ${{ env.MAKEFLAGS }}
-        sudo make install
-        sudo ldconfig
-    
-    - name: Rebuild and Install SpaceTime
-      if: hashFiles('spacetime/CMakeLists.txt') != ''
-      run: |
-        mkdir -p spacetime/build
-        cd spacetime/build
         cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
         make ${{ env.MAKEFLAGS }}
         sudo make install
@@ -1520,11 +1508,11 @@ jobs:
         sudo make install
         sudo ldconfig
 
-  # Stage 13: Build Learn (depends on CogServer)
+  # Stage 13: Build Learn (depends on AtomSpace)
   build-learn:
     runs-on: ubuntu-latest
     name: Build Learn
-    needs: build-cogserver
+    needs: build-atomspace
     
     steps:
     - name: Checkout Repository
@@ -1547,7 +1535,6 @@ jobs:
           libboost-system-dev \
           libboost-thread-dev \
           guile-3.0-dev \
-          libasio-dev \
           cython3 \
           python3-nose \
           python3-dev \
@@ -1567,28 +1554,6 @@ jobs:
       run: |
         mkdir -p atomspace/build
         cd atomspace/build
-        cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-        make ${{ env.MAKEFLAGS }}
-        sudo make install
-        sudo ldconfig
-    
-    - name: Rebuild and Install AtomSpace Storage
-      # Note: atomspace-storage is optional, so we continue even if it fails
-      if: hashFiles('atomspace-storage/CMakeLists.txt') != ''
-      run: |
-        mkdir -p atomspace-storage/build
-        cd atomspace-storage/build
-        cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-        make ${{ env.MAKEFLAGS }}
-        sudo make install
-        sudo ldconfig
-      continue-on-error: true
-    
-    - name: Rebuild and Install CogServer
-      if: hashFiles('cogserver/CMakeLists.txt') != ''
-      run: |
-        mkdir -p cogserver/build
-        cd cogserver/build
         cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
         make ${{ env.MAKEFLAGS }}
         sudo make install
