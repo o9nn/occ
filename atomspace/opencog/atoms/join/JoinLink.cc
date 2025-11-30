@@ -25,9 +25,8 @@
 #include <opencog/util/oc_assert.h>
 #include <opencog/atoms/atom_types/NameServer.h>
 #include <opencog/atoms/atom_types/atom_types.h>
-#include <opencog/atoms/core/FindUtils.h>
-#include <opencog/atoms/core/TypeUtils.h>
-#include <opencog/atoms/execution/EvaluationLink.h>
+#include <opencog/atoms/free/FindUtils.h>
+#include <opencog/atoms/signature/TypeUtils.h>
 #include <opencog/atoms/value/LinkValue.h>
 #include <opencog/atomspace/AtomSpace.h>
 #include <opencog/atomspace/Transient.h>
@@ -90,8 +89,8 @@ void JoinLink::validate(void)
 
 		// Type type nodes get applied to the container.
 		if (nameserver().isA(t, TYPE_NODE)) continue;
-		if (nameserver().isA(t, TYPE_INPUT_LINK)) continue;
-		if (nameserver().isA(t, TYPE_OUTPUT_LINK)) continue;
+		if (nameserver().isA(t, TYPE_INPUT_SIG)) continue;
+		if (nameserver().isA(t, TYPE_OUTPUT_SIG)) continue;
 
 		// Variable decls are allowed only in the first location.
 		if (0 == i and nameserver().isA(t, VARIABLE_LIST)) continue;
@@ -119,8 +118,8 @@ void JoinLink::setup_meet(void)
 		Type t = clause->get_type();
 		if (REPLACEMENT_LINK == t) continue;
 		if (nameserver().isA(t, TYPE_NODE)) continue;
-		if (nameserver().isA(t, TYPE_INPUT_LINK)) continue;
-		if (nameserver().isA(t, TYPE_OUTPUT_LINK)) continue;
+		if (nameserver().isA(t, TYPE_INPUT_SIG)) continue;
+		if (nameserver().isA(t, TYPE_OUTPUT_SIG)) continue;
 
 		// If variable declarations are missing, then
 		// we insist on the first link being a PresentLink
@@ -249,8 +248,8 @@ void JoinLink::setup_top_types(void)
 
 		// Type type nodes get applied to the container.
 		if (nameserver().isA(t, TYPE_NODE) or
-		    nameserver().isA(t, TYPE_INPUT_LINK) or
-		    nameserver().isA(t, TYPE_OUTPUT_LINK))
+		    nameserver().isA(t, TYPE_INPUT_SIG) or
+		    nameserver().isA(t, TYPE_OUTPUT_SIG))
 		{
 			_top_types.push_back(clause);
 		}
@@ -358,10 +357,9 @@ HandleSet JoinLink::principals(AtomSpace* as,
 
 	// If we are here, the expression had variables in it.
 	// Perform a search to ground those.
-	AtomSpace* temp = grab_transient_atomspace(as);
-	Handle meet = temp->add_atom(_meet);
+	Transient scratch(as);
+	Handle meet = scratch.tmp->add_atom(_meet);
 	ValuePtr vp = meet->execute();
-	release_transient_atomspace(temp);
 
 	// The MeetLink returned everything that the variables in the
 	// clause could ever be...
@@ -430,7 +428,7 @@ void JoinLink::principal_filter(Traverse& trav,
 	// Ignore type specifications, other containers!
 	Type t = h->get_type();
 	if (nameserver().isA(t, PRESENT_LINK) or
-	    nameserver().isA(t, TYPE_OUTPUT_LINK) or
+	    nameserver().isA(t, TYPE_OUTPUT_SIG) or
 	    nameserver().isA(t, JOIN_LINK))
 		return;
 
@@ -449,7 +447,7 @@ void JoinLink::principal_filter_map(Traverse& trav,
 	// Ignore type specifications, other containers!
 	Type t = h->get_type();
 	if (nameserver().isA(t, PRESENT_LINK) or
-	    nameserver().isA(t, TYPE_OUTPUT_LINK) or
+	    nameserver().isA(t, TYPE_OUTPUT_SIG) or
 	    nameserver().isA(t, JOIN_LINK))
 		return;
 
@@ -608,10 +606,7 @@ HandleSet JoinLink::constrain(AtomSpace* as, bool silent,
                               Traverse& trav) const
 {
 	HandleSet rejects;
-
-	AtomSpace* temp = nullptr;
-	if (0 < _top_clauses.size())
-		temp = grab_transient_atomspace(as);
+	Transient scratch(as);
 
 	for (const Handle& h : trav.containers)
 	{
@@ -639,17 +634,14 @@ HandleSet JoinLink::constrain(AtomSpace* as, bool silent,
 
 			// Plug in any variables ...
 			Handle topper = Replacement::replace_nocheck(toc, plugs);
-			topper = temp->add_atom(topper);
-			TruthValuePtr tvp =
-				EvaluationLink::do_evaluate(temp, topper, silent);
-			if (tvp->get_mean() < 0.5)
+			topper = scratch.tmp->add_atom(topper);
+			if (not topper->bevaluate(scratch.tmp, silent))
 			{
 				rejects.insert(h);
 				break;
 			}
 		}
 	}
-	if (temp) release_transient_atomspace(temp);
 
 	// Remove the rejects
 	HandleSet accept;
