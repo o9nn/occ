@@ -57,30 +57,25 @@ jobs:
       run: |
         cd cogutil
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: List Generated Packages
       if: always()
       run: |
         echo "📦 Generated Debian packages:"
-        ls -lh *.deb 2>/dev/null || echo "No .deb files found"
-        ls -lh cogutil/*.deb 2>/dev/null || echo "No .deb files in cogutil/"
-        ls -lh ../*.deb 2>/dev/null || true
+        ls -lh *.deb 2>/dev/null || echo "No .deb files found in root"
     
     - name: Upload cogutil Packages
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: cogutil-debian-packages
-        path: |
-          *.deb
-          cogutil/*.deb
+        path: "*.deb"
         retention-days: 7
     
     - name: Install cogutil for next stages
       if: success()
       run: |
-        sudo dpkg -i *.deb || true
+        sudo dpkg -i *.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
 
   # Stage 2: Build atomspace (requires cogutil)
@@ -135,7 +130,7 @@ jobs:
     
     - name: Install cogutil
       run: |
-        sudo dpkg -i *.deb || true
+        sudo dpkg -i *.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
@@ -151,29 +146,25 @@ jobs:
       run: |
         cd atomspace
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: List Generated Packages
       if: always()
       run: |
         echo "📦 Generated Debian packages:"
-        ls -lh *.deb 2>/dev/null || echo "No .deb files found"
-        ls -lh atomspace/*.deb 2>/dev/null || echo "No .deb files in atomspace/"
+        ls -lh *.deb 2>/dev/null || echo "No .deb files found in root"
     
     - name: Upload atomspace Packages
       uses: actions/upload-artifact@v4
       if: success()
       with:
         name: atomspace-debian-packages
-        path: |
-          *.deb
-          atomspace/*.deb
+        path: "*.deb"
         retention-days: 7
     
     - name: Install atomspace for next stages
       if: success()
       run: |
-        sudo dpkg -i *.deb || true
+        sudo dpkg -i *.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
 
   # Stage 3: Build unify (requires cogutil, atomspace)
@@ -235,7 +226,6 @@ jobs:
       run: |
         cd unify
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: List Generated Packages
       if: always()
@@ -304,7 +294,6 @@ jobs:
       run: |
         cd ure
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: Upload ure Packages
       uses: actions/upload-artifact@v4
@@ -367,7 +356,6 @@ jobs:
       run: |
         cd cogserver
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: Upload cogserver Packages
       uses: actions/upload-artifact@v4
@@ -430,7 +418,6 @@ jobs:
       run: |
         cd attention
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: Upload attention Packages
       uses: actions/upload-artifact@v4
@@ -474,7 +461,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        sudo dpkg -i *.deb || true
+        sudo dpkg -i *.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
@@ -490,7 +477,6 @@ jobs:
       run: |
         cd moses
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: Upload moses Packages
       uses: actions/upload-artifact@v4
@@ -553,7 +539,6 @@ jobs:
       run: |
         cd asmoses
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: Upload asmoses Packages
       uses: actions/upload-artifact@v4
@@ -616,7 +601,6 @@ jobs:
       run: |
         cd miner
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: Upload miner Packages
       uses: actions/upload-artifact@v4
@@ -679,7 +663,6 @@ jobs:
       run: |
         cd pln
         dpkg-buildpackage -us -uc -b
-      continue-on-error: true
     
     - name: Upload pln Packages
       uses: actions/upload-artifact@v4
@@ -710,8 +693,12 @@ jobs:
         echo "## Built Packages" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         
-        # Count packages
-        total_debs=$(find ./all-packages -name "*.deb" 2>/dev/null | wc -l)
+        # Count packages (check if directory exists first)
+        if [ -d "./all-packages" ]; then
+          total_debs=$(find ./all-packages -name "*.deb" 2>/dev/null | wc -l)
+        else
+          total_debs=0
+        fi
         echo "**Total packages built:** $total_debs" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         

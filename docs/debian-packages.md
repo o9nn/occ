@@ -162,11 +162,13 @@ For each component:
 
 ### Example Script
 
-A reference script showing the build commands is available:
+A reference script that displays the build commands is available:
 
 ```bash
 ./scripts/build-debian-packages-example.sh
 ```
+
+**Note:** This script only displays the build commands for reference; it does not execute them. Use it to understand the build sequence and commands.
 
 ## Package Structure
 
