@@ -39,9 +39,9 @@ class SoundTrack:
 			self.sl_matrix = rospy.get_param(parameter_name)
 			rospy.Subscriber("/manyears/source_pose", PoseStamped, \
 				self.sound_cb)
-			print("Sound localization is enabled")
+			print "Sound localization is enabled"
 		else :
-			print("Sound localization is disabled")
+			print "Sound localization is disabled"
 
 	# ---------------------------------------------------------------
 	# Store the location of the strongest sound-source in the

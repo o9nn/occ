@@ -40,7 +40,7 @@ from tts_feedback import TTSFeedback
 
 rospy.init_node("OpenCog_ROS_bridge")
 logging.info("Starting the OpenCog ROS Bridge")
-print("Starting the OpenCog ROS Bridge")
+print "Starting the OpenCog ROS Bridge"
 
 co = Control()
 cp = ControlPsi()
@@ -59,4 +59,4 @@ try:
 except rospy.ROSInterruptException as e:
 	print(e)
 
-print("Exit OpenCog ROS bridge")
+print "Exit OpenCog ROS bridge"
