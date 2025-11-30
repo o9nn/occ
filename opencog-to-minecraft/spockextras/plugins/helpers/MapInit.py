@@ -15,7 +15,7 @@ logger = logging.getLogger('spock')
 class MapInitCore:
 
     def __init__(self):
-
+    
     def move(self, direction, motion, jump):
 
         acc = motions[motion]
@@ -23,13 +23,13 @@ class MapInitCore:
 
 @pl_announce('MapInit')
 class MapInitPlugin:
-
+    
     def __init__(self, ploader, settings):
-
+        
         self.world = ploader.requires('World')
         self.event = ploader.requires('Event')
         clinfo = ploader.requires('ClientInfo')
-
+        
         ploader.reg_event_handler('world_tick', self.tick)
         #time should probably be handled by a separate plugin
         #ploader.reg_event_handler('w_time_update', handleTimeUpdate)
@@ -40,20 +40,20 @@ class MapInitPlugin:
 
 
     def startMapInit(self):
-
+        
         self.event.emit('ros_world_init_started')
-
-
+    
+    
     def finishMapInit(self):
-
+        
         self.event.emit('ros_world_init_finished')
-
+    
 
     # basically whenever the player joins or respawns
     def handleNewDimension(self):
-
+        
         startMapInit()
-
+        
         # each column is addressed by a tuple (x, z)
         # this will simply pass the entire structure for the chunk column
         # along with its coordinates
@@ -66,6 +66,6 @@ class MapInitPlugin:
             data['biome'] = cols[col].biome.get(col)
             data['raw'] = world.columns[col]
             self.event.emit('ros_column_update', data)
-
+        
         finishMapInit()
 

@@ -14,7 +14,7 @@ from minecraft_bot.msg import map_block_msg, map_block_multi_msg, position_msg
 
 def handleVisBlocks(data):
 
-    print(data)
+    print data
 
 
 def sendCoords():
@@ -35,7 +35,7 @@ def testVisibleBlocks():
     # rospy.wait_for_service('get_visible_blocks')
 
     rospy.init_node('test_vis_blocks_node')
-    print("test visibility node initialized")
+    print "test visibility node initialized"
 
     while not rospy.is_shutdown():
         sendCoords()

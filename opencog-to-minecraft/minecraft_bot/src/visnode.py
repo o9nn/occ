@@ -19,7 +19,7 @@ def get_block_multi(coords):
         return response.blocks
 
     except rospy.ServiceException as e:
-        print("service call failed: %s" % e)
+        print "service call failed: %s" % e
 
 
 def handle_get_visible_blocks(req):
