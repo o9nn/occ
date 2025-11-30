@@ -139,7 +139,7 @@ class AIMLCharacter(Character):
         else:
             self.counter = 0
             self.logger.info('Topic is changed from "{}" to "{}", '
-                             'reset counter'.format(self.current_topic, topic))
+                        'reset counter'.format(self.current_topic, topic))
             self.current_topic = topic
         if self.counter >= self.N:
             self.counter = 0
@@ -249,8 +249,8 @@ class AIMLCharacter(Character):
         patterns = defaultdict(list)
         for t in self.get_templates():
             key = (t[1]['pattern'].lower(),
-                   t[1]['that'].lower(),
-                   t[1]['topic'].lower())
+                t[1]['that'].lower(),
+                t[1]['topic'].lower())
             patterns[key].append(t[1])
         for pattern in patterns:
             if len(patterns[pattern]) > 1:

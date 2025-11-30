@@ -20,7 +20,7 @@ def generateAimlFromSimpleCSV(csvData):
     currentPattern = ''
 
     def processInPatternState(category, aimlFile):
-        # build template from random, think
+         # build template from random, think
         if len(temp_random) > 1:
             randomString = ' <random> \n'
             for li in temp_random:
@@ -130,7 +130,7 @@ def generateAimlFromLongCSV(csvData):
     srai = []
 
     def processInPatternState(category, aimlFile):
-        # build template from random, think
+         # build template from random, think
         if len(temp_random) > 1:
             randomString = ' <random> \n'
             for li in temp_random:
@@ -240,11 +240,11 @@ if __name__ == '__main__':
     longtest=csv.DictReader(open('../character_aiml/sophia-personality.invert.csv','r'))
     aiml=generateAimlFromLongCSV(longtest)
     ftest=open('../character_aiml/sophia-personality.invert.xml','w')
-    print(>>ftest,aiml)
+    print >>ftest,aiml
     ftest.close()
     """
     simpletest = csv.DictReader(open('../character_aiml/convoid419.csv', 'r'))
     aiml = generateAimlFromSimpleCSV(simpletest)
     ftest = open('../character_aiml/convoid419.invert.xml', 'w')
-    print(>>ftest, aiml)
+    print >>ftest, aiml
     ftest.close()
