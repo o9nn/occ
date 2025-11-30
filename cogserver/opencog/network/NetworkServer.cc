@@ -25,14 +25,46 @@
 
 using namespace opencog;
 
-NetworkServer::NetworkServer(unsigned short port, const char* name) :
+NetworkServer::NetworkServer(unsigned short port, const char* name, SocketManager* mgr) :
     _name(name),
     _port(port),
     _running(false),
-    _acceptor(_io_service,
-        asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+    _acceptor(_io_service),
+    _socket_manager(mgr)
 {
     logger().debug("[NetworkServer] constructor for %s at %d", name, port);
+
+    // Try IPv6 dual-stack mode first (accepts both IPv6 and IPv4)
+    bool ipv6_success = false;
+    try {
+        _acceptor.open(asio::ip::tcp::v6());
+        _acceptor.set_option(asio::socket_base::reuse_address(true));
+        _acceptor.set_option(asio::ip::v6_only(false));
+        _acceptor.bind(asio::ip::tcp::endpoint(asio::ip::tcp::v6(), port));
+        _acceptor.listen();
+        logger().info("[NetworkServer] dual-stack IPv4/IPv6 mode enabled");
+        ipv6_success = true;
+    }
+    catch (const std::system_error& e) {
+        logger().info("[NetworkServer] IPv6 not available (%s), falling back to IPv4-only mode",
+                      e.what());
+    }
+
+    // Fall back to IPv4-only if IPv6 failed
+    if (!ipv6_success) {
+        try {
+            _acceptor.open(asio::ip::tcp::v4());
+            _acceptor.set_option(asio::socket_base::reuse_address(true));
+            _acceptor.bind(asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
+            _acceptor.listen();
+            logger().info("[NetworkServer] IPv4-only mode enabled");
+        }
+        catch (const std::system_error& e) {
+            logger().error("[NetworkServer] Failed to bind to port %d: %s", port, e.what());
+            throw;
+        }
+    }
+
     _start_time = time(nullptr);
     _last_connect = 0;
     _nconnections = 0;
@@ -52,7 +84,7 @@ void NetworkServer::stop()
 {
     if (not _running) return;
     _running = false;
-    ServerSocket::network_gone();
+    _socket_manager->network_gone();
 
     std::error_code ec;
     _acceptor.cancel(ec);
@@ -65,6 +97,26 @@ void NetworkServer::stop()
     _listener_thread->join();
     delete _listener_thread;
     _listener_thread = nullptr;
+
+    // Join all connection handler threads to ensure complete shutdown.
+    // This guarantees all TCP/IP packets have been processed and all
+    // handler threads have finished before serverLoop() returns.
+    logger().debug("[NetworkServer] Joining %zu handler threads",
+                   _handler_threads.size());
+
+    std::list<std::thread*> threads_to_join;
+    {
+        std::lock_guard<std::mutex> lock(_handler_threads_mtx);
+        threads_to_join.swap(_handler_threads);
+    }
+
+    for (std::thread* thr : threads_to_join)
+    {
+        thr->join();
+        delete thr;
+    }
+
+    logger().debug("[NetworkServer] All handler threads joined");
 }
 
 void NetworkServer::listen(void)
@@ -105,15 +157,20 @@ void NetworkServer::listen(void)
         setsockopt(fd, IPPROTO_TCP, TCP_QUICKACK, &flags, sizeof(flags));
 
         // The total number of concurrently open sockets is managed by
-        // keeping a count in ConsoleSocket, and blocking when there are
-        // too many.
-        ServerSocket* ss = _getServer();
+        // the SocketManager, which blocks when there are too many.
+        ServerSocket* ss = _getServer(_socket_manager);
         ss->set_connection(sock);
-        std::thread(&ServerSocket::handle_connection, ss).detach();
+
+        // Create handler thread and track it for proper cleanup.
+        std::thread* handler_thread = new std::thread(&ServerSocket::handle_connection, ss);
+        {
+            std::lock_guard<std::mutex> lock(_handler_threads_mtx);
+            _handler_threads.push_back(handler_thread);
+        }
     }
 }
 
-void NetworkServer::run(ServerSocket* (*handler)(void))
+void NetworkServer::run(ServerSocket* (*handler)(SocketManager*))
 {
     if (_running) return;
     _running = true;
@@ -126,88 +183,6 @@ void NetworkServer::run(ServerSocket* (*handler)(void))
     }
 
     _listener_thread = new std::thread(&NetworkServer::listen, this);
-}
-
-// ==================================================================
-
-std::string NetworkServer::display_stats(int nlines)
-{
-    struct tm tm;
-    char sbuf[40];
-    gmtime_r(&_start_time, &tm);
-    strftime(sbuf, 40, "%d %b %H:%M:%S %Y", &tm);
-
-    char nbuf[40];
-    time_t now = time(nullptr);
-    gmtime_r(&now, &tm);
-    strftime(nbuf, 40, "%d %b %H:%M:%S %Y", &tm);
-
-    // Current max_open_sockets is 60 which requires a terminal
-    // size of 66x80 to display correctly. So reserve a reasonble
-    // string size.
-    std::string rc;
-    rc.reserve(4000);
-
-    rc = "----- OpenCog CogServer top threads: type help or ^C to exit\n";
-    rc += nbuf;
-    rc += " UTC ---- up-since: ";
-    rc += sbuf;
-    rc += "\n";
-
-    gmtime_r(&_last_connect, &tm);
-    strftime(nbuf, 40, "%d %b %H:%M:%S", &tm);
-
-    char buff[180];
-    snprintf(buff, sizeof(buff),
-        "status: %s  last: %s  tot-cnct: %4zd  port: %d\n",
-        _running?"running":"halted", nbuf, _nconnections, _port);
-
-    rc += buff;
-
-    // Count open file descs
-    int nfd = 0;
-    for (int j=0; j<4096; j++) {
-       int fd = dup(j);
-       if (fd < 0) continue;
-       close(fd);
-       nfd++;
-    }
-
-    snprintf(buff, sizeof(buff),
-        "max-open-socks: %d   cur-open-socks: %d   num-open-fds: %d  stalls: %zd\n",
-        ConsoleSocket::get_max_open_sockets(),
-        ConsoleSocket::get_num_open_sockets(),
-        nfd,
-        ConsoleSocket::get_num_open_stalls());
-    rc += buff;
-
-    clock_t clk = clock();
-    int sec = clk / CLOCKS_PER_SEC;
-    clock_t rem = clk - sec * CLOCKS_PER_SEC;
-    int msec = (1000 * rem) / CLOCKS_PER_SEC;
-
-    struct rusage rus;
-    getrusage(RUSAGE_SELF, &rus);
-
-    snprintf(buff, sizeof(buff),
-        "cpu: %d.%03d secs  user: %ld.%03ld  sys: %ld.%03ld     tot-lines: %lu\n",
-        sec, msec,
-        rus.ru_utime.tv_sec, rus.ru_utime.tv_usec / 1000,
-        rus.ru_stime.tv_sec, rus.ru_stime.tv_usec / 1000,
-        ServerSocket::total_line_count.load());
-    rc += buff;
-
-    snprintf(buff, sizeof(buff),
-        "maxrss: %ld KB  majflt: %ld  inblk: %ld  outblk: %ld\n",
-        rus.ru_maxrss, rus.ru_majflt, rus.ru_inblock, rus.ru_oublock);
-    rc += buff;
-
-    // The above chews up 8 lines of display. Byobu/tmux needs a line.
-    // Blank line for accepting commmands. So subtract 10.
-    rc += "\n";
-    rc += ServerSocket::display_stats(nlines - 10);
-
-    return rc;
 }
 
 // ==================================================================
