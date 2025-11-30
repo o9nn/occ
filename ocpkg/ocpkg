@@ -67,8 +67,8 @@ DEFAULT_UPDATE_OPENCOG=true
 DEFAULT_BUILD_OPENCOG=false
 DEFAULT_TEST_OPENCOG=false
 
-UBUNTU_ISO=ubuntu-20.04.3-desktop-amd64.iso
-UBUNTU_URL=http://releases.ubuntu.com/20.04/
+UBUNTU_ISO=ubuntu-24.04-desktop-amd64.iso
+UBUNTU_URL=http://releases.ubuntu.com/24.04/
 UBUNTU_MD5SUM=5fdebc435ded46ae99136ca875afc6f05bde217be7dd018e1841924f71db46b5
 UBUNTU_ISO_IMAGE=$CURRENT_DIR/$UBUNTU_ISO #default location
 
@@ -108,12 +108,11 @@ PACKAGES_ADMIN="
 		apt-rdepends \
 		"
 
-# The only remaining users of boost are ure, miner and as-moses
+# The only remaining user of boost is as-moses
 # libboost-date-time-dev asmoses gregorian dates.
 # libboost-program-options-dev by asmoses/utils/log_prog_name.cc
 # libboost-regex-dev asmoses combo
 # libboost-random-dev asmoses random shuffle
-# liboctomap-dev for spacetime
 #
 PACKAGES_BUILD_OLD=" \
 		libboost-date-time-dev \
@@ -121,7 +120,6 @@ PACKAGES_BUILD_OLD=" \
 		libboost-program-options-dev \
 		libboost-regex-dev \
 		libboost-random-dev \
-		liboctomap-dev \
 		"
 
 # Packages for GPU devel (OpenCL)
@@ -190,11 +188,8 @@ PACKAGES_BUILD_CORE=" build-essential \
 		swig \
 		"
 
-# Must install PACKAGES_BUILD_OLD for now, because the circle-ci
-# container expects these, in order for as-moses, etc to build.
 PACKAGES_BUILD="
 		$PACKAGES_BUILD_CORE \
-		$PACKAGES_BUILD_OLD \
 		$PACKAGES_BUILD_GUILE \
 		"
 
@@ -579,11 +574,11 @@ else
 fi
 }
 
-get_distro_version() {
-  cat /etc/os-release | grep "^VERSION_ID="  | cut -d "=" -f 2
+get_release_version() {
+  cat /etc/os-release | grep "^VERSION_CODENAME="  | cut -d "=" -f 2
 }
 
-UBUNTU_VERSION=$(get_distro_version)
+RELEASE_VERSION=$(get_release_version)
 
 add_repositories() {
 MESSAGE="Adding software repositories..." ; message
@@ -744,13 +739,16 @@ install_build() {
 install_atomspace(){
   install_opencog_github_repo atomspace
   install_opencog_github_repo atomspace-storage
-  install_opencog_github_repo atomspace-pgres
   install_opencog_github_repo atomspace-rocks
   install_opencog_github_repo atomspace-cog
   install_opencog_github_repo cogserver
   install_opencog_github_repo unify
   install_opencog_github_repo sensory
   install_opencog_github_repo motor
+
+  # Postgres no longer builds due to missing SimpleTV and general
+  # obsolescence.
+  # install_opencog_github_repo atomspace-pgres
 }
 
 # Install Language components
@@ -787,20 +785,19 @@ install_benchmark() {
 }
 
 # Install obsolete parts of OpenCog
+# None of these compile any longer due to bitrot.
 install_opencog() {
-  install_language
-  sudo apt-get $QUIET --no-upgrade --assume-yes install $PACKAGES_BUILD_OLD
   install_opencog_github_repo ure
   install_opencog_github_repo attention
   install_opencog_github_repo spacetime
   install_opencog_github_repo pln
   install_opencog_github_repo miner
-# opencog no longer compiles.
-#  install_opencog_github_repo opencog
+  install_opencog_github_repo opencog
 }
 
 # Install ASMOSES
 install_asmoses() {
+  sudo apt-get $QUIET --no-upgrade --assume-yes install $PACKAGES_BUILD_OLD
   install_opencog_github_repo asmoses
 }
 
@@ -892,18 +889,13 @@ install_bdwgc() {
 
 install_python() {
   MESSAGE="Installing python3 ...." ; message
-  sudo apt-get install -y --no-install-recommends python3-dev python3-dev
+  sudo apt-get install -y --no-install-recommends python3-dev
 
-  if [[ "$UBUNTU_VERSION" = "\"20.04\"" ]]; then
+  # Ubuntu focal is 20.04 LTS
+  if [[ $RELEASE_VERSION = "focal" ]]; then
     sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 2
-    sudo apt-get install -y --no-install-recommends python3-nose cython3
   fi
-  if [[ "$UBUNTU_VERSION" = "\"22.04\"" ]]; then
-    sudo apt-get install -y --no-install-recommends python3-nose cython3
-  fi
-  if [[ "$UBUNTU_VERSION" = "\"24.04\"" ]]; then
-    sudo apt-get install -y --no-install-recommends python3-nose cython3
-  fi
+  sudo apt-get install -y --no-install-recommends python3-pytest cython3
 }
 
 # Install pip seperately. The problem here is that installing pip
@@ -986,11 +978,22 @@ install_dependencies() {
   fi
   ensure_UTF_installed
 
+  # boost is needed in NumberNode.h for lexical cast,
+  # but only if the compiler is old. gcc circa 2022 or later is OK.
+  # Ubuntu focal is 20.04 LTS
+  # Debian bullseye is from August 2021.
+  if [[ $RELEASE_VERSION = "focal" ]]; then
+    sudo apt-get $QUIET --assume-yes --no-install-recommends install libboost-dev
+  fi
+  if [[ $RELEASE_VERSION = "bullseye" ]]; then
+    sudo apt-get $QUIET --assume-yes --no-install-recommends install libboost-dev
+  fi
+
   # Update ccache links
   update_ccache_links
 
   # Install custom guile >3.0.0 for language-learning
-  # The apt-get default is OK these days.
+  # Not needed -- the apt-get default is OK these days.
   # install_guile
 }
 
