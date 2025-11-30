@@ -9,9 +9,8 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-frame-progressive-test")
 
-(define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
 (define (get-val ATOM NAME) (inexact->exact
 	(cog-value-ref (cog-value ATOM (Predicate NAME)) 2)))
 
@@ -26,19 +25,19 @@
 ;; value setter.  This is unintuitive to the casual user!
 (define (store-stuff N)
 	(define x (Concept "foo"))
-	(define x1 (cog-set-value! x (Predicate "gee") (ctv 1 0 N)))
+	(define x1 (cog-set-value! x (Predicate "gee") (FloatValue 1 0 N)))
 	(store-atom x1)
 
 	(define y (Concept "bar"))
-	(define y1 (cog-set-value! y (Predicate "gosh") (ctv 1 0 (+ 1 N))))
+	(define y1 (cog-set-value! y (Predicate "gosh") (FloatValue 1 0 (+ 1 N))))
 	(store-atom y1)
 
 	(define z (List x y))
-	(define z1 (cog-set-value! z (Predicate "bang") (ctv 1 0 (+ 2 N))))
+	(define z1 (cog-set-value! z (Predicate "bang") (FloatValue 1 0 (+ 2 N))))
 	(store-atom z1)
 
 	(define w (List z x))
-	(define w1 (cog-set-value! w (Predicate "bash") (ctv 1 0 (+ 3 N))))
+	(define w1 (cog-set-value! w (Predicate "bash") (FloatValue 1 0 (+ 3 N))))
 	(store-atom w1)
 )
 
@@ -46,9 +45,9 @@
 (define (recompute N NLOOP)
 	(when (< 0 NLOOP)
 		(store-stuff N)
-		(cog-set-atomspace! (cog-new-atomspace (cog-atomspace)))
+		(cog-set-atomspace! (AtomSpace (cog-atomspace)))
 		(cog-delete-recursive! (Concept "bar"))
-		(cog-set-atomspace! (cog-new-atomspace (cog-atomspace)))
+		(cog-set-atomspace! (AtomSpace (cog-atomspace)))
 		(recompute (+ N 3) (- NLOOP 1)))
 )
 
@@ -58,7 +57,7 @@
 	(define base-space (cog-atomspace))
 
 	; Open storage immediately.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-frame-progressive-test"))
 	(cog-open storage)
 
 	; We plan to store multiple atomspaces.
@@ -130,16 +129,16 @@
 	(progressive-store STACK-DEPTH)
 
 	; Set a brand new current space
-	(define new-base (cog-new-atomspace))
+	(define new-base (AtomSpace))
 	(cog-set-atomspace! new-base)
 
-	; (cog-rocks-open "rocks:///tmp/cog-rocks-unit-test")
+	; (cog-rocks-open "rocks:///tmp/cog-rocks-frame-progressive-test")
 	; (cog-rocks-stats)
 	; (cog-rocks-get "")
 	; (cog-rocks-close)
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-frame-progressive-test"))
 	(cog-open storage)
 
 	; Load all of the AtomSpace Frames.
@@ -161,5 +160,5 @@
 (force-output (current-output-port))
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-frame-progressive-test")
 (opencog-test-end)
