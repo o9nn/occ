@@ -18,7 +18,7 @@ if sys.version_info[0] == 2:
 else:
     import functools
 
-    print(= functools.partial(print, flush=True))
+    print = functools.partial(print, flush=True)
 
 
 class MalmoWrapper(Wrapper):
