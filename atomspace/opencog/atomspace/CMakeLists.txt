@@ -28,6 +28,7 @@ TARGET_LINK_LIBRARIES(atomspace
 	# screwball failures.
 	${NO_AS_NEEDED}
 	clearbox
+	grant
 	join
 	pattern
 	grounded
@@ -35,7 +36,6 @@ TARGET_LINK_LIBRARIES(atomspace
 	atomflow
 	atomcore
 	atombase
-	truthvalue
 	${COGUTIL_LIBRARY}
 )
 

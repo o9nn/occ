@@ -28,31 +28,45 @@
 
 #include "AtomSpace.h"
 
-#include <atomic>
-#include <stdlib.h>
-
 #include <opencog/atoms/atom_types/NameServer.h>
 #include <opencog/atoms/base/Link.h>
 #include <opencog/atoms/base/Node.h>
-#include <opencog/atoms/core/DefineLink.h>
-#include <opencog/atoms/core/StateLink.h>
-#include <opencog/atoms/core/TypedAtomLink.h>
+#include <opencog/atoms/grant/DefineLink.h>
+#include <opencog/atoms/grant/StateLink.h>
+#include <opencog/atoms/grant/TypedAtomLink.h>
 #include <opencog/util/exceptions.h>
 #include <opencog/util/Logger.h>
 #include <opencog/util/oc_assert.h>
 
+#include <atomic>
+#include <cstdio>
+#include <ctime>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+
 using namespace opencog;
 
 // ====================================================================
-// Nothing should ever get the uuid of zero. Zero is reserved for
-// "no atomspace" (in the persist code).
-static std::atomic<UUID> _id_pool(1);
 
 void AtomSpace::init(void)
 {
-    _uuid = _id_pool.fetch_add(1, std::memory_order_relaxed);
+    // Timestamp provides the primary ID, which the user might
+    // over-write with a given name. Normally, the timestamp is
+    // (almost) enough to provide a distinct, unique name...
+    // expect in cases of extreme multi-threading, when multiple
+    // thread can end up with the same timestamp, even at the
+    // nanosecond level, dependong on the OS, scheduling, interrupts,
+    // etc. So we further disambiguate (DAB) with a per-session counter.
+    static std::atomic_uint64_t dabcnt(1);
 
-    _name = "(uuid . " + std::to_string(_uuid) + ")";
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    char buf[64];
+    strftime(buf, sizeof(buf), "/%Y-%m-%d %H:%M:%S", gmtime(&ts.tv_sec));
+    sprintf(buf + strlen(buf), ".%09ld/%ld", ts.tv_nsec, dabcnt.fetch_add(1));
+
+    _name = buf;
 
     // Connect signal to find out about type additions
     addedTypeConnection =
@@ -237,13 +251,6 @@ Handle AtomSpace::lookupHide(const Handle& a, bool hide) const
     return Handle::UNDEFINED;
 }
 
-/// Search for an equivalent atom that we might be holding.
-Handle AtomSpace::get_atom(const Handle& a) const
-{
-    if (nullptr == a) return Handle::UNDEFINED;
-    return lookupHandle(a);
-}
-
 /// Helper utility for adding atoms to the atomspace. Checks to see
 /// if the indicated atom already is in the atomspace. If it is, it
 /// returns that atom. Copies over values in the process.
@@ -271,7 +278,7 @@ Handle AtomSpace::check(const Handle& orig, bool force)
     // If this is a transient atomspace, then just grab any version
     // we find. This alters the behavior of glob matching in the
     // MinerUTest (specifically, test_glob and test_typed_glob).
-    // I'm not sure what the deal is, though, why we need to check.
+    // I'm not sure what the deal is, though, why we need to check?
     if (_transient)
         return lookupHandle(orig);
 
@@ -357,11 +364,8 @@ Handle AtomSpace::add(const Handle& orig, bool force,
             // Now that the outgoing set is correct, check again to
             // see if we already have this atom in the atomspace.
             const Handle& hc(check(atom, force));
-            if (hc and (not _copy_on_write or this == hc->getAtomSpace())) {
-                if (not recurse)
-                    hc->copyValues(orig);
+            if (hc and (not _copy_on_write or this == hc->getAtomSpace()))
                 return hc;
-            }
 
         } else {
             atom->unsetRemovalFlag();
@@ -380,10 +384,30 @@ Handle AtomSpace::add(const Handle& orig, bool force,
     }
 
     // If we are shadowing a deeper atom, copy it's values.
-    if (_transient or _copy_on_write)
+    if ((_transient or _copy_on_write) and atom == orig)
     {
-        Handle covered(lookupHandle(atom));
-        if (covered) atom->copyValues(covered);
+        Handle covered(lookupHandle(orig));
+        if (covered)
+        {
+            // Just one darn tootin moment ... check again.
+            // If another thread is racing, the first check() earlier
+            // above may have failed, but has since then inserted this
+            // atom. If this happens, then lookup for `covered` succeeds.
+            // Rule out this case by checking again. Yes, this happens.
+            // It happens in the atomspace-rocks CountThreadedUTest.
+            // (Approx. once out of every 30 runs, so its rare.)
+            //
+            // Multiple threads are adding atoms to an upper COW space,
+            // then incrementing counts in the lower space. If there's
+            // a race here, then `covered` will be the base space, and
+            // the copyValues() below will incorrectly copy those counts
+            // into the top space. So, before we copy anything, check
+            // again to see if we already have this atom.
+            const Handle& hc(check(orig, force));
+            if (hc) return hc;
+
+            orig->copyValues(covered);
+         }
     }
 
     if (atom != orig)
