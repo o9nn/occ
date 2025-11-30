@@ -1,7 +1,7 @@
 /*
  * tests/persist/rocks/QueryPersistUTest.cxxtest
  *
- * Test persistance queries.  Assumes PerisistUTest and ValueSaveUTest
+ * Test persistence queries.  Assumes PerisistUTest and ValueSaveUTest
  * are passing.
  *
  * Copyright (C) 2008, 2009, 2013, 2020 Linas Vepstas <linasvepstas@gmail.com>
@@ -24,13 +24,14 @@
  */
 
 #include <cstdio>
+#include <filesystem>
 
 #include <opencog/atoms/atom_types/atom_types.h>
 #include <opencog/atoms/base/Atom.h>
 #include <opencog/atoms/base/Link.h>
 #include <opencog/atoms/base/Node.h>
 #include <opencog/atomspace/AtomSpace.h>
-#include <opencog/atoms/truthvalue/SimpleTruthValue.h>
+#include <opencog/atoms/value/FloatValue.h>
 #include <opencog/atoms/value/LinkValue.h>
 #include <opencog/persist/rocks-types/atom_types.h>
 #include <opencog/persist/rocks/RocksStorage.h>
@@ -53,7 +54,13 @@ class QueryPersistUTest :  public CxxTest::TestSuite
 		{
 			// erase the log file if no assertions failed
 			if (!CxxTest::TestTracker::tracker().suiteFailed())
+			{
 				std::remove(logger().get_filename().c_str());
+				// Also remove the database directory
+				// URI is "rocks:///tmp/..." so path starts at position 8
+				std::string dbpath = uri.substr(8);
+				std::filesystem::remove_all(dbpath);
+			}
 		}
 
 		void setUp(void);
@@ -70,7 +77,7 @@ QueryPersistUTest:: QueryPersistUTest(void)
 	logger().set_level(Logger::DEBUG);
 	logger().set_print_to_stdout_flag(true);
 
-	uri = "rocks:///tmp/cog-rocks-unit-test";
+	uri = "rocks:///tmp/cog-rocks-query-persist-utest";
 }
 
 /*
@@ -145,13 +152,13 @@ void QueryPersistUTest::setup_data(void)
 
 	// Sprinkle in some TruthValues
 	an(CONCEPT, "airplane") ->
-		setTruthValue(createSimpleTruthValue(0.11, 100));
+		setValue(truth_key(), createFloatValue(std::vector<double>({0.11, 100})));
 
 	an(CONCEPT, "bicycle") ->
-		setTruthValue(createSimpleTruthValue(0.22, 100));
+		setValue(truth_key(), createFloatValue(std::vector<double>({0.22, 100})));
 
 	an(CONCEPT, "car") ->
-		setTruthValue(createSimpleTruthValue(0.33, 300));
+		setValue(truth_key(), createFloatValue(std::vector<double>({0.33, 300})));
 
 	/* Push all atoms out to the database */
 	store->store_atomspace();
