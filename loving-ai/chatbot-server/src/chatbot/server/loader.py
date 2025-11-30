@@ -212,4 +212,4 @@ class AIMLCharacterZipLoader(object):
         return characters
 
 if __name__ == '__main__':
-    print(dyn_properties)
+    print dyn_properties
