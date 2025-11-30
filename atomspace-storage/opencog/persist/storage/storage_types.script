@@ -3,11 +3,6 @@
 // a collection of types suitable for defining distributed storage
 // interconnects.
 //
-// The ObjectNode is the base class for StorageNode, because all
-// StorageNodes are stateful objects, existing in the real physical
-// world, and accept the messages that define the storage API.
-STORAGE_NODE <- OBJECT_NODE
-//
 // Specific storage nodes. FileStoreageNode is implemented here, because
 // it is so simple. The others are implemented in other git repos,
 // according to the type.
@@ -80,9 +75,5 @@ DYNAMIC_DATA_PROXY_NODE <- PROXY_NODE
 // Fetch and store Values from Storage.
 // Marked "NUMERIC" only because having a FetchFloatValueOfLink seems
 // like overkill.
-//
-// These are here, instead of in the "main" atom_types.script because
-// the implementation for them is here, because otherwise crazy library
-// dependency issues arise.
-FETCH_VALUE_OF_LINK <- VALUE_OF_LINK,NUMERIC_OUTPUT_LINK
-STORE_VALUE_OF_LINK <- VALUE_OF_LINK,NUMERIC_OUTPUT_LINK
+FETCH_VALUE_OF_LINK <- VALUE_OF_LINK,NUMERIC_OUTPUT_SIG
+STORE_VALUE_OF_LINK <- VALUE_OF_LINK,NUMERIC_OUTPUT_SIG
