@@ -56,7 +56,7 @@ def has_field(type_, field):
 
     type_ = get_basic_type(type_)
     if (type_.code != gdb.TYPE_CODE_STRUCT and
-            type_.code != gdb.TYPE_CODE_UNION):
+        type_.code != gdb.TYPE_CODE_UNION):
         raise TypeError("not a struct or union")
     for f in type_.fields():
         if f.is_base_class:

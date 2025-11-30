@@ -109,375 +109,375 @@ SINGLE_LINE = _clinkgrammar.SINGLE_LINE
 MAX_STYLES = _clinkgrammar.MAX_STYLES
 
 def linkgrammar_get_version():
-    return _clinkgrammar.linkgrammar_get_version()
+  return _clinkgrammar.linkgrammar_get_version()
 linkgrammar_get_version = _clinkgrammar.linkgrammar_get_version
 
 def linkgrammar_get_dict_version(*args):
-    return _clinkgrammar.linkgrammar_get_dict_version(*args)
+  return _clinkgrammar.linkgrammar_get_dict_version(*args)
 linkgrammar_get_dict_version = _clinkgrammar.linkgrammar_get_dict_version
 
 def linkgrammar_get_dict_locale(*args):
-    return _clinkgrammar.linkgrammar_get_dict_locale(*args)
+  return _clinkgrammar.linkgrammar_get_dict_locale(*args)
 linkgrammar_get_dict_locale = _clinkgrammar.linkgrammar_get_dict_locale
 
 def dictionary_create_lang(*args):
-    return _clinkgrammar.dictionary_create_lang(*args)
+  return _clinkgrammar.dictionary_create_lang(*args)
 dictionary_create_lang = _clinkgrammar.dictionary_create_lang
 
 def dictionary_create_default_lang():
-    return _clinkgrammar.dictionary_create_default_lang()
+  return _clinkgrammar.dictionary_create_default_lang()
 dictionary_create_default_lang = _clinkgrammar.dictionary_create_default_lang
 
 def dictionary_get_lang(*args):
-    return _clinkgrammar.dictionary_get_lang(*args)
+  return _clinkgrammar.dictionary_get_lang(*args)
 dictionary_get_lang = _clinkgrammar.dictionary_get_lang
 
 def dictionary_delete(*args):
-    return _clinkgrammar.dictionary_delete(*args)
+  return _clinkgrammar.dictionary_delete(*args)
 dictionary_delete = _clinkgrammar.dictionary_delete
 
 def dictionary_set_data_dir(*args):
-    return _clinkgrammar.dictionary_set_data_dir(*args)
+  return _clinkgrammar.dictionary_set_data_dir(*args)
 dictionary_set_data_dir = _clinkgrammar.dictionary_set_data_dir
 
 def dictionary_get_data_dir():
-    return _clinkgrammar.dictionary_get_data_dir()
+  return _clinkgrammar.dictionary_get_data_dir()
 dictionary_get_data_dir = _clinkgrammar.dictionary_get_data_dir
 
 def parse_options_create():
-    return _clinkgrammar.parse_options_create()
+  return _clinkgrammar.parse_options_create()
 parse_options_create = _clinkgrammar.parse_options_create
 
 def parse_options_delete(*args):
-    return _clinkgrammar.parse_options_delete(*args)
+  return _clinkgrammar.parse_options_delete(*args)
 parse_options_delete = _clinkgrammar.parse_options_delete
 
 def parse_options_set_verbosity(*args):
-    return _clinkgrammar.parse_options_set_verbosity(*args)
+  return _clinkgrammar.parse_options_set_verbosity(*args)
 parse_options_set_verbosity = _clinkgrammar.parse_options_set_verbosity
 
 def parse_options_get_verbosity(*args):
-    return _clinkgrammar.parse_options_get_verbosity(*args)
+  return _clinkgrammar.parse_options_get_verbosity(*args)
 parse_options_get_verbosity = _clinkgrammar.parse_options_get_verbosity
 
 def parse_options_set_linkage_limit(*args):
-    return _clinkgrammar.parse_options_set_linkage_limit(*args)
+  return _clinkgrammar.parse_options_set_linkage_limit(*args)
 parse_options_set_linkage_limit = _clinkgrammar.parse_options_set_linkage_limit
 
 def parse_options_get_linkage_limit(*args):
-    return _clinkgrammar.parse_options_get_linkage_limit(*args)
+  return _clinkgrammar.parse_options_get_linkage_limit(*args)
 parse_options_get_linkage_limit = _clinkgrammar.parse_options_get_linkage_limit
 
 def parse_options_set_disjunct_cost(*args):
-    return _clinkgrammar.parse_options_set_disjunct_cost(*args)
+  return _clinkgrammar.parse_options_set_disjunct_cost(*args)
 parse_options_set_disjunct_cost = _clinkgrammar.parse_options_set_disjunct_cost
 
 def parse_options_get_disjunct_cost(*args):
-    return _clinkgrammar.parse_options_get_disjunct_cost(*args)
+  return _clinkgrammar.parse_options_get_disjunct_cost(*args)
 parse_options_get_disjunct_cost = _clinkgrammar.parse_options_get_disjunct_cost
 
 def parse_options_set_min_null_count(*args):
-    return _clinkgrammar.parse_options_set_min_null_count(*args)
+  return _clinkgrammar.parse_options_set_min_null_count(*args)
 parse_options_set_min_null_count = _clinkgrammar.parse_options_set_min_null_count
 
 def parse_options_get_min_null_count(*args):
-    return _clinkgrammar.parse_options_get_min_null_count(*args)
+  return _clinkgrammar.parse_options_get_min_null_count(*args)
 parse_options_get_min_null_count = _clinkgrammar.parse_options_get_min_null_count
 
 def parse_options_set_max_null_count(*args):
-    return _clinkgrammar.parse_options_set_max_null_count(*args)
+  return _clinkgrammar.parse_options_set_max_null_count(*args)
 parse_options_set_max_null_count = _clinkgrammar.parse_options_set_max_null_count
 
 def parse_options_get_max_null_count(*args):
-    return _clinkgrammar.parse_options_get_max_null_count(*args)
+  return _clinkgrammar.parse_options_get_max_null_count(*args)
 parse_options_get_max_null_count = _clinkgrammar.parse_options_get_max_null_count
 
 def parse_options_set_islands_ok(*args):
-    return _clinkgrammar.parse_options_set_islands_ok(*args)
+  return _clinkgrammar.parse_options_set_islands_ok(*args)
 parse_options_set_islands_ok = _clinkgrammar.parse_options_set_islands_ok
 
 def parse_options_get_islands_ok(*args):
-    return _clinkgrammar.parse_options_get_islands_ok(*args)
+  return _clinkgrammar.parse_options_get_islands_ok(*args)
 parse_options_get_islands_ok = _clinkgrammar.parse_options_get_islands_ok
 
 def parse_options_set_short_length(*args):
-    return _clinkgrammar.parse_options_set_short_length(*args)
+  return _clinkgrammar.parse_options_set_short_length(*args)
 parse_options_set_short_length = _clinkgrammar.parse_options_set_short_length
 
 def parse_options_get_short_length(*args):
-    return _clinkgrammar.parse_options_get_short_length(*args)
+  return _clinkgrammar.parse_options_get_short_length(*args)
 parse_options_get_short_length = _clinkgrammar.parse_options_get_short_length
 
 def parse_options_set_max_memory(*args):
-    return _clinkgrammar.parse_options_set_max_memory(*args)
+  return _clinkgrammar.parse_options_set_max_memory(*args)
 parse_options_set_max_memory = _clinkgrammar.parse_options_set_max_memory
 
 def parse_options_get_max_memory(*args):
-    return _clinkgrammar.parse_options_get_max_memory(*args)
+  return _clinkgrammar.parse_options_get_max_memory(*args)
 parse_options_get_max_memory = _clinkgrammar.parse_options_get_max_memory
 
 def parse_options_set_max_parse_time(*args):
-    return _clinkgrammar.parse_options_set_max_parse_time(*args)
+  return _clinkgrammar.parse_options_set_max_parse_time(*args)
 parse_options_set_max_parse_time = _clinkgrammar.parse_options_set_max_parse_time
 
 def parse_options_get_max_parse_time(*args):
-    return _clinkgrammar.parse_options_get_max_parse_time(*args)
+  return _clinkgrammar.parse_options_get_max_parse_time(*args)
 parse_options_get_max_parse_time = _clinkgrammar.parse_options_get_max_parse_time
 
 def parse_options_set_cost_model_type(*args):
-    return _clinkgrammar.parse_options_set_cost_model_type(*args)
+  return _clinkgrammar.parse_options_set_cost_model_type(*args)
 parse_options_set_cost_model_type = _clinkgrammar.parse_options_set_cost_model_type
 
 def parse_options_get_cost_model_type(*args):
-    return _clinkgrammar.parse_options_get_cost_model_type(*args)
+  return _clinkgrammar.parse_options_get_cost_model_type(*args)
 parse_options_get_cost_model_type = _clinkgrammar.parse_options_get_cost_model_type
 
 def parse_options_timer_expired(*args):
-    return _clinkgrammar.parse_options_timer_expired(*args)
+  return _clinkgrammar.parse_options_timer_expired(*args)
 parse_options_timer_expired = _clinkgrammar.parse_options_timer_expired
 
 def parse_options_memory_exhausted(*args):
-    return _clinkgrammar.parse_options_memory_exhausted(*args)
+  return _clinkgrammar.parse_options_memory_exhausted(*args)
 parse_options_memory_exhausted = _clinkgrammar.parse_options_memory_exhausted
 
 def parse_options_resources_exhausted(*args):
-    return _clinkgrammar.parse_options_resources_exhausted(*args)
+  return _clinkgrammar.parse_options_resources_exhausted(*args)
 parse_options_resources_exhausted = _clinkgrammar.parse_options_resources_exhausted
 
 def parse_options_set_display_morphology(*args):
-    return _clinkgrammar.parse_options_set_display_morphology(*args)
+  return _clinkgrammar.parse_options_set_display_morphology(*args)
 parse_options_set_display_morphology = _clinkgrammar.parse_options_set_display_morphology
 
 def parse_options_get_display_morphology(*args):
-    return _clinkgrammar.parse_options_get_display_morphology(*args)
+  return _clinkgrammar.parse_options_get_display_morphology(*args)
 parse_options_get_display_morphology = _clinkgrammar.parse_options_get_display_morphology
 
 def parse_options_set_spell_guess(*args):
-    return _clinkgrammar.parse_options_set_spell_guess(*args)
+  return _clinkgrammar.parse_options_set_spell_guess(*args)
 parse_options_set_spell_guess = _clinkgrammar.parse_options_set_spell_guess
 
 def parse_options_get_spell_guess(*args):
-    return _clinkgrammar.parse_options_get_spell_guess(*args)
+  return _clinkgrammar.parse_options_get_spell_guess(*args)
 parse_options_get_spell_guess = _clinkgrammar.parse_options_get_spell_guess
 
 def parse_options_set_all_short_connectors(*args):
-    return _clinkgrammar.parse_options_set_all_short_connectors(*args)
+  return _clinkgrammar.parse_options_set_all_short_connectors(*args)
 parse_options_set_all_short_connectors = _clinkgrammar.parse_options_set_all_short_connectors
 
 def parse_options_get_all_short_connectors(*args):
-    return _clinkgrammar.parse_options_get_all_short_connectors(*args)
+  return _clinkgrammar.parse_options_get_all_short_connectors(*args)
 parse_options_get_all_short_connectors = _clinkgrammar.parse_options_get_all_short_connectors
 
 def parse_options_reset_resources(*args):
-    return _clinkgrammar.parse_options_reset_resources(*args)
+  return _clinkgrammar.parse_options_reset_resources(*args)
 parse_options_reset_resources = _clinkgrammar.parse_options_reset_resources
 
 def parse_options_set_use_sat_parser(*args):
-    return _clinkgrammar.parse_options_set_use_sat_parser(*args)
+  return _clinkgrammar.parse_options_set_use_sat_parser(*args)
 parse_options_set_use_sat_parser = _clinkgrammar.parse_options_set_use_sat_parser
 
 def parse_options_get_use_sat_parser(*args):
-    return _clinkgrammar.parse_options_get_use_sat_parser(*args)
+  return _clinkgrammar.parse_options_get_use_sat_parser(*args)
 parse_options_get_use_sat_parser = _clinkgrammar.parse_options_get_use_sat_parser
 
 def sentence_create(*args):
-    return _clinkgrammar.sentence_create(*args)
+  return _clinkgrammar.sentence_create(*args)
 sentence_create = _clinkgrammar.sentence_create
 
 def sentence_delete(*args):
-    return _clinkgrammar.sentence_delete(*args)
+  return _clinkgrammar.sentence_delete(*args)
 sentence_delete = _clinkgrammar.sentence_delete
 
 def sentence_split(*args):
-    return _clinkgrammar.sentence_split(*args)
+  return _clinkgrammar.sentence_split(*args)
 sentence_split = _clinkgrammar.sentence_split
 
 def sentence_parse(*args):
-    return _clinkgrammar.sentence_parse(*args)
+  return _clinkgrammar.sentence_parse(*args)
 sentence_parse = _clinkgrammar.sentence_parse
 
 def sentence_length(*args):
-    return _clinkgrammar.sentence_length(*args)
+  return _clinkgrammar.sentence_length(*args)
 sentence_length = _clinkgrammar.sentence_length
 
 def sentence_null_count(*args):
-    return _clinkgrammar.sentence_null_count(*args)
+  return _clinkgrammar.sentence_null_count(*args)
 sentence_null_count = _clinkgrammar.sentence_null_count
 
 def sentence_num_linkages_found(*args):
-    return _clinkgrammar.sentence_num_linkages_found(*args)
+  return _clinkgrammar.sentence_num_linkages_found(*args)
 sentence_num_linkages_found = _clinkgrammar.sentence_num_linkages_found
 
 def sentence_num_valid_linkages(*args):
-    return _clinkgrammar.sentence_num_valid_linkages(*args)
+  return _clinkgrammar.sentence_num_valid_linkages(*args)
 sentence_num_valid_linkages = _clinkgrammar.sentence_num_valid_linkages
 
 def sentence_num_linkages_post_processed(*args):
-    return _clinkgrammar.sentence_num_linkages_post_processed(*args)
+  return _clinkgrammar.sentence_num_linkages_post_processed(*args)
 sentence_num_linkages_post_processed = _clinkgrammar.sentence_num_linkages_post_processed
 
 def sentence_num_violations(*args):
-    return _clinkgrammar.sentence_num_violations(*args)
+  return _clinkgrammar.sentence_num_violations(*args)
 sentence_num_violations = _clinkgrammar.sentence_num_violations
 
 def sentence_disjunct_cost(*args):
-    return _clinkgrammar.sentence_disjunct_cost(*args)
+  return _clinkgrammar.sentence_disjunct_cost(*args)
 sentence_disjunct_cost = _clinkgrammar.sentence_disjunct_cost
 
 def sentence_link_cost(*args):
-    return _clinkgrammar.sentence_link_cost(*args)
+  return _clinkgrammar.sentence_link_cost(*args)
 sentence_link_cost = _clinkgrammar.sentence_link_cost
 
 def linkage_create(*args):
-    return _clinkgrammar.linkage_create(*args)
+  return _clinkgrammar.linkage_create(*args)
 linkage_create = _clinkgrammar.linkage_create
 
 def linkage_delete(*args):
-    return _clinkgrammar.linkage_delete(*args)
+  return _clinkgrammar.linkage_delete(*args)
 linkage_delete = _clinkgrammar.linkage_delete
 
 def linkage_print_diagram(*args):
-    return _clinkgrammar.linkage_print_diagram(*args)
+  return _clinkgrammar.linkage_print_diagram(*args)
 linkage_print_diagram = _clinkgrammar.linkage_print_diagram
 
 def linkage_print_postscript(*args):
-    return _clinkgrammar.linkage_print_postscript(*args)
+  return _clinkgrammar.linkage_print_postscript(*args)
 linkage_print_postscript = _clinkgrammar.linkage_print_postscript
 
 def linkage_print_links_and_domains(*args):
-    return _clinkgrammar.linkage_print_links_and_domains(*args)
+  return _clinkgrammar.linkage_print_links_and_domains(*args)
 linkage_print_links_and_domains = _clinkgrammar.linkage_print_links_and_domains
 
 def linkage_print_senses(*args):
-    return _clinkgrammar.linkage_print_senses(*args)
+  return _clinkgrammar.linkage_print_senses(*args)
 linkage_print_senses = _clinkgrammar.linkage_print_senses
 
 def linkage_print_constituent_tree(*args):
-    return _clinkgrammar.linkage_print_constituent_tree(*args)
+  return _clinkgrammar.linkage_print_constituent_tree(*args)
 linkage_print_constituent_tree = _clinkgrammar.linkage_print_constituent_tree
 
 def linkage_print_disjuncts(*args):
-    return _clinkgrammar.linkage_print_disjuncts(*args)
+  return _clinkgrammar.linkage_print_disjuncts(*args)
 linkage_print_disjuncts = _clinkgrammar.linkage_print_disjuncts
 
 def linkage_print_pp_msgs(*args):
-    return _clinkgrammar.linkage_print_pp_msgs(*args)
+  return _clinkgrammar.linkage_print_pp_msgs(*args)
 linkage_print_pp_msgs = _clinkgrammar.linkage_print_pp_msgs
 
 def linkage_get_num_words(*args):
-    return _clinkgrammar.linkage_get_num_words(*args)
+  return _clinkgrammar.linkage_get_num_words(*args)
 linkage_get_num_words = _clinkgrammar.linkage_get_num_words
 
 def linkage_get_num_links(*args):
-    return _clinkgrammar.linkage_get_num_links(*args)
+  return _clinkgrammar.linkage_get_num_links(*args)
 linkage_get_num_links = _clinkgrammar.linkage_get_num_links
 
 def linkage_get_link_lword(*args):
-    return _clinkgrammar.linkage_get_link_lword(*args)
+  return _clinkgrammar.linkage_get_link_lword(*args)
 linkage_get_link_lword = _clinkgrammar.linkage_get_link_lword
 
 def linkage_get_link_rword(*args):
-    return _clinkgrammar.linkage_get_link_rword(*args)
+  return _clinkgrammar.linkage_get_link_rword(*args)
 linkage_get_link_rword = _clinkgrammar.linkage_get_link_rword
 
 def linkage_get_link_length(*args):
-    return _clinkgrammar.linkage_get_link_length(*args)
+  return _clinkgrammar.linkage_get_link_length(*args)
 linkage_get_link_length = _clinkgrammar.linkage_get_link_length
 
 def linkage_get_link_label(*args):
-    return _clinkgrammar.linkage_get_link_label(*args)
+  return _clinkgrammar.linkage_get_link_label(*args)
 linkage_get_link_label = _clinkgrammar.linkage_get_link_label
 
 def linkage_get_link_llabel(*args):
-    return _clinkgrammar.linkage_get_link_llabel(*args)
+  return _clinkgrammar.linkage_get_link_llabel(*args)
 linkage_get_link_llabel = _clinkgrammar.linkage_get_link_llabel
 
 def linkage_get_link_rlabel(*args):
-    return _clinkgrammar.linkage_get_link_rlabel(*args)
+  return _clinkgrammar.linkage_get_link_rlabel(*args)
 linkage_get_link_rlabel = _clinkgrammar.linkage_get_link_rlabel
 
 def linkage_get_link_num_domains(*args):
-    return _clinkgrammar.linkage_get_link_num_domains(*args)
+  return _clinkgrammar.linkage_get_link_num_domains(*args)
 linkage_get_link_num_domains = _clinkgrammar.linkage_get_link_num_domains
 
 def linkage_get_link_domain_names(*args):
-    return _clinkgrammar.linkage_get_link_domain_names(*args)
+  return _clinkgrammar.linkage_get_link_domain_names(*args)
 linkage_get_link_domain_names = _clinkgrammar.linkage_get_link_domain_names
 
 def linkage_get_words(*args):
-    return _clinkgrammar.linkage_get_words(*args)
+  return _clinkgrammar.linkage_get_words(*args)
 linkage_get_words = _clinkgrammar.linkage_get_words
 
 def linkage_get_word(*args):
-    return _clinkgrammar.linkage_get_word(*args)
+  return _clinkgrammar.linkage_get_word(*args)
 linkage_get_word = _clinkgrammar.linkage_get_word
 
 def linkage_get_word_byte_start(*args):
-    return _clinkgrammar.linkage_get_word_byte_start(*args)
+  return _clinkgrammar.linkage_get_word_byte_start(*args)
 linkage_get_word_byte_start = _clinkgrammar.linkage_get_word_byte_start
 
 def linkage_get_word_byte_end(*args):
-    return _clinkgrammar.linkage_get_word_byte_end(*args)
+  return _clinkgrammar.linkage_get_word_byte_end(*args)
 linkage_get_word_byte_end = _clinkgrammar.linkage_get_word_byte_end
 
 def linkage_get_word_char_start(*args):
-    return _clinkgrammar.linkage_get_word_char_start(*args)
+  return _clinkgrammar.linkage_get_word_char_start(*args)
 linkage_get_word_char_start = _clinkgrammar.linkage_get_word_char_start
 
 def linkage_get_word_char_end(*args):
-    return _clinkgrammar.linkage_get_word_char_end(*args)
+  return _clinkgrammar.linkage_get_word_char_end(*args)
 linkage_get_word_char_end = _clinkgrammar.linkage_get_word_char_end
 
 def linkage_unused_word_cost(*args):
-    return _clinkgrammar.linkage_unused_word_cost(*args)
+  return _clinkgrammar.linkage_unused_word_cost(*args)
 linkage_unused_word_cost = _clinkgrammar.linkage_unused_word_cost
 
 def linkage_disjunct_cost(*args):
-    return _clinkgrammar.linkage_disjunct_cost(*args)
+  return _clinkgrammar.linkage_disjunct_cost(*args)
 linkage_disjunct_cost = _clinkgrammar.linkage_disjunct_cost
 
 def linkage_link_cost(*args):
-    return _clinkgrammar.linkage_link_cost(*args)
+  return _clinkgrammar.linkage_link_cost(*args)
 linkage_link_cost = _clinkgrammar.linkage_link_cost
 
 def linkage_corpus_cost(*args):
-    return _clinkgrammar.linkage_corpus_cost(*args)
+  return _clinkgrammar.linkage_corpus_cost(*args)
 linkage_corpus_cost = _clinkgrammar.linkage_corpus_cost
 
 def linkage_get_violation_name(*args):
-    return _clinkgrammar.linkage_get_violation_name(*args)
+  return _clinkgrammar.linkage_get_violation_name(*args)
 linkage_get_violation_name = _clinkgrammar.linkage_get_violation_name
 
 def _lg_error_formatmsg(*args):
-    return _clinkgrammar._lg_error_formatmsg(*args)
+  return _clinkgrammar._lg_error_formatmsg(*args)
 _lg_error_formatmsg = _clinkgrammar._lg_error_formatmsg
 
 def lg_error_clearall():
-    return _clinkgrammar.lg_error_clearall()
+  return _clinkgrammar.lg_error_clearall()
 lg_error_clearall = _clinkgrammar.lg_error_clearall
 
 def _prt_error(*args):
-    return _clinkgrammar._prt_error(*args)
+  return _clinkgrammar._prt_error(*args)
 _prt_error = _clinkgrammar._prt_error
 
 def lg_error_flush():
-    return _clinkgrammar.lg_error_flush()
+  return _clinkgrammar.lg_error_flush()
 lg_error_flush = _clinkgrammar.lg_error_flush
 
 def _py_error_default_handler(*args):
-    return _clinkgrammar._py_error_default_handler(*args)
+  return _clinkgrammar._py_error_default_handler(*args)
 _py_error_default_handler = _clinkgrammar._py_error_default_handler
 
 def _py_error_set_handler(*args):
-    return _clinkgrammar._py_error_set_handler(*args)
+  return _clinkgrammar._py_error_set_handler(*args)
 _py_error_set_handler = _clinkgrammar._py_error_set_handler
 
 def _py_error_printall(*args):
-    return _clinkgrammar._py_error_printall(*args)
+  return _clinkgrammar._py_error_printall(*args)
 _py_error_printall = _clinkgrammar._py_error_printall
 
 def delete_lg_errinfo(*args):
-    return _clinkgrammar.delete_lg_errinfo(*args)
+  return _clinkgrammar.delete_lg_errinfo(*args)
 delete_lg_errinfo = _clinkgrammar.delete_lg_errinfo
 # This file is compatible with both classic and new-style classes.
 

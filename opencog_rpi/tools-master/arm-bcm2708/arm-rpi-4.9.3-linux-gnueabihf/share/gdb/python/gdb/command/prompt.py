@@ -46,14 +46,14 @@ The currently defined substitutions are:
 
     def get_show_string (self, pvalue):
         if self.value is not '':
-            return "The extended prompt is: " + self.value
+           return "The extended prompt is: " + self.value
         else:
-            return "The extended prompt is not set."
+           return "The extended prompt is not set."
 
     def get_set_string (self):
         if self.hook_set == False:
-            gdb.prompt_hook = self.before_prompt_hook
-            self.hook_set = True
+           gdb.prompt_hook = self.before_prompt_hook
+           self.hook_set = True
         return ""
 
     def before_prompt_hook(self, current):
