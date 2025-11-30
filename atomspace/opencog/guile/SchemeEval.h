@@ -34,9 +34,12 @@
 #include <opencog/atoms/base/Atom.h>
 #include <opencog/atoms/base/Handle.h>
 #include <opencog/eval/GenericEval.h>
-#include <opencog/atoms/truthvalue/TruthValue.h>
 
 namespace opencog {
+
+// Forward declaration for friend
+template <typename T> class EvaluatorPool;
+
 /** \addtogroup grp_smob
  *  @{
  *
@@ -73,8 +76,6 @@ namespace opencog {
  *         { begin_eval(); eval_expr(expr); return poll_result(); }
  *
  */
-
-class AtomSpace;
 
 class SchemeEval : public GenericEval
 {
@@ -150,26 +151,27 @@ class SchemeEval : public GenericEval
 
 		static void * c_wrap_set_atomspace(void *);
 		static void * c_wrap_get_atomspace(void *);
-		AtomSpacePtr _atomspace;
 		bool _in_eval;
+	protected:
+		AtomSpacePtr _atomspace;
+
+		friend class EvaluatorPool<SchemeEval>;
+		SchemeEval(void);
 
 	public:
-		// Call before first use.
+		// Call before first use. Cogserver needs this!
 		static void init_scheme(void);
 
-		// Set per-thread global
-		static void set_scheme_as(AtomSpace*);
-		virtual void set_scheme_as(const AtomSpacePtr&);
-		virtual AtomSpacePtr get_scheme_as(void);
+		// Set AtomSpace that this evaluator will be using.
+		virtual void set_atomspace(const AtomSpacePtr&);
+		virtual AtomSpacePtr get_atomspace(void);
 
-		SchemeEval(AtomSpace* = NULL);
-		SchemeEval(AtomSpacePtr&);
-		~SchemeEval();
+		virtual ~SchemeEval();
 		virtual std::string get_name(void) const { return "SchemeEval"; }
 
 		// Return per-thread, per-atomspace singleton
-		static SchemeEval* get_evaluator(AtomSpace*);
-		static SchemeEval* get_evaluator(const AtomSpacePtr&);
+		static SchemeEval* get_scheme_evaluator(AtomSpace*);
+		static SchemeEval* get_scheme_evaluator(const AtomSpacePtr&);
 
 		// The async-output interface.
 		void begin_eval(void);
@@ -190,10 +192,6 @@ class SchemeEval : public GenericEval
 		// Evaluate expression, returning handle.
 		Handle eval_h(const std::string& str) { return HandleCast(eval_v(str)); }
 		Handle eval_h(const std::stringstream& ss) { return eval_h(ss.str()); }
-
-		// Evaluate expression, returning TV.
-		TruthValuePtr eval_tv(const std::string& str) { return TruthValueCast(eval_v(str)); }
-		TruthValuePtr eval_tv(const std::stringstream& ss) { return eval_tv(ss.str()); }
 
 		// Evaluate expression, returning AtomSpace.
 		AtomSpacePtr eval_as(const std::string&);
