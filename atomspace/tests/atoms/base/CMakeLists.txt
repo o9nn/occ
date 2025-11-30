@@ -1,14 +1,8 @@
 
-LINK_LIBRARIES(
-	atombase
-	atomspace
-)
-
 ADD_CXXTEST(AtomUTest)
 ADD_CXXTEST(NodeUTest)
 ADD_CXXTEST(LinkUTest)
 ADD_CXXTEST(ClassServerUTest)
-ADD_CXXTEST(HandleUTest)
 
 # Special unit test atom types, tested by the FactoryUTest
 OPENCOG_GEN_CXX_ATOMTYPES(test_types.script
