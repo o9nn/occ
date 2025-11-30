@@ -11,7 +11,7 @@ def getRecipeName(line):
 
     ni1 = line.find('(', 37, -1) + 1
     ni2 = line.find(')', 37, -1)
-
+    
     namelist = line[ni1:ni2].split(',')
     #print namelist
 
@@ -21,7 +21,7 @@ def getRecipeName(line):
 
     if ns >= 0:
         name = namelist[0][ns:]
-
+    
     if len(namelist) > 1:
         num = int(namelist[1])
     else:
@@ -32,14 +32,14 @@ def getRecipeName(line):
 
 
 def getObjects(objectstring):
-
+    
     objects = []
     substring = objectstring
-
+    
     while len(substring) > 0:
         founditem = substring.find("Items.")
         foundblock = substring.find("Blocks.")
-
+        
         # if nothing found, break
         if founditem < 0 and foundblock < 0:
             break
@@ -53,10 +53,10 @@ def getObjects(objectstring):
         # otherwise both exist, so pick the smaller
         else:
             foundobject = min(foundblock, founditem)
-
+        
         substring = substring[foundobject:]
         foundspace = substring.find(" ")
-
+        
         if foundspace >= 0:
             item = substring[0:foundspace+1]
             substring = substring[foundspace+1:]
@@ -65,7 +65,7 @@ def getObjects(objectstring):
             item = substring[0:]
             objects.append(item.strip())
             break
-
+    
     return objects
 
 
@@ -76,7 +76,7 @@ def getShapedRecipe(line):
     recipe['shape'] = True
 
     name, num = getRecipeName(line)
-
+    
     recipe['name'] = name
     recipe['num'] = num
 
@@ -97,42 +97,42 @@ def getShapedRecipe(line):
     recipe['shape'] = layers
 
     remaining = " ".join(shapelist[len(layers):])
-
+   
     characters = [remaining[i+1]
-                  for i in range(len(remaining))
-                  if remaining[i] == "\'" and remaining[i+2] == "\'"]
+            for i in range(len(remaining))
+            if remaining[i] == "\'" and remaining[i+2] == "\'"]
 
     objects = getObjects(remaining)
-
+    
     recipe['mats'] = {}
     for char,obj in zip(characters, objects):
         recipe['mats'][char] = obj
 
-    print(recipe)
+    print recipe
     return recipe
 
 
 def getShapelessRecipe(line):
-
+    
     recipe = {}
     recipe['shape'] = False
 
     name, num = getRecipeName(line)
-
+    
     recipe['name'] = name
     recipe['num'] = num
-
+    
     ri1 = line.find('{') + 1
     ri2 = line.find('}')
-
+    
     remaining = line[ri1:ri2]
     #print remaining
-
+    
     objects = getObjects(remaining)
 
     recipe['mats'] = objects
 
-    print(recipe)
+    print recipe
     return recipe
 
 
@@ -143,7 +143,7 @@ def getAllRecipes():
     infile = open('mc_recipes.txt', 'rb')
 
     recipes = []
-
+    
     for line in infile:
         linestring = line.strip()
 
@@ -158,7 +158,7 @@ def getAllRecipes():
     #    if recipe['shaped']:
     #        outfile.write("RECIPE: %s\n"%recipe['name'])
     #        outfile.write("SHAPE: %s\n"%(','.join(recipe['shape'])))
-
+    
     infile.close()
 
 
