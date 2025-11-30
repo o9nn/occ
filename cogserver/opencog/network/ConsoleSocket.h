@@ -42,7 +42,7 @@ private:
     // loop, and then tries to destruct this class and exit the thread
     // that has been handling the socket i/o. We have to hold off this
     // destruction, until all of the users of this class have completed
-    // thier work. We accomplish this with a use-count: each in-flight
+    // their work. We accomplish this with a use-count: each in-flight
     // request increments the use-count, and then decrements it when done.
     // The destructor can run only when the use-count has dropped to zero.
     //
@@ -57,17 +57,6 @@ private:
 protected:
     GenericShell* _shell;
 
-    /**
-     * Connection callback: called whenever a new connection arrives
-     */
-    virtual void OnConnection(void) = 0;
-
-    /**
-     * OnLine callback: called when a newline-terminated line is received
-     * from the client.
-     */
-    virtual void OnLine(const std::string&) = 0;
-
     /** Status printing */
     virtual std::string connection_header(void);
     virtual std::string connection_stats(void);
@@ -76,7 +65,7 @@ public:
      * Ctor. Defines the socket's mime-type as 'text/plain' and then
      * configures the Socket to use line protocol.
      */
-    ConsoleSocket(void);
+    ConsoleSocket(SocketManager*);
     virtual ~ConsoleSocket();
 
     void get() { std::unique_lock<std::mutex> lck(_in_use_mtx); _use_count++; }
@@ -88,6 +77,9 @@ public:
      */
     void SetShell(GenericShell *);
     GenericShell * getShell(void) { return _shell; }
+
+    /** Predicate: is there a shell, and is it busy? */
+    bool busyShell(void);
 
     /**
      * Assorted debugging utilities.
