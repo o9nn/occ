@@ -35,6 +35,9 @@
 namespace opencog
 {
 
+//! UUID == Universally Unique Identifier
+typedef size_t UUID;
+
 class uuid_pool
 {
 public:
@@ -105,9 +108,6 @@ public:
      * @param Atom to be added.
      * @return UUID of the newly added atom.
      */
-    UUID addAtom(const AtomPtr& a, UUID uuid) {
-        return addAtom(a->get_handle(), uuid);
-    }
     UUID addAtom(const Handle&, UUID);
 
     /** Look up atom corresponding to the UUID. */
@@ -117,9 +117,6 @@ public:
     UUID getUUID(const Handle&);
 
     /** Remove the atom. */
-    void removeAtom(const AtomPtr& a) {
-        return removeAtom(a->get_handle());
-    }
     void removeAtom(const Handle&);
     void removeAtom(UUID);
     void purgeAtom(UUID);
