@@ -5,14 +5,16 @@
 #
 # Steps:
 # 1. docker build --no-cache -t opencog/atomspace .
-# 2. docker create --name atomspace -p 17001:17001
+# 2. docker create --name atomspace -p 17001:17001 -p 18080:18080
 #       -v /ABSOLUTE/PATH/TO/YOUR/WORKING/DIRECTORY/On/Your/PC/:/opencog
 #       -w /opencog
 #       -it opencog/atomspace
 # 3. docker start -i atomspace
 #
 
-FROM opencog/opencog-deps:latest
+ARG OS_VERSION=latest
+ARG BASE_IMAGE=opencog/opencog-deps:${OS_VERSION}
+FROM ${BASE_IMAGE}
 
 # The apt installs below will fail, unless we are at the latest.
 # Bump the date, if there are DNS failures!
@@ -22,26 +24,27 @@ RUN apt-get -y update; apt-get -y upgrade; apt-get -y autoremove
 # Basic tools that allow this image to be minimally usable.
 #  * Networking tools (ping, ifconfig, telnet, netcat)
 #  * Terminal sharing tools (tmux, byobu)
-#  * Debug tools (gdb, xxd)
+#  * Debug tools (gdb, xxd, jq)
 #  * Webserver (apache2, php)
-RUN apt-get -y install \
+#
+# Oddly, the xxd package is sometimes missing; use --ignore-missing.
+# The || true is needed to prevent docker from dying when xxd is not
+# found.
+RUN apt-get -y --ignore-missing install \
+	lsof \
 	net-tools iputils-ping netcat-openbsd traceroute iptraf \
 	rlwrap telnet \
 	tmux byobu \
-	gdb time xxd \
-	apache2 php
+	gdb time xxd jq \
+	apache2 php \
+	|| true
 
 # Install cogutil
-ENV LAST_COGUTIL_UPDATE=2025-09-03
+ENV LAST_COGUTIL_UPDATE=2025-11-17
 RUN  /tmp/octool -c && ccache -C
 
-# Update Link Grammar.
-# This installs the latest release tarball, and NOT github master.
-ENV LAST_LINK_GRAMMAR_UPDATE=2024-05-02
-RUN  /tmp/octool -v -l default && ccache -C
-
 # Install core AtomSpace.
-ENV LAST_ATOMSPACE_UPDATE=2025-09-03
+ENV LAST_ATOMSPACE_UPDATE=2025-11-20
 RUN  /tmp/octool -a && ccache -C
 
 USER opencog
@@ -60,6 +63,13 @@ RUN sudo chown -R opencog:opencog .[a-z]*
 RUN guile -c "(use-modules (opencog) (opencog exec) (opencog cogserver) (opencog persist) (opencog persist-cog) (opencog persist-rocks))"
 
 # RUN guile -c "(use-modules (opencog persist-pgres))"
+
+# Docker EXPOSE says "we listen on these ports". Which is not quite
+# true, because the default cogserver publishes on these ports. But
+# it is considered to be "best practices" to announce this to the world.
+EXPOSE 17001
+EXPOSE 18080
+EXPOSE 18888
 
 CMD /bin/bash
 
