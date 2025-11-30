@@ -162,8 +162,10 @@ def demo_evolution(neurocog):
         print(f"   Generation {neurocog.generation}: "
               f"Fitness {new_fitness:.4f} (Δ {improvement:+.4f})")
         
-        # Visual progress bar
-        progress = int((new_fitness - 0.87) / (0.99 - 0.87) * 40)
+        # Visual progress bar (using NeuroCog fitness range)
+        FITNESS_MIN = 0.87
+        FITNESS_MAX = 0.99
+        progress = int((new_fitness - FITNESS_MIN) / (FITNESS_MAX - FITNESS_MIN) * 40)
         bar = "█" * progress + "░" * (40 - progress)
         print(f"   [{bar}] {new_fitness:.1%}\n")
         

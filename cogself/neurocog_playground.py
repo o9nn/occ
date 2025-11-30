@@ -673,11 +673,13 @@ THE END! (Or is it...? 😏)
         """Spawn many agents"""
         print("🤖 SPAWNING MASSIVE AGENT ARMY!\n")
         
+        import time
         for i in range(20):
             role = f"Agent-{i:02d}"
             self.neurocog.spawn_subordinate_agent(role)
             if i % 5 == 0:
                 print(f"  Deployed {i+1} agents...")
+            time.sleep(0.05)  # Small delay to prevent overwhelming
         
         print(f"\n💪 Agent army complete: {len(self.neurocog.subordinate_agents)} agents!")
         print("   Ready for distributed cognition!")

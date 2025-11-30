@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on error
 # Quick launcher for NeuroCog Playground
 
 cd "$(dirname "$0")"
