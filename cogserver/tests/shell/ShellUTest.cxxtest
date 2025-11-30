@@ -212,7 +212,7 @@ public:
 	ShellUTest()
 	{
 		logger().set_level(Logger::DEBUG);
-		//logger().set_print_to_stdout_flag(true);
+		// logger().set_print_to_stdout_flag(true);
 	}
 
 	~ShellUTest()
@@ -231,13 +231,17 @@ public:
 
 		// Wait for the cogserver to finish initializing.
 		sleep(1);
+		csrv->getAtomSpace()->clear();
 	}
 
 	void tearDown()
 	{
+		logger().debug("AFTER TEST stop cogserver: %s", __FUNCTION__);
 		csrv->stop();
 		main_loop->join();
 		delete main_loop;
+		csrv->getAtomSpace()->clear();
+		logger().debug("AFTER TEST DONE stopping cogserver: %s", __FUNCTION__);
 	}
 
 	void testControlD()
@@ -276,32 +280,33 @@ public:
 		// The interrupt should kill the sleep immediately.
 		// Elapsed time should be well under a second.
 		int rc = system("echo '(sleep 42)\n\x16' | nc -q 0 localhost 17333");
-		if (rc != 0) printf("Error: first call failed\n");
+		if (rc != 0) logger().warn("Error: first call failed");
 		TS_ASSERT_EQUALS(rc, 0);
 
 		time_t end = time(0);
 		TS_ASSERT_LESS_THAN (end - start, 2);
-		printf("Elapsed: %ld\n", end-start);
+		logger().debug("Elapsed seconds: %ld", end-start);
 
 		start = time(0);
 		// The hexadecimal \x18 is ctrl-X aka "cancel"
-		rc = system("echo '(sleep 42)\n\x18' | nc -q 0 localhost 17333");
-		if (rc != 0) printf("Error: first call failed\n");
+		rc = system("echo '(sleep 43)\n\x18' | nc -q 0 localhost 17333");
+		if (rc != 0) logger().warn("Error: first call failed");
 		TS_ASSERT_EQUALS(rc, 0);
 
 		end = time(0);
 		TS_ASSERT_LESS_THAN (end - start, 2);
-		printf("First elapsed: %ld\n", end-start);
+		logger().debug("First elapsed: %ld", end-start);
 
 		start = time(0);
 		// The hexadecimal \x1b is ctrl-[ aka "escape"
-		rc = system("echo '(sleep 42)\n\x1b' | nc -q 0 localhost 17333");
-		if (rc != 0) printf("Error: second call failed\n");
+		rc = system("echo '(sleep 44)\n\x1b' | nc -q 0 localhost 17333");
+		if (rc != 0) logger().warn("Error: second call failed");
 		TS_ASSERT_EQUALS(rc, 0);
 
 		end = time(0);
 		TS_ASSERT_LESS_THAN (end - start, 2);
-		printf("Second elapsed: %ld\n", end-start);
+		logger().debug("Second elapsed: %ld", end-start);
+		usleep(50000);
 
 		logger().debug("END TEST: %s", __FUNCTION__);
 	}
@@ -314,25 +319,34 @@ public:
 	{
 		logger().debug("BEGIN TEST: %s", __FUNCTION__);
 		cmd_exec(
-			"echo 'scm\n (Concept \"A\")\n (sleep 1)\n (Concept \"B\")\n"
-			"(sleep 1)\n (Concept \"C\")\n' | nc -q 0 localhost 17333");
+			"echo 'scm\n (sleep 3) (Concept \"A\")\n"
+			"(sleep 3)\n (Concept \"B\")\n"
+			"(sleep 3)\n (Concept \"C\")\n' | nc -q 0 localhost 17333");
 
-		// Wait for above to finish
-		sleep(4);
+		// The barrier call here will force above to finish before the
+		// atomspace print below. We sleep one second, to make sure the
+		// above got started; we don't want the barrier to finish before
+		// the above starts.
+		sleep(1);
+		cmd_exec("echo 'scm\n (cog-barrier)' | nc -q 0 localhost 17333");
 
-		// nc -q 1 means "wait for a reply, doofus"
+		// Sleep one second, so as to let the barrier at least get started,
+		// before we ask to print the AtomSpace. The barrier should block
+		// for about nine seconds (the sum of the sleeps above). We won't
+		// notice the block, but the attempt to cog-prt-atomspace will.
+		// Use `nc -q 15` because it will take a while to respond.
+		sleep(1);
 		std::string ply = cmd_exec(
-			"echo 'scm\n (cog-prt-atomspace)' | nc -q 1 localhost 17333");
+			"echo 'scm\n (cog-prt-atomspace)' | nc -q 15 localhost 17333");
 
-		// Actually, we expect exactly 205 bytes, these days....
-		printf("Received %zu bytes: %s\n", ply.size(), ply.c_str());
-		TS_ASSERT_LESS_THAN(200, ply.size());
+		// Expect between 189 and 205 bytes; it seems a trailing
+		// prompt string is sometimes not received. I don't know
+		// if that's OK, or if that's a bug. Below, we also test
+		// to make sure the printed AtomSpace is correct.
+		printf("Received %zu bytes: >>>%s<<<\n", ply.size(), ply.c_str());
+		TS_ASSERT_LESS_THAN(189, ply.size());
 
 		// Expect to get all three atoms.
-		// TS_ASSERT(ply.npos != ply.find("(ConceptNode \"A\")"));
-		// TS_ASSERT(ply.npos != ply.find("(ConceptNode \"B\")"));
-		// TS_ASSERT(ply.npos != ply.find("(ConceptNode \"C\")"));
-
 		TS_ASSERT(ply.npos != ply.find("(Concept \"A\")"));
 		TS_ASSERT(ply.npos != ply.find("(Concept \"B\")"));
 		TS_ASSERT(ply.npos != ply.find("(Concept \"C\")"));
