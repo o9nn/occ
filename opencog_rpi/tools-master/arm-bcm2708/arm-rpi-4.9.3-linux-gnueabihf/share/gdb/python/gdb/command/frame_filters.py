@@ -122,7 +122,7 @@ def _enable_parse_arg(cmd_name, arg):
     argc = len(argv)
     if argv[0] == "all" and argc > 1:
         raise gdb.GdbError(cmd_name + ": with 'all' " \
-                           "you may not specify a filter.")
+                          "you may not specify a filter.")
     else:
         if argv[0] != "all" and argc != 2:
             raise gdb.GdbError(cmd_name + " takes exactly two arguments.")
@@ -232,7 +232,7 @@ class EnableFrameFilter(gdb.Command):
     """
     def __init__(self):
         super(EnableFrameFilter, self).__init__("enable frame-filter",
-                                                gdb.COMMAND_DATA)
+                                                 gdb.COMMAND_DATA)
     def complete(self, text, word):
         """Completion function for both frame filter dictionary, and
         frame filter name."""
@@ -265,7 +265,7 @@ class DisableFrameFilter(gdb.Command):
     """
     def __init__(self):
         super(DisableFrameFilter, self).__init__("disable frame-filter",
-                                                 gdb.COMMAND_DATA)
+                                                  gdb.COMMAND_DATA)
 
     def complete(self, text, word):
         """Completion function for both frame filter dictionary, and
@@ -455,7 +455,7 @@ class ShowFrameFilterPriority(gdb.Command):
             print("Error printing filter priority for '"+name+"':"+str(e))
         else:
             print("Priority of filter '" + filter_name + "' in list '" \
-                  + list_name + "' is: " + str(priority))
+                + list_name + "' is: " + str(priority))
 
 # Register commands
 SetFilterPrefixCmd()
