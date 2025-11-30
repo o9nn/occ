@@ -30,6 +30,7 @@
 #include <opencog/util/oc_assert.h>
 
 #include <opencog/network/ConsoleSocket.h>
+#include <opencog/network/SocketManager.h>
 #include <opencog/eval/GenericEval.h>
 #include "GenericShell.h"
 
@@ -87,8 +88,12 @@ GenericShell::~GenericShell()
 {
 	self_destruct = true;
 
-	// It can happen that we already cancelled (e.g. control-D)
-	try { evalque.cancel(); }
+	// Wake up eval thread without cancelling the queue.
+	// We cannot use cancel() here because it prevents any further
+	// push() operations. This creates a race: if the socket is still
+	// draining buffers and trying to queue commands, those pushes
+	// will fail. Instead, push an empty string to wake up the thread.
+	try { evalque.push(""); }
 	catch (const std::exception& ex) {}
 
 	if (evalthr)
@@ -204,14 +209,18 @@ void GenericShell::eval(const std::string &expr)
 	if (apply_discipline)
 		line_discipline(expr);
 	else
-		evalque.push(expr);
+		enqueue_work(expr);
 
 	// The user is exiting the shell. No one will ever call a method on
 	// this instance ever again. So stop hogging space, and self-destruct.
 	// We have to do this here; there is no other opportunity to call dtor.
 	if (self_destruct)
 	{
-		socket->SetShell(nullptr);
+		// The atomspace-cog unit tests are unhappy if we don't send
+		// some reply message; they perceive an abnormal socket close.
+		// So we send them some garbage. They're using the hush sexpr
+		// prompt, so sending a lonely newline will get filtered.
+		socket->Send("goodbye!\n");
 		delete this;
 	}
 }
@@ -224,7 +233,8 @@ void GenericShell::user_interrupt()
 	// Discard all pending, unevaluated junk in the queue.
 	// Failure to do so will typically result in confusing
 	// the shell user.
-	while (not evalque.is_empty()) evalque.value_pop();
+	std::string junk;
+	while (not evalque.is_empty()) evalque.try_pop(junk);
 
 	// Work around timing window, where queue was just now emptied,
 	// but the scheme evaluator has not yet started... and so the
@@ -235,7 +245,7 @@ void GenericShell::user_interrupt()
 	// It can also happen that eval_loop() has exited, and has set
 	// _evaluator to nullptr. So we need to check for this. Of course,
 	// this is insane and racey, and in principle, we need some kind
-	// addional condition varable to avoid hitting this during shutdown.
+	// additional condition variable to avoid hitting this during shutdown.
 	// but for now, just punt.
 	//
 	// This happens if you run TopShell, enter . carriage return ctrl-C
@@ -264,7 +274,7 @@ void GenericShell::line_discipline(const std::string &expr)
 
 	if (0 == len)
 	{
-		evalque.push("\n");
+		enqueue_work("\n");
 		return;
 	}
 
@@ -373,7 +383,7 @@ void GenericShell::line_discipline(const std::string &expr)
 					mute[breakpt] = 0;
 					logger().warn("[GenericShell] Telnet sent RFC 860 TIMING MARK -- Probably garbled UTF-8: %s",
 						mute.c_str());
-					evalque.push(mute);
+					enqueue_work(mute);
 					return;
 				}
 
@@ -455,17 +465,13 @@ void GenericShell::line_discipline(const std::string &expr)
 	 *
 	 * XXX Is this still true?
 	 */
-	evalque.push(expr + "\n");
+	enqueue_work(expr + "\n");
 }
 
 /* ============================================================== */
 // The problem being addressed here is that the shell destructor
 // can start running (because the socket was closed) before the
-// evaluator has even started running. This is not really a
-// problem for this class; however, if a derived class
-// (specifically, the SchemeShell) is destroyed before it has a
-// chance to run thread_init() during evaluation, then crashes
-// will result (in this case, because the atomspace was not set).
+// evaluator has even started running. Need to hold off.
 
 void GenericShell::start_eval()
 {
@@ -476,12 +482,10 @@ void GenericShell::start_eval()
 
 void GenericShell::finish_eval()
 {
-	{
-		// Repeated control-C will send us here with _eval_done already set..
-		std::unique_lock<std::mutex> lck(_eval_mtx);
-		_eval_done = true;
-		_eval_cv.notify_all();
-	}
+	// Repeated control-C will send us here with _eval_done already set..
+	std::unique_lock<std::mutex> lck(_eval_mtx);
+	_eval_done = true;
+	_eval_cv.notify_all();
 }
 
 void GenericShell::while_not_done()
@@ -512,8 +516,8 @@ void GenericShell::eval_loop(void)
 	auto poll_wrapper = [&](void) { poll_loop(); };
 	pollthr = new std::thread(poll_wrapper);
 
-	// Derived-class initializer. (The scheme shell uses this to set
-	// the atomspace).
+	// Derived-class initializer. (None of the shells use this
+	// at this time ... this is left over from earlier times.)
 	thread_init();
 
 	// Go through the body of the loop at least once.
@@ -531,6 +535,11 @@ void GenericShell::eval_loop(void)
 			// Note that this pop will stall until the queue
 			// becomes non-empty.
 			evalque.pop(in);
+
+			// Skip empty strings - these are sentinel wake-up signals.
+			if (in.empty())
+				continue;
+
 			logger().debug("[GenericShell] start eval %s of '%s'",
 				 _evaluator->get_name().c_str(), in.c_str());
 
@@ -589,6 +598,10 @@ void GenericShell::eval_loop(void)
 			continue;
 		}
 
+		// Skip empty strings - these are sentinel wake-up signals.
+		if (in.empty())
+			continue;
+
 		logger().debug("[GenericShell] finishing; eval of '%s'", in.c_str());
 		start_eval();
 		_evaluator->begin_eval();
@@ -602,6 +615,7 @@ void GenericShell::eval_loop(void)
 		usleep(10000);
 		poll_and_send();
 	}
+	socket->SetShell(nullptr);
 
 	// After we exit, the _evaluator will be reclaimed by the
 	// thread dtor running in the evaluator pool.
@@ -659,10 +673,11 @@ void GenericShell::poll_loop(void)
 	// polling the output, eventually causing the evalthr to stay
 	// in while_not_done() forever. So let's poll again, one more
 	// time, here.
+	usleep(250);
 	do
 	{
-		usleep(1);
 		poll_and_send();
+		usleep(10000);
 	}
 	while (not _eval_done);
 }
@@ -704,27 +719,48 @@ std::string GenericShell::poll_output()
 		return get_output() + result;
 
 	// If we are here, the evaluator is done. Return shell prompts.
-	if (_eval_done) return "";
-	finish_eval();
-
-	if (_evaluator->input_pending())
+	if (_eval_done)
 	{
-		if (show_output and show_prompt)
-			return pending_prompt;
-		else
-			return "";
+		// Record evaluator errors. Automated scripts pumping the cogserver
+		// with data might not always notice these, so at least record them
+		// in the log file, where they might get noticed by some human.
+		if (_evaluator->eval_error())
+		{
+			std::string errmsg(_evaluator->get_error_string());
+			_evaluator->clear_pending(); // clear the error bit.
+			logger().info("[GenericShell] evaluator error:\n%s", errmsg.c_str());
+			if (show_output) return errmsg;
+		}
+		return "";
 	}
 
-	// Record evaluator errors. Automated scripts pumping the cogserver
-	// with data might not always notice these, so at least record them
-	// in the log file, where they might get noticed by some human.
-	if (_evaluator->eval_error())
-		logger().info("[GenericShell] evaluator error:\n%s",
-			_evaluator->get_error_string().c_str());
+	// If we are here, the result size was zero, and so we know we are
+	// done, but the _eval_done flag had not been set. Use this to wake
+	// up everyone.
+	finish_eval();
 
-	if (show_prompt and (show_output or _evaluator->eval_error()))
+	if (show_output and show_prompt)
+	{
+		if (_evaluator->input_pending())
+			return pending_prompt;
 		return normal_prompt;
+	}
+
 	return "";
+}
+
+void GenericShell::enqueue_work(const std::string& expr)
+{
+	// New work cannot be enqueued as long as there is a barrier in place.
+	socket->get_socket_manager()->block_on_bar();
+
+	// If the cogserver is shutting down, while there are still
+	// open sockets with data on them, we might end up here, trying
+	// to queue up work onto a closed queue. This is a race, and
+	// curing that race in some other way is ... not worth the effort.
+	// The goal here is to not crash with an uncaught exception.
+	try { evalque.push(expr); }
+	catch (const concurrent_queue<std::string>::Canceled& ex) {}
 }
 
 /* ===================== END OF FILE ============================ */
