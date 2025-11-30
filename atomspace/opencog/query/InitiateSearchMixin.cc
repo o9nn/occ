@@ -23,11 +23,11 @@
 
 #include <opencog/atomspace/AtomSpace.h>
 
-#include <opencog/atoms/core/DefineLink.h>
-#include <opencog/atoms/core/LambdaLink.h>
+#include <opencog/atoms/grant/DefineLink.h>
+#include <opencog/atoms/scope/LambdaLink.h>
 #include <opencog/atoms/execution/EvaluationLink.h>
 #include <opencog/atoms/pattern/PatternLink.h>
-#include <opencog/atoms/core/FindUtils.h>
+#include <opencog/atoms/free/FindUtils.h>
 
 #include "InitiateSearchMixin.h"
 #include "PatternMatchEngine.h"
@@ -696,7 +696,7 @@ static Type find_plain_type(const Handle& h)
 	Type t = h->get_type();
 	if (not nameserver().isA(t, TYPE_NODE) and
 	    not nameserver().isA(t, TYPE_CHOICE) and
-	    not nameserver().isA(t, TYPE_OUTPUT_LINK))
+	    not nameserver().isA(t, TYPE_OUTPUT_SIG))
 		return t;
 	if (h->is_node()) return NOTYPE;
 	for (const Handle& ho: h->getOutgoingSet())
