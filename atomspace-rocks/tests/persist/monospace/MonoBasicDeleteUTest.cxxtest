@@ -25,6 +25,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include <cstdio>
+#include <filesystem>
 
 #include <opencog/atoms/base/Atom.h>
 #include <opencog/atoms/base/Link.h>
@@ -54,14 +55,20 @@ class BasicDeleteUTest :  public CxxTest::TestSuite
 			// logger().set_level(Logger::DEBUG);
 			logger().set_print_to_stdout_flag(true);
 
-			uri = "monospace:///tmp/cog-mono-unit-test";
+			uri = "monospace:///tmp/cog-mono-basic-delete-utest";
 		}
 
 		~BasicDeleteUTest()
 		{
 			// erase the log file if no assertions failed
 			if (!CxxTest::TestTracker::tracker().suiteFailed())
+			{
 				std::remove(logger().get_filename().c_str());
+				// Also remove the database directory
+				// URI is "monospace:///tmp/..." so path starts at position 12
+				std::string dbpath = uri.substr(12);
+				std::filesystem::remove_all(dbpath);
+			}
 		}
 
 		void setUp(void);
@@ -161,7 +168,7 @@ void BasicDeleteUTest::test_recursive(void)
 	TS_ASSERT_EQUALS(as->get_size(), 5);
 
 	// Remove (Concept "a"). Since this appears twice, recursion
-	// will hit it twice, in stange ways, and maybe crash.
+	// will hit it twice, in strange ways, and maybe crash.
 	store->remove_atom(as, ha, true);
 
 	printf("Post-delete atomspace size=%lu\n", as->get_size());
