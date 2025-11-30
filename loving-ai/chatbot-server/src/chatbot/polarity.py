@@ -80,5 +80,5 @@ if __name__ == '__main__':
         p.load_sentiment_csv('../../scripts/aiml/senticnet3.props.csv')
     except Exception as ex:
         logger.error("Load sentiment file error {}".format(ex))
-        print(ex)
-    print(p.get_polarity("The dish is yucky"))
+        print ex
+    print p.get_polarity("The dish is yucky")

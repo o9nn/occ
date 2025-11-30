@@ -48,7 +48,7 @@ class WordsToNumbers():
     __groups_re__ = re.compile(
         r'\s?([\w\s]+?)(?:\s((?:%s))|$)' %
         ('|'.join(__groups__))
-    )
+        )
 
     # a regular expression that looks within a single number group for
     # 'n hundred' and captures:
@@ -66,7 +66,7 @@ class WordsToNumbers():
     __tens_and_ones_re__ =  re.compile(
         r'((?:%s))(?:\s(.*)|$)' %
         ('|'.join(__tens__.keys()))
-    )
+        )
 
     def parse(self, words):
         """Parses words to the number they describe"""
@@ -103,13 +103,13 @@ class WordsToNumbers():
                 # multiply the 'n' value by 100 and increment this group's
                 # running tally
                 group_num = group_num + \
-                    (WordsToNumbers.__ones__[hundreds_match.group(1)] * 100)
+                            (WordsToNumbers.__ones__[hundreds_match.group(1)] * 100)
                 # the tens- and ones-place value is whatever is left
                 tens_and_ones = hundreds_match.group(2)
             else:
-                # if there was no string matching the 'n hundred' pattern,
-                # assume that the entire string contains only tens- and ones-
-                # place values
+            # if there was no string matching the 'n hundred' pattern,
+            # assume that the entire string contains only tens- and ones-
+            # place values
                 tens_and_ones = group[0]
             # if the 'tens and ones' string is empty, it is time to
             # move along to the next group
@@ -128,8 +128,8 @@ class WordsToNumbers():
                 if tn1_match.group(2) is not None:
                     group_num = group_num + WordsToNumbers.__ones__[tn1_match.group(2)]
             else:
-                # assume that the 'tens and ones' actually contained only the ones-
-                # place values
+            # assume that the 'tens and ones' actually contained only the ones-
+            # place values
                 group_num = group_num + WordsToNumbers.__ones__[tens_and_ones]
             # increment the total number by the current group number, times
             # its multiplier
@@ -168,4 +168,4 @@ if __name__ == '__main__':
     assert words2num("nine thousand two hundred and ninety seven") == 9297
     assert words2num(None) is None
     assert words2num("zero") == 0
-    print('done')
+    print 'done'

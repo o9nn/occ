@@ -28,7 +28,7 @@ proc = subprocess.Popen(
         'logs={}'.format(logs),
         'tmp={}'.format(tmp),
         'topic={}'.format(topic)
-     ], cwd=os.path.join(CS_DIR, 'BINARIES'),
+    ], cwd=os.path.join(CS_DIR, 'BINARIES'),
     preexec_fn=os.setsid)
 time.sleep(4)
 
