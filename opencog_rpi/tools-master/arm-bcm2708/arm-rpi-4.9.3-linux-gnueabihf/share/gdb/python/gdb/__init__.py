@@ -130,7 +130,7 @@ def auto_load_packages():
         location = os.path.join(os.path.dirname(__file__), package)
         if os.path.exists(location):
             py_files = filter(lambda x: x.endswith('.py')
-                              and x != '__init__.py',
+                                        and x != '__init__.py',
                               os.listdir(location))
 
             for py_file in py_files:
