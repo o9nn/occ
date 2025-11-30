@@ -7,7 +7,7 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-space-wye-test")
 
 (opencog-test-runner)
 
@@ -16,23 +16,23 @@
 
 (define (setup-and-store)
 	(define left-space (cog-atomspace))
-	(define right-space (cog-new-atomspace))
-	(define top-space (cog-new-atomspace (list left-space right-space)))
+	(define right-space (AtomSpace))
+	(define top-space (AtomSpace (list left-space right-space)))
 
 	; Splatter some atoms into the various spaces.
 	(cog-set-atomspace! left-space)
-	(Concept "foo" (ctv 1 0 3))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 3))
 
 	; Put different variants of the same atom in two parallel spaces
 	(cog-set-atomspace! right-space)
-	(Concept "bar" (ctv 1 0 4))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 4))
 
 	(cog-set-atomspace! top-space)
-	(ListLink (Concept "foo") (Concept "bar") (ctv 1 0 8))
+	(set-cnt! (ListLink (Concept "foo") (Concept "bar")) (FloatValue 1 0 8))
 
 	; Store the content. Store the Concepts as well as the link,
 	; as otherwise, the TV's on the Concepts aren't stored.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-wye-test"))
 	(cog-open storage)
 	(store-frames top-space)
 	(store-atom (ListLink (Concept "foo") (Concept "bar")))
@@ -41,24 +41,22 @@
 	(cog-close storage)
 )
 
-(define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
-
 ; -------------------------------------------------------------------
 ; Test ability to restore the above.
 
 (define (test-wye)
 	(setup-and-store)
 
-	; (cog-rocks-open "rocks:///tmp/cog-rocks-unit-test")
+	; (cog-rocks-open "rocks:///tmp/cog-rocks-space-wye-test")
 	; (cog-rocks-stats)
 	; (cog-rocks-get "")
 	; (cog-rocks-close)
 
-	(define new-base (cog-new-atomspace))
+	(define new-base (AtomSpace))
 	(cog-set-atomspace! new-base)
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-wye-test"))
 	(cog-open storage)
 
 	; Load all of the AtomSpaces.
@@ -73,9 +71,9 @@
 	(define left-space (cog-outgoing-atom top-space 0))
 	(define right-space (cog-outgoing-atom top-space 1))
 	(test-assert "wye-unequal" (not (equal? left-space right-space)))
-	(test-assert "wye-uuid" (not (equal?
-		(cog-atomspace-uuid left-space)
-		(cog-atomspace-uuid right-space))))
+	(test-assert "wye-name" (not (equal?
+		(cog-name left-space)
+		(cog-name right-space))))
 
 	; Work on the current surface, but expect to find the deeper ListLink.
 	(define lilly (ListLink (Concept "foo") (Concept "bar")))
@@ -97,5 +95,5 @@
 (test-end wye)
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-space-wye-test")
 (opencog-test-end)

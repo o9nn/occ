@@ -8,7 +8,7 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-value-reval-test")
 
 (opencog-test-runner)
 
@@ -17,22 +17,22 @@
 
 (define (setup-and-store)
 
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-value-reval-test"))
 	(cog-open storage)
 	(store-frames (cog-atomspace))
 
 	; Splatter some atoms into the various spaces.
-	(Concept "foo" (ctv 1 0 3))
-	(Concept "bar" (ctv 1 0 4))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 3))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 4))
 
 	(define base-space (cog-atomspace))
-	(define mid1-space (cog-new-atomspace base-space))
+	(define mid1-space (AtomSpace base-space))
 
 	(cog-set-atomspace! mid1-space)
-	(List (Concept "foo") (Concept "bar") (ctv 1 0 5))
+	(set-cnt! (List (Concept "foo") (Concept "bar")) (FloatValue 1 0 5))
 	(store-atom (ListLink (Concept "foo") (Concept "bar")))
 
-	(define mid2-space (cog-new-atomspace mid1-space))
+	(define mid2-space (AtomSpace mid1-space))
 	(cog-set-atomspace! mid2-space)
 
 	; Delete it (which writes to DB),
@@ -40,15 +40,15 @@
 	; But it has no values. Next, write an explicit value.
 	(cog-delete-recursive! (Concept "foo"))
 	(store-atom (Concept "foo"))
-	(Concept "foo" (ctv 1 0 6))
-	(store-value (Concept "foo") (Predicate "*-TruthValueKey-*"))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 6))
+	(store-value (Concept "foo") (Predicate "kayfabe"))
 
-	(define mid3-space (cog-new-atomspace mid2-space))
+	(define mid3-space (AtomSpace mid2-space))
 	(cog-set-atomspace! mid3-space)
-	(List (Concept "foo") (Concept "bar") (ctv 1 0 7))
+	(set-cnt! (List (Concept "foo") (Concept "bar")) (FloatValue 1 0 7))
 	(store-atom (ListLink (Concept "foo") (Concept "bar")))
 
-	(define surface-space (cog-new-atomspace mid3-space))
+	(define surface-space (AtomSpace mid3-space))
 	(cog-set-atomspace! surface-space)
 	(store-frames surface-space)
 
@@ -62,8 +62,6 @@
 	(cog-atomspace-clear base-space)
 )
 
-(define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
-
 ; -------------------------------------------------------------------
 ; Test that deep links are found correctly.
 
@@ -71,10 +69,10 @@
 	(setup-and-store)
 
 	; Start with a blank slate.
-	(cog-set-atomspace! (cog-new-atomspace))
+	(cog-set-atomspace! (AtomSpace))
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-value-reval-test"))
 	(cog-open storage)
 	(define top-space (car (load-frames)))
 	(cog-set-atomspace! top-space)
@@ -102,7 +100,7 @@
 	; Verify appropriate values
 	(test-equal "link-top-tv" 7 (get-cnt lilly))
 	(test-equal "foo-top-tv" 6 (get-cnt (cog-node 'Concept "foo")))
-	(test-equal "bar-tv" 0 (get-cnt (cog-node 'Concept "bar")))
+	(test-equal "bar-tv" #f (cog-value (cog-node 'Concept "bar") pk))
 
 	; ----------------------------------
 	(cog-set-atomspace! mid2-space)
@@ -112,7 +110,7 @@
 	(test-equal "bar2-space" base-space (cog-atomspace (cog-node 'Concept "bar")))
 
 	(test-equal "foo2-tv" 6 (get-cnt (cog-node 'Concept "foo")))
-	(test-equal "bar-tv" 0 (get-cnt (cog-node 'Concept "bar")))
+	(test-equal "bar-tv" #f (cog-value (cog-node 'Concept "bar") pk))
 
 	; ----------------------------------
 	(cog-set-atomspace! mid1-space)
@@ -121,8 +119,8 @@
 	(test-equal "link1-space" mid1-space
 		(cog-atomspace (cog-link 'List (Concept "foo") (Concept "bar"))))
 
-	(test-equal "foo1-tv" 0 (get-cnt (cog-node 'Concept "foo")))
-	(test-equal "bar-tv" 0 (get-cnt (cog-node 'Concept "bar")))
+	(test-equal "foo1-tv" #f (cog-value (cog-node 'Concept "foo") pk))
+	(test-equal "bar-tv" #f (cog-value (cog-node 'Concept "bar") pk))
 	(test-equal "link-1-tv" 5
 		(get-cnt (cog-link 'List (Concept "foo") (Concept "bar"))))
 
@@ -134,5 +132,5 @@
 (test-end resave-value)
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-value-reval-test")
 (opencog-test-end)
