@@ -207,7 +207,7 @@ std::string MonoStorage::writeAtom(const Handle& h)
 	std::string shash, sid, satom, pfx;
 
 	// If it's alpha-convertible, then look for equivalents.
-	bool convertible = nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_LINK);
+	bool convertible = nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_SIG);
 	if (convertible)
 	{
 		shash = "h@" + aidtostr(h->get_hash());
@@ -351,7 +351,15 @@ Handle MonoStorage::getAtom(const std::string& sid)
 		throw IOException(TRACE_INFO, "Internal Error!");
 
 	size_t pos = satom.find('('); // skip over hash, if present
-	return Sexpr::decode_atom(satom, pos);
+	try {
+		return Sexpr::decode_atom(satom, pos);
+	} catch (const SyntaxException& ex) {
+		// This will happen if a Type is unknown. Either the user forgot
+		// to load the module that defines that type, or this is an old
+		// dataset that contains an obsolete type. Either way, a loud warning.
+		logger().warn("MonoStorage: %s\n", ex.get_message());
+	}
+	return Handle::UNDEFINED;
 }
 
 /// Return the Value located at skid.
@@ -425,7 +433,7 @@ void MonoStorage::getKeys(AtomSpace* as,
 			{
 				size_t junk = 0;
 				ValuePtr vp = Sexpr::decode_value(it->value().ToString(), junk);
-				h->setTruthValue(TruthValueCast(vp));
+				h->setValue(truth_key(), vp);
 			}
 			continue;
 		}
@@ -452,7 +460,7 @@ Handle MonoStorage::getLink(Type t, const HandleSeq& hs)
 {
 	CHECK_OPEN;
 	// If it's alpha-convertible, then look for equivalents.
-	bool convertible = nameserver().isA(t, ALPHA_CONVERTIBLE_LINK);
+	bool convertible = nameserver().isA(t, ALPHA_CONVERTIBLE_SIG);
 	if (convertible)
 	{
 		Handle h = createLink(hs, t);
@@ -486,7 +494,7 @@ std::string MonoStorage::findAtom(const Handle& h)
 	CHECK_OPEN;
 	// If it's alpha-convertible, maybe we already know about
 	// an alpha-equivalent form...
-	if (nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_LINK))
+	if (nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_SIG))
 	{
 		std::string shash = "h@" + aidtostr(h->get_hash());
 		std::string sid;
@@ -502,7 +510,7 @@ std::string MonoStorage::findAtom(const Handle& h)
 	return sid;
 }
 
-/// If an Atom is an ALPHA_CONVERTIBLE_LINK, then we have to look
+/// If an Atom is an ALPHA_CONVERTIBLE_SIG, then we have to look
 /// for it's hash, and figure out if we already know it in a different
 /// but alpha-equivalent form. Return the sid of that form, if found.
 Handle MonoStorage::findAlpha(const Handle& h, const std::string& shash,
@@ -541,7 +549,7 @@ void MonoStorage::removeAtom(AtomSpace* as, const Handle& h, bool recursive)
 #endif
 
 	// Are we even holding the Atom to be deleted?
-	bool convertible = nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_LINK);
+	bool convertible = nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_SIG);
 	std::string sid;
 	std::string satom;
 	std::string shash;
@@ -905,9 +913,17 @@ void MonoStorage::loadAtoms(AtomSpace* as, const std::string& pfx)
 	auto it = _rfile->NewIterator(rocksdb::ReadOptions());
 	for (it->Seek(pfx); it->Valid() and it->key().starts_with(pfx); it->Next())
 	{
-		Handle h = Sexpr::decode_atom(it->key().ToString().substr(2));
-		getKeys(as, it->value().ToString(), h);
-		as->storage_add_nocheck(h);
+		try {
+			Handle h = Sexpr::decode_atom(it->key().ToString().substr(2));
+			getKeys(as, it->value().ToString(), h);
+			as->storage_add_nocheck(h);
+		} catch (const SyntaxException& ex) {
+			// This will happen if a Type is unknown. Either the user forgot
+			// to load the module that defines that type, or this is an old
+			// dataset that contains an obsolete type. Either way, a loud warning.
+			logger().warn("MonoStorage: %s\n", ex.get_message());
+			_unknown_type = true;
+		}
 	}
 	delete it;
 }
@@ -920,6 +936,11 @@ void MonoStorage::loadAtomSpace(AtomSpace* table)
 	// XXX TODO - maybe load links depth-order...
 	loadAtoms(table, "n@");
 	loadAtoms(table, "l@");
+	if (_unknown_type)
+	{
+		fprintf(stderr, "Unknown Atom type encountered during load; check logfile!\n");
+		_unknown_type = false;
+	}
 }
 
 void MonoStorage::loadType(AtomSpace* as, Type t)
@@ -932,9 +953,16 @@ void MonoStorage::loadType(AtomSpace* as, Type t)
 	auto it = _rfile->NewIterator(rocksdb::ReadOptions());
 	for (it->Seek(typ); it->Valid() and it->key().starts_with(typ); it->Next())
 	{
-		Handle h = Sexpr::decode_atom(it->key().ToString().substr(2));
-		getKeys(as, it->value().ToString(), h);
-		as->storage_add_nocheck(h);
+		try {
+			Handle h = Sexpr::decode_atom(it->key().ToString().substr(2));
+			getKeys(as, it->value().ToString(), h);
+			as->storage_add_nocheck(h);
+		} catch (const SyntaxException& ex) {
+			// This will happen if a Type is unknown. Either the user forgot
+			// to load the module that defines that type, or this is an old
+			// dataset that contains an obsolete type. Either way, a loud warning.
+			logger().warn("MonoStorage: %s\n", ex.get_message());
+		}
 	}
 	delete it;
 }
