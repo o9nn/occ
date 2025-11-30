@@ -270,3 +270,53 @@ Input
 Failed to store memory with error: Resource not found
 
 Now let me do a final code review
+
+---
+
+Perfect! Now let me create a summary document and store important facts about this fix:
+
+Call to store_memory
+Input
+{
+  "subject": "CI build dependencies",
+  "fact": "Package liboctomap-tools does not exist; use liboctomap-dev for building with Octomap",
+  "category": "general",
+  "citations": "User input: problem statement showing \"E: Unable to locate package liboctomap-tools\". apt-cache search confirmed only liboctomap-dev, liboctomap1.9t64, and octomap-tools exist.",
+  "reason": "This prevents future build errors when adding Octomap dependencies. The incorrect package name liboctomap-tools was causing CI failures. Future tasks involving Octomap integration should use liboctomap-dev (development headers/cmake) or octomap-tools (command-line utilities), never liboctomap-tools."
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "AtomSpace Rocks CMake configuration",
+  "fact": "AtomSpace Rocks requires CMAKE_PREFIX_PATH=\"/usr/local/lib/cmake;/usr/local/share/cmake\" to find AtomSpaceStorage",
+  "category": "general",
+  "citations": "User input: problem statement showing CMake error \"Could not find a package configuration file provided by AtomSpaceRocks\". .github/workflows/occ-build.yml lines 395-404 show the fix.",
+  "reason": "This is critical for building components that depend on AtomSpace Storage. Without CMAKE_PREFIX_PATH, CMake cannot locate AtomSpaceStorageConfig.cmake even when it's properly installed. Future components depending on AtomSpace Storage should use this same pattern."
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "AS-MOSES Boost dependencies",
+  "fact": "AS-MOSES requires libboost-regex-dev package and may need -DBoost_NO_SYSTEM_PATHS=OFF CMake flag",
+  "category": "general",
+  "citations": "User input: problem statement showing \"Could not find a package configuration file provided by boost_regex\". .github/workflows/occ-build.yml lines 1123 and 1184-1186 show the fix.",
+  "reason": "This prevents CMake Boost configuration errors when building AS-MOSES or similar components that use Boost.Regex. The libboost-regex-dev package was missing from dependencies, causing find_package(boost_regex) to fail. Future components using Boost should ensure all required Boost component packages are installed."
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "component dependencies",
+  "fact": "PLN does not depend on Octomap; only SpaceTime requires Octomap (liboctomap-dev)",
+  "category": "general",
+  "citations": "spacetime/CMakeLists.txt line showing FIND_PACKAGE(Octomap), pln/CMakeLists.txt showing no Octomap reference",
+  "reason": "Prevents unnecessary dependencies in CI builds and reduces build time. Future modifications to PLN or SpaceTime should maintain this separation of concerns. Adding Octomap to PLN was a copy-paste error that wasted build resources."
+}
+Failed to store memory with error: Resource not found
+
+Now let me run a quick syntax check on the YAML file to ensure it's valid
