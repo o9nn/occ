@@ -64,6 +64,8 @@ class GenericShell
 		concurrent_queue<std::string> evalque;
 		volatile bool _init_done;
 
+		void enqueue_work(const std::string&);
+
 	protected:
 		std::string abort_prompt;
 		std::string normal_prompt;
@@ -73,7 +75,6 @@ class GenericShell
 		volatile bool self_destruct;
 		bool apply_discipline;
 
-		virtual GenericEval* get_evaluator(void) = 0;
 		virtual void thread_init(void);
 		virtual void line_discipline(const std::string &expr);
 
@@ -112,11 +113,17 @@ class GenericShell
 		virtual void hush_prompt(bool);
 		virtual void discipline(bool);
 
+		virtual GenericEval* get_evaluator(void) = 0;
+
 		// Monitor statistics
 		const char* _name;
 		bool eval_done() const { return _eval_done; }
 		size_t pending() const { return _pending_output.size(); }
 		size_t queued() const { return evalque.size(); }
+
+		// Return true if the current thread is this shell's eval thread
+		bool is_eval_thread() const
+		{ return evalthr and evalthr->get_id() == std::this_thread::get_id(); }
 };
 
 /** @}*/
