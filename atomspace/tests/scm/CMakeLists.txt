@@ -4,21 +4,6 @@ INCLUDE_DIRECTORIES (
 	${PROJECT_SOURCE_DIR}/opencog/util
 )
 
-LINK_DIRECTORIES(
-	${PROJECT_BINARY_DIR}/opencog/atomspace
-	${PROJECT_BINARY_DIR}/opencog/guile
-	${PROJECT_BINARY_DIR}/opencog/util
-)
-
-LINK_LIBRARIES(
-	atomspace
-	smob
-	clearbox
-	execution
-	logger
-	${GUILE_LIBRARIES}
-)
-
 ADD_CXXTEST(BasicSCMUTest)
 ADD_CXXTEST(SCMPrimitiveUTest)
 ADD_CXXTEST(MultiAtomSpaceUTest)
@@ -35,11 +20,20 @@ ADD_GUILE_TEST(SCMOpencogTestRunnerFail scm-opencog-test-runner-fail.scm)
 SET_PROPERTY(TEST SCMOpencogTestRunnerFail PROPERTY WILL_FAIL TRUE)
 
 ADD_GUILE_TEST(CopyAtomTest copy-atom-test.scm)
-ADD_GUILE_TEST(SCMInlineValues inline-values.scm)
+ADD_GUILE_TEST(InlineValuesTest inline-values-test.scm)
+ADD_GUILE_TEST(BooleanPredicateTest boolean-predicate-test.scm)
 
 # Guile-python bridge requires python
 IF (HAVE_CYTHON)
-	ADD_GUILE_TEST(SCMPython scm-python.scm)
-	ADD_GUILE_TEST(SCMPythonSharedAtomspace scm-python-shared-atomspace.scm)
-	ADD_GUILE_TEST(SCMPythonArity scm-python-arity.scm)
+	ADD_GUILE_TEST(ScmPythonTest scm-python-test.scm)
+	ADD_GUILE_TEST(ScmPythonSharedAtomspaceTest scm-python-shared-atomspace-test.scm)
+	ADD_GUILE_TEST(ScmPythonArityTest scm-python-arity-test.scm)
+
+	# Set PYTHONPATH so Python can find the opencog module in the build directory
+	SET_PROPERTY(TEST ScmPythonTest
+		APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/opencog/cython")
+	SET_PROPERTY(TEST ScmPythonSharedAtomspaceTest
+		APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/opencog/cython")
+	SET_PROPERTY(TEST ScmPythonArityTest
+		APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/opencog/cython")
 ENDIF (HAVE_CYTHON)

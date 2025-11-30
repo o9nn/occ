@@ -26,13 +26,12 @@
 
 #include <opencog/atoms/atom_types/NameServer.h>
 #include <opencog/atoms/base/Node.h>
-#include <opencog/atoms/core/FindUtils.h>
-#include <opencog/atoms/core/FreeLink.h>
+#include <opencog/atoms/free/FindUtils.h>
+#include <opencog/atoms/free/FreeLink.h>
 #include <opencog/atoms/core/NumberNode.h>
 #include <opencog/atoms/value/UnisetValue.h>
 #include <opencog/atomspace/AtomSpace.h>
 
-#include "BindLink.h"
 #include "DualLink.h"
 #include "PatternLink.h"
 #include "PatternUtils.h"
@@ -402,28 +401,6 @@ PatternLink::PatternLink(const HandleSet& vars,
 
 /* ================================================================= */
 
-/// Constructor that takes a pre-determined set of variables, and
-/// a list of clauses to solve.  This is currently kind-of crippled,
-/// since no variable type restricions are possible, and no optionals,
-/// either.  This is used only for backwards-compatibility API's.
-/// XXX No one, except unit tests, use these deprecated API's. These
-/// old unit tests should be removed.
-PatternLink::PatternLink(const HandleSet& vars,
-                         const HandleSeq& clauses)
-	: RuleLink(HandleSeq(), PATTERN_LINK)
-{
-	_variables.varset = vars;
-	for (const Handle& clause : clauses)
-	{
-		PatternTermPtr root_term(make_term_tree(clause));
-		_pat.pmandatory.push_back(root_term);
-	}
-	common_init();
-	setup_components();
-}
-
-/* ================================================================= */
-
 PatternLink::PatternLink(const Handle& body)
 	: RuleLink(HandleSeq({body}), PATTERN_LINK)
 {
@@ -694,7 +671,18 @@ void PatternLink::unbundle_clauses(const Handle& hbody)
 		for (const Handle& ho : oset)
 			dedupe.insert(ho);
 
+		// Process non-evaluatable clauses before evaluatable ones.
+		// This ensures evaluatables find non-evaluatables in pmandatory
+		// when need_dummies() checks, avoiding order-dependency.
+		HandleSeq sorted_clauses;
 		for (const Handle& ho : dedupe)
+			if (not can_evaluate(ho))
+				sorted_clauses.push_back(ho);
+		for (const Handle& ho : dedupe)
+			if (can_evaluate(ho))
+				sorted_clauses.push_back(ho);
+
+		for (const Handle& ho : sorted_clauses)
 		{
 			PatternTermPtr clause(make_term_tree(ho));
 			if (not clause->contained_in(_pat.pmandatory) and
@@ -784,8 +772,9 @@ void PatternLink::locate_cacheable(const PatternTermSeq& clauses)
 		// knee in the curve is at 4 or fewer UnorderedLinks in a clause.
 		// Note that UnorderedUTest has some very unusual patterns,
 		// exploring many tens of thousands of combinations, something
-		// that most ussers will surely almost never do :-)
-		if (4 < contains_atomtype_count(claw, UNORDERED_LINK)) continue;
+		// that most users will surely almost never do :-)
+		if (4 < (contains_atomtype_count(claw, UNORDERED_LINK) +
+		         contains_atomtype_count(claw, UNORDERED_SIG))) continue;
 
 		_pat.cacheable_clauses.insert(claw);
 	}
@@ -1148,7 +1137,7 @@ PatternTermPtr PatternLink::make_term_tree(const Handle& term)
 {
 	PatternTermPtr top_term(createPatternTerm());
 	PatternTermPtr root_term(top_term->addOutgoingTerm(term));
-	make_term_tree_recursive(root_term, root_term);
+	make_ttree_recursive(root_term, root_term);
 	return root_term;
 }
 
@@ -1172,8 +1161,8 @@ void PatternLink::pin_term_recursive(const PatternTermPtr& ptm,
 		pin_term_recursive(stm, root);
 }
 
-void PatternLink::make_term_tree_recursive(const PatternTermPtr& root,
-                                           PatternTermPtr& ptm)
+void PatternLink::make_ttree_recursive(const PatternTermPtr& root,
+                                       PatternTermPtr& ptm)
 {
 	// `h` is usually the same as `term`, unless there's quotation.
 	const Handle& h(ptm->getHandle());
@@ -1206,7 +1195,8 @@ void PatternLink::make_term_tree_recursive(const PatternTermPtr& root,
 	}
 
 	// If the term is unordered, all parents must know about it.
-	if (nameserver().isA(t, UNORDERED_LINK))
+	if (nameserver().isA(t, UNORDERED_LINK) or
+	    nameserver().isA(t, UNORDERED_SIG))
 	{
 		// If there's a GlobNode in here, make sure there's only one.
 		// Unordered links with globs hit the "sparse" pattern match.
@@ -1292,7 +1282,7 @@ void PatternLink::make_term_tree_recursive(const PatternTermPtr& root,
 		{
 			if (chk_const and is_constant(_variables.varset, ho)) continue;
 			PatternTermPtr po(ptm->addOutgoingTerm(ho));
-			make_term_tree_recursive(root, po);
+			make_ttree_recursive(root, po);
 		}
 	}
 
