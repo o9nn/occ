@@ -32,7 +32,7 @@ class TestBasic(unittest.TestCase):
         rule_base = ConceptNode('PLN')
         set_ttv(ConceptNode("apple"), TTruthValue((0.8, 0.9)))
         inh = InheritanceLink(ConceptNode("apple"),
-                              ConceptNode("fruit"))
+                ConceptNode("fruit"))
         set_ttv(inh, TTruthValue(0.8, 0.4))
         bc = BackwardChainer(self.atomspace, rule_base, ConceptNode("fruit"))
         bc.do_chain()
@@ -63,7 +63,7 @@ class TestBasic(unittest.TestCase):
         set_ttv(C, (1.0, 1.0))
         set_ttv(ImplicationLink(A, C), (0.55, 0.55))
         set_ttv(ImplicationLink(A,
-                                OrLink(B, C)), (1.0, 1.0))
+                        OrLink(B, C)), (1.0, 1.0))
 
         impl = ImplicationLink(A, B)
         bc = BackwardChainer(self.atomspace, rule_base, impl)
@@ -85,7 +85,7 @@ class TestBasic(unittest.TestCase):
         bc.do_chain()
         result = bc.get_results().out[0]
         self.assertTrue(0 < get_ttv(result).confidence,
-                        'fails due to https://github.com/opencog/opencog/issues/3465')
+                'fails due to https://github.com/opencog/opencog/issues/3465')
 
     def tearDown(self):
         self.atomspace = None
