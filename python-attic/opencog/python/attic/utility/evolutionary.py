@@ -197,7 +197,7 @@ class GeneticAlgorithm(object):
         self.__dict__.update(kwargs)
         if not self.__dict__.has_key('population'):
             if not self.__dict__.has_key('type_of_individuals')\
-                    or not self.__dict__.has_key('number_of_individuals'):
+            or not self.__dict__.has_key('number_of_individuals'):
                 raise ValueError('since population is not specified,'
                                  ' type_of_individuals and number_of_individuals'
                                  ' should be present')
@@ -234,56 +234,56 @@ class GeneticAlgorithm(object):
     def run(self, show_population_each_generation=True):
         while True:
             if show_population_each_generation:
-                print(')  #################### Generation ' +\
+                print '#################### Generation ' +\
                       str(self.population.generation_count) +\
                       ' ####################'
-                      for individual in self.population:
-                      print(individual)
-                      print('Fittest:', str(self.step()))
+                for individual in self.population:
+                    print individual
+            print 'Fittest:', str(self.step())
 
 
-                      class IndividualListBase(IndividualBase, list):
+class IndividualListBase(IndividualBase, list):
 
-                      @property
-                      def loci(self):
-                      return range(len(self))
+    @property
+    def loci(self):
+        return range(len(self))
 
-                      class IndividualDictBase(IndividualBase, dict):
+class IndividualDictBase(IndividualBase, dict):
 
-                      @property
-                      def loci(self):
-                      return self
+    @property
+    def loci(self):
+        return self
 
-                      class IndividualSetBase(IndividualBase, set):
+class IndividualSetBase(IndividualBase, set):
 
-                      @property
-                      def loci(self):
-                      return self
+    @property
+    def loci(self):
+        return self
 
-                      def __getitem__(self, item):
-                      return item
+    def __getitem__(self, item):
+        return item
 
-                      def __setitem__(self, key, value):
-                      self.remove(key)
-                      self.add(value)
+    def __setitem__(self, key, value):
+        self.remove(key)
+        self.add(value)
 
 
-                      #class NoneEpistaticGeneticAlgorithm(GeneticAlgorithm):
-                      #
-                      #    fitness_unit = 1
-                      #
-                      #    class _contribution_dict(dict):
-                      #        def __getitem__(self, item):
-                      #            if item not in self:
-                      #                return NoneEpistaticGeneticAlgorithm.fitness_unit
-                      #            return dict.__getitem__(self, item)
-                      #
-                      #    fitness_contribution_by_locus = _contribution_dict()
-                      #
-                      #    def __init__(self, type_of_individuals, number_of_individuals):
-                      #        self.population = _none_epistatic_population(type_of_individuals, number_of_individuals)
-                      #        self.population.a
-                      #
-                      #    def step(self, mutation_rate=1, crossover_rate = 1,
-                      #             number_of_individuals=0):
-                      #        pass
+#class NoneEpistaticGeneticAlgorithm(GeneticAlgorithm):
+#
+#    fitness_unit = 1
+#
+#    class _contribution_dict(dict):
+#        def __getitem__(self, item):
+#            if item not in self:
+#                return NoneEpistaticGeneticAlgorithm.fitness_unit
+#            return dict.__getitem__(self, item)
+#
+#    fitness_contribution_by_locus = _contribution_dict()
+#
+#    def __init__(self, type_of_individuals, number_of_individuals):
+#        self.population = _none_epistatic_population(type_of_individuals, number_of_individuals)
+#        self.population.a
+#
+#    def step(self, mutation_rate=1, crossover_rate = 1,
+#             number_of_individuals=0):
+#        pass
