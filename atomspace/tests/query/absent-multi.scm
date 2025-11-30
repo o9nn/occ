@@ -11,36 +11,36 @@
 
 ; Clause to match during query - are Agents Mulder and Scully around?
 (define mulder
-	(EvaluationLink
+	(EdgeLink
 		(PredicateNode "Agent Mulder")
 		(ListLink (VariableNode "$x"))))
 
 (define scully
-	(EvaluationLink
+	(EdgeLink
 		(PredicateNode "Agent Scully")
 		(ListLink (VariableNode "$y"))))
 
 ; Call in the agents
 (define call-mulder
 	(PutLink
-		(EvaluationLink
+		(EdgeLink
 			(PredicateNode "Agent Mulder")
 			(VariableNode "$x"))
 		(ListLink (ConceptNode "Exploring Area 51"))))
 
 (define call-scully
 	(PutLink
-		(EvaluationLink
+		(EdgeLink
 			(PredicateNode "Agent Scully")
 			(VariableNode "$x"))
 		(ListLink (ConceptNode "Late night in the morgue"))))
 
 ; Make the agents go away.
 (define discredit-mulder
-	(BindLink mulder (DeleteLink mulder)))
+	(QueryLink mulder (DeleteLink mulder)))
 
 (define discredit-scully
-	(BindLink scully (DeleteLink scully)))
+	(QueryLink scully (DeleteLink scully)))
 
 ; Status of the UFO
 (define ufo-state (AnchorNode "UFO"))
@@ -56,7 +56,7 @@
 
 ; The UFO exists only if both Mulder and Scully are not around.
 (define is-visible
-	(BindLink
+	(QueryLink
 		(AndLink (AbsentLink mulder) (AbsentLink scully))
 		(PutLink (StateLink ufo-state (VariableNode "$x")) ufo-exists)
 	)
@@ -64,7 +64,7 @@
 
 ; The UFO is denied if either Mulder or Scully are around.
 (define is-invisible
-	(BindLink
+	(QueryLink
 		(ChoiceLink mulder scully)
 		(PutLink (StateLink ufo-state (VariableNode "$x")) ufo-denied)
 	)
@@ -72,12 +72,19 @@
 
 ; There is undeniable evidence when both of them are working.
 (define is-proven
-	(BindLink
+	(QueryLink
 		(AndLink mulder scully)
 		(PutLink (StateLink ufo-state (VariableNode "$x")) ufo-proven)
 	)
 )
 
+; Chase key->StateLink->ConceptNode
+(define (get-state STATE)
+	(filter
+		(lambda (CURSTA) (eq? 'ConceptNode (cog-type CURSTA)))
+		(map
+			(lambda (STALNK) (cog-outgoing-atom STALNK 1))
+			(cog-incoming-by-type STATE 'StateLink))))
+
 ;; Display the current UFO state
-(define (show-ufo-state)
-   (car (cog-chase-link 'StateLink 'ConceptNode ufo-state)))
+(define (show-ufo-state) (car (get-state ufo-state)))
