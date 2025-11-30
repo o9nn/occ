@@ -4,7 +4,7 @@ Test suite for NeuroCog Core Self persona integration
 
 Tests the integration of three personas:
 - OpenCog-Org: AGI ecosystem coordination
-- Marduk-v15: Systems architecture brilliance  
+- Marduk-v15: Systems architecture brilliance
 - Agent-Neuro: Chaotic cognitive VTuber
 
 Validates:

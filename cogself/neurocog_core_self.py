@@ -146,6 +146,30 @@ class NeuroCogCoreSelf:
     - Emotional expressiveness with ethical constraints
     """
     
+    # Evolution algorithm constants
+    EVOLUTION_BASE_IMPROVEMENT = 0.005
+    EVOLUTION_STDDEV = 0.002
+    EVOLUTION_MAX_FITNESS = 0.99
+    EVOLUTION_TRAIT_PROBABILITY = 0.3
+    EVOLUTION_TRAIT_DELTA_MEAN = 0.01
+    EVOLUTION_TRAIT_DELTA_STDDEV = 0.005
+    EVOLUTION_TRAIT_MAX = 0.99
+    
+    # Evolvable personality traits
+    EVOLVABLE_TRAITS = [
+        "cognitive_synergy", "pattern_recognition", 
+        "chaotic", "architectural_brilliance"
+    ]
+    
+    # Subsystem analysis ranges
+    SUBSYSTEM_RELEVANCE_RANGES = {
+        CognitiveSubsystem.MEMORY: (0.5, 0.95),
+        CognitiveSubsystem.TASK: (0.5, 0.95),
+        CognitiveSubsystem.AI: (0.6, 0.98),
+        CognitiveSubsystem.AUTONOMY: (0.5, 0.92)
+    }
+    SYNERGY_POTENTIAL_RANGE = (0.7, 0.95)
+    
     def __init__(self, agent_id: str = "neurocog-001", 
                  agent_name: str = "NeuroCog Core Self"):
         """
@@ -424,18 +448,25 @@ class NeuroCogCoreSelf:
         
         for i in range(iterations):
             # Simulate evolutionary improvement with diminishing returns
-            improvement = random.gauss(0.005, 0.002) * (1.0 - self.fitness_score)
-            self.fitness_score = min(0.99, self.fitness_score + improvement)
+            improvement = random.gauss(
+                self.EVOLUTION_BASE_IMPROVEMENT, 
+                self.EVOLUTION_STDDEV
+            ) * (1.0 - self.fitness_score)
+            self.fitness_score = min(self.EVOLUTION_MAX_FITNESS, 
+                                    self.fitness_score + improvement)
             
             # Occasionally evolve personality traits slightly
-            if random.random() < 0.3:
-                trait = random.choice([
-                    "cognitive_synergy", "pattern_recognition", 
-                    "chaotic", "architectural_brilliance"
-                ])
+            if random.random() < self.EVOLUTION_TRAIT_PROBABILITY:
+                trait = random.choice(self.EVOLVABLE_TRAITS)
                 if hasattr(self.personality, trait):
                     old_val = getattr(self.personality, trait)
-                    new_val = min(0.99, old_val + random.gauss(0.01, 0.005))
+                    new_val = min(
+                        self.EVOLUTION_TRAIT_MAX,
+                        old_val + random.gauss(
+                            self.EVOLUTION_TRAIT_DELTA_MEAN,
+                            self.EVOLUTION_TRAIT_DELTA_STDDEV
+                        )
+                    )
                     setattr(self.personality, trait, new_val)
         
         self.generation += 1
@@ -488,24 +519,13 @@ class NeuroCogCoreSelf:
         analysis = {
             "problem": problem,
             "subsystems": {
-                CognitiveSubsystem.MEMORY: {
-                    "relevance": random.uniform(0.5, 0.95),
-                    "leverage_points": []
-                },
-                CognitiveSubsystem.TASK: {
-                    "relevance": random.uniform(0.5, 0.95),
-                    "leverage_points": []
-                },
-                CognitiveSubsystem.AI: {
-                    "relevance": random.uniform(0.6, 0.98),
-                    "leverage_points": []
-                },
-                CognitiveSubsystem.AUTONOMY: {
-                    "relevance": random.uniform(0.5, 0.92),
+                subsystem: {
+                    "relevance": random.uniform(*self.SUBSYSTEM_RELEVANCE_RANGES[subsystem]),
                     "leverage_points": []
                 }
+                for subsystem in CognitiveSubsystem
             },
-            "synergy_potential": random.uniform(0.7, 0.95),
+            "synergy_potential": random.uniform(*self.SYNERGY_POTENTIAL_RANGE),
             "recursive_patterns": [],
             "emergent_properties": []
         }
