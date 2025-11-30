@@ -58,15 +58,24 @@ class RocksStorage : public StorageNode
 		// True if file contains more than one atomspace.
 		bool _multi_space;
 
+		// Exception due to unknown Atom type.
+		bool _unknown_type;
+
 		// The Handles are *always* AtomSpacePtr's
 		std::unordered_map<Handle, const std::string> _frame_map;
 		std::unordered_map<std::string, Handle> _fid_map;
-		void makeOrder(Handle, std::map<uint64_t, Handle>&);
+		UnorderedHandleSet _top_frames;
+		void updateFrameMap(const Handle&, const std::string&);
+		typedef std::map<uint64_t, Handle> FramePath;
+		const FramePath& getPath(const Handle&);
+		void makeOrder(Handle, FramePath&);
+		std::unordered_map<Handle, FramePath> _path_cache;
 
 		std::mutex _mtx_frame;
 		std::string encodeFrame(const Handle&);
 		std::string writeFrame(const Handle&);
 		std::string writeFrame(AtomSpace* as) {
+			if (nullptr == as) return "0";
 			return writeFrame(HandleCast(as));
 		}
 		Handle decodeFrame(const std::string&);
@@ -107,7 +116,7 @@ class RocksStorage : public StorageNode
 		void getKeysMonospace(AtomSpace*, const std::string&, const Handle&);
 		void getKeysMulti(AtomSpace*, const std::string&, const Handle&);
 		void loadAtoms(AtomSpace*);
-		size_t loadAtomsPfx(const std::map<uint64_t, Handle>&,
+		size_t loadAtomsPfx(const FramePath&,
 		                    const std::string&);
 		size_t loadAtomsHeight(const std::map<uint64_t, Handle>&,
 		                       size_t);
