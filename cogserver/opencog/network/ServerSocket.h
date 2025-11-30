@@ -15,6 +15,9 @@
 
 namespace opencog
 {
+
+class SocketManager;
+
 /** \addtogroup grp_server
  *  @{
  */
@@ -43,18 +46,9 @@ class ServerSocket
 private:
     // The actual socket on which data comes & goes.
     asio::ip::tcp::socket* _socket;
-    static bool _network_gone;
 
-    // A count of the number of concurrent open sockets. This is used
-    // to limit the number of connections to the server, so that it
-    // doesn't crash with a `accept: Too many open files` error.
-    static unsigned int _max_open_sockets;
-    static volatile unsigned int _num_open_sockets;
-    static std::mutex _max_mtx;
-    static std::condition_variable _max_cv;
-
-    // A count of the number of times the max condition was reached.
-    static size_t _num_open_stalls;
+    // Socket manager handles registration and coordination
+    SocketManager* _socket_manager;
 
     // Read a newline-delimited line of text from socket.
     std::string get_telnet_line(asio::streambuf&);
@@ -80,13 +74,17 @@ protected:
     // WebSocket stuff that users will be interested in.
     bool _is_http_socket;
     bool _got_websock_header;
-    std::string _url;
+    bool _is_mcp_socket;
 
     // KeepAlive connections will repeatedly send HTTP headers.
     bool _keep_alive;
+
+    bool _in_barrier;
+
     size_t _content_length;
 
-    bool _is_mcp_socket;
+    std::string _url;
+    std::string _host_header;  // Host header from HTTP request
 
     /**
      * Connection callback: called whenever a new connection arrives
@@ -111,10 +109,13 @@ protected:
     virtual std::string connection_header(void);
     virtual std::string connection_stats(void);
 public:
-    ServerSocket(void);
+    ServerSocket(SocketManager*);
     virtual ~ServerSocket();
     void act_as_http_socket(void) { _is_http_socket = true; }
     void act_as_mcp(void) { _is_mcp_socket = true; }
+
+    // Access to socket manager for derived classes
+    SocketManager* get_socket_manager() { return _socket_manager; }
 
     void set_connection(asio::ip::tcp::socket*);
     void handle_connection(void);
@@ -129,31 +130,23 @@ public:
      * the one that is actually polling the socket.
      */
     void Exit(void);
-    static void network_gone(void) { _network_gone = true; }
-
-    /**
-     * Return a human-readable table of socket statistics.
-     * Used for monitoring the server state.
-     * Loops over all active sockets.
-     */
-    static std::string display_stats(int);
-
-    /** Attempt top close half-open sockets, if any. */
-    static void half_ping(void);
-
-    /** Attempt to kill the indicated thread. */
-    static bool kill(pid_t);
 
     /** Total line count, handled by all sockets, ever. */
     static std::atomic_size_t total_line_count;
 
-    /**
-     * Status reporting API.
-     */
-    static void set_max_open_sockets(unsigned int m) { _max_open_sockets = m; }
-    static unsigned int get_max_open_sockets() { return _max_open_sockets; }
-    static unsigned int get_num_open_sockets() { return _num_open_sockets; }
-    static size_t get_num_open_stalls() { return _num_open_stalls; }
+    /** Status string constants */
+    static char START[6];
+    static char BLOCK[6];
+    static char IWAIT[6];
+    static char QUING[6];
+    static char BAR[6];
+    static char DTOR[6];
+    static char CLOSE[6];
+    static char DOWN[6];
+
+    // Expose frequently-needed socket manager operations
+    // These delegate to the socket manager for this socket
+    friend class SocketManager;
 }; // class
 
 /** @}*/
