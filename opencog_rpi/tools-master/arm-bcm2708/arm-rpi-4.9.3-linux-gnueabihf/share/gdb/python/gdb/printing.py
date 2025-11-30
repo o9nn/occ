@@ -115,9 +115,9 @@ def register_pretty_printer(obj, printer, replace=False):
         raise TypeError("printer missing attribute: __call__")
 
     if hasattr(printer, "name"):
-        name = printer.name
+      name = printer.name
     else:
-        name = printer.__name__
+      name = printer.__name__
     if obj is None or obj is gdb:
         if gdb.parameter("verbose"):
             gdb.write("Registering global %s pretty-printer ...\n" % name)
@@ -148,8 +148,8 @@ def register_pretty_printer(obj, printer, replace=False):
                     del obj.pretty_printers[i]
                     break
                 else:
-                    raise RuntimeError("pretty-printer already registered: %s" %
-                                       printer.name)
+                  raise RuntimeError("pretty-printer already registered: %s" %
+                                     printer.name)
             i = i + 1
 
     obj.pretty_printers.insert(0, printer)
