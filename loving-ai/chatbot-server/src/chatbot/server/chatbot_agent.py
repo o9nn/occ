@@ -470,7 +470,7 @@ def _ask_characters(characters, question, lang, sid, query, request_id, **kwargs
                 response['text'] = answer
                 cross_trace.append(
                     (hit_character.id, response_type,
-                     response.get('trace') or 'No trace'))
+                    response.get('trace') or 'No trace'))
                 break
 
     if answer and re.match('.*{.*}.*', answer):
@@ -494,9 +494,9 @@ def _ask_characters(characters, question, lang, sid, query, request_id, **kwargs
 
     if not query and hit_character is not None:
         sess.add(question, answer, AnsweredBy=hit_character.id,
-                 User=user, BotName=botname, Trace=cross_trace,
-                 Revision=REVISION, Lang=lang, ModQuestion=_question,
-                 RequestId=request_id,Marker=kwargs.get('marker'))
+                    User=user, BotName=botname, Trace=cross_trace,
+                    Revision=REVISION, Lang=lang, ModQuestion=_question,
+                    RequestId=request_id,Marker=kwargs.get('marker'))
 
         sess.last_used_character = hit_character
 
