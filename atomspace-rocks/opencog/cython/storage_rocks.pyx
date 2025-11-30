@@ -2,14 +2,20 @@
 # storage_rocks.pyx
 #
 # Defines a python module for the RocksDB storage nodes.
-# There's almost nothing here, just enough to link the C library to 
-# cython so that user can import. Intended use is for the user to say
+# Intended use is for the user to say
 #
-# import storage_rocks
+# from opencog.storage_rocks import *
 #
-# and that's all.
+# and that's all. The RocksStorageNode type will then be available.
 #
 
-from opencog.atomspace import types
+from opencog.atomspace import types, regenerate_types
 
-# Great emptiness.
+# Regenerate types so that RocksStorageNode becomes available.
+regenerate_types()
+
+# Import add_node for the type constructors below.
+from opencog.type_ctors import add_node
+
+# Include the auto-generated type constructors.
+include "opencog/persist/rocks-types/persist_rocks_types.pyx"
