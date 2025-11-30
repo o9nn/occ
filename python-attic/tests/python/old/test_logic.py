@@ -27,7 +27,7 @@ class LogicTest(TestCase):
 
     def setUp(self):
         self.space = AtomSpace()
-
+        
         tempfd, self.tempfn = tempfile.mkstemp()
         # close the temp file as Logger will want to manually
         # open it
@@ -45,10 +45,10 @@ class LogicTest(TestCase):
         x1 = rules.Rule(T(2), 
                         [T('ImplicationLink', T('EvaluationLink', a.add(t.PredicateNode, 'is_axiom'), T('ListLink', T(1000008))), T(2)),
                          T('EvaluationLink', a.add(t.PredicateNode, 'is_axiom'), T('ListLink', T(1000008)))
-                         ], name='ModusPonens')
+                        ], name='ModusPonens')
         x2 = rules.Rule(T(2), 
                         [T('ImplicationLink', T('EvaluationLink', a.add(t.PredicateNode, 'is_axiom'), T('ListLink', T(1000011))), T(2)),
                          T('EvaluationLink', a.add(t.PredicateNode, 'is_axiom'), T('ListLink', T(1000011)))
-                         ], name='ModusPonens')
+                        ], name='ModusPonens')
 
         self.assertTrue(x1.isomorphic(x2))

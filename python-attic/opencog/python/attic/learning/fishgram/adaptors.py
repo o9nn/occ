@@ -22,10 +22,10 @@ class ForestExtractor:
     def __init__(self, atomspace, writer):
         self.a = atomspace
         self.writer = writer
-
+        
         #self.attentional_focus = True
         self.attentional_focus = False
-
+        
         # policy
         # Whether to create miner-friendly output, rather than human-friendly output.
         # Makes it output all object-nodes with the same label. May be more useful for visualisation anyway.
@@ -38,26 +38,26 @@ class ForestExtractor:
         self.compact_binary_links = True
         # Spatial relations are useful, but cause a big combinatorial explosion
         self.unwanted_atoms = set(['proximity', 'next', 'near',
-                                   'beside', 'left_of', 'right_of', 'far', 'behind', 'in_front_of',
-                                   'between', 'touching', 'outside', 'above', 'below', # 'inside',
-                                   # Useless stuff. null means the object class isn't specified (something that was used in the
-                                   # Multiverse world but not in the Unity world. Maybe it should be?
-                                   'is_movable', 'is_noisy', 'null', 'id_null', 'Object',
-                                   'exist', # 'decreased','increased',
-                                   # Not useful e.g. because they contain numbers
-                                   "AGISIM_rotation", "AGISIM_position", "AGISIM_velocity", "SpaceMap", "inside_pet_fov", 'turn', 'walk',
-                                   'move:actor', 'is_moving', 
-                                   # These ones make it ignore physiological feelings; it'll only care about the corresponding DemandGoals
-                                   'pee_urgency', 'poo_urgency', 'energy', 'fitness', 'thirst',
-                                   # These might be part of the old embodiment system or part of Psi, I'm not sure
-                                   'happiness','sadness','fear','excitement','anger',
-                                   'night',
-                                   'actionFailed','decreased',
-                                   'food_bowl', # redundant with is_edible
-                                   #'foodState','egg','dish',
-                                   # The can_do predicate is useful but should be in an AtTimeLink
-                                   'can_do'])
-
+            'beside', 'left_of', 'right_of', 'far', 'behind', 'in_front_of',
+            'between', 'touching', 'outside', 'above', 'below', # 'inside',
+            # Useless stuff. null means the object class isn't specified (something that was used in the
+            # Multiverse world but not in the Unity world. Maybe it should be?
+            'is_movable', 'is_noisy', 'null', 'id_null', 'Object',
+            'exist', # 'decreased','increased',
+            # Not useful e.g. because they contain numbers
+            "AGISIM_rotation", "AGISIM_position", "AGISIM_velocity", "SpaceMap", "inside_pet_fov", 'turn', 'walk',
+            'move:actor', 'is_moving', 
+            # These ones make it ignore physiological feelings; it'll only care about the corresponding DemandGoals
+            'pee_urgency', 'poo_urgency', 'energy', 'fitness', 'thirst',
+            # These might be part of the old embodiment system or part of Psi, I'm not sure
+            'happiness','sadness','fear','excitement','anger',
+            'night',
+            'actionFailed','decreased',
+            'food_bowl', # redundant with is_edible
+            #'foodState','egg','dish',
+            # The can_do predicate is useful but should be in an AtTimeLink
+            'can_do'])
+        
         # state
         self.all_objects  = set()# all objects in the AtomSpace
         self.all_timestamps = set()
@@ -70,11 +70,11 @@ class ForestExtractor:
         #self.i = 0
 
         self.event_embeddings = defaultdict(list)
-
+        
         # fishgram-specific experiments. Refactor later
         # map from unique tree to set of embeddings. An embedding is a set of bindings. Maybe store the corresponding link too.
         self.tree_embeddings = defaultdict(list)
-
+        
         # The incoming links (or rather trees/predicates) for each object.
         # For each object, a mapping from rel -> every embedding involving that object
         self.incoming = defaultdict(lambda:defaultdict(list))
@@ -102,19 +102,19 @@ class ForestExtractor:
     def extractForest(self):
         # TODO >0.5 for a fuzzy link means it's true, but probabilistic links may work differently        
         initial_links = [x for x in self.a.get_atoms_by_type(t.Link) if (x.tv.mean > 0.5 and x.tv.confidence > 0)]
-
+        
         for link in initial_links:
             if link.tv is None:
-                print(link, 'has no TV!')
+                print link, 'has no TV!'
                 assert False
-                #or x.type_name in ['EvaluationLink', 'InheritanceLink']]: # temporary hack
-                #or x.is_a(t.AndLink)]: # temporary hack
+                     #or x.type_name in ['EvaluationLink', 'InheritanceLink']]: # temporary hack
+                     #or x.is_a(t.AndLink)]: # temporary hack
             if self.attentional_focus and link.av['sti'] <= -10:
                 continue
-
+            
             if not self.include_tree(link): continue
             #print link
-
+            
             objects = []            
             #print self.extractTree(link, objects),  objects, self.i
             self.i = 0
@@ -127,24 +127,24 @@ class ForestExtractor:
             # fishgram wants objects as trees for consistency, but
             # gephi output class wants atoms...
             objects = tuple(map(Tree,objects))
-
+            
             #print tree,  [str(o) for o in objects]
-
+            
             # policy - throw out trees with no objects
             if len(objects):
                 self.all_trees.append(tree)
                 self.all_trees_atoms.append(link)
-
-
+                
+                
                 self.bindings.append(objects)
-
+                
                 for obj in objects:
                     if obj.get_type() != t.TimeNode:
-                        #if obj.t != t.TimeNode:
+                    #if obj.t != t.TimeNode:
                         self.all_objects.add(obj)
                     else:
                         self.all_timestamps.add(obj)
-
+                    
                 # fishgram-specific
                 substitution = subst_from_binding(objects)
                 if tree.op == 'AtTimeLink':
@@ -169,17 +169,17 @@ class ForestExtractor:
                 #    if slot not in self.incoming[obj][size]:
                 #        self.incoming[obj][size][slot] = []
                 #    self.incoming[obj][size][slot].append(tree_id)
-
+        
         # Make all bound trees. Enables using lookup_embeddings
         self.all_bound_trees = [subst(subst_from_binding(b), tr) for tr, b in zip(self.all_trees, self.bindings)]    
-
+    
         pprint({tr:len(embs) for (tr, embs) in self.tree_embeddings.items()})
-
-        print(self.all_objects, self.all_timestamps)
+        
+        print self.all_objects, self.all_timestamps
 
     def output_tree(self, atom,  tree,  bindings):
         vertex_name = str(tree)
-
+        
         # policy
         if self.compact_binary_links and len(bindings) == 2:
             self.writer.outputLinkEdge(atom,  label=vertex_name,  outgoing=bindings)
@@ -204,16 +204,16 @@ class ForestExtractor:
         # only useful for pathfinding visualization!
         #return atom.name.startswith('at ')
         return atom.is_a(t.StructureNode) or atom.is_a(t.BlockEntityNode) or atom.is_a(t.ObjectNode) or atom.is_a(t.SemeNode) or atom.is_a(t.TimeNode) or atom.name.startswith('at ') # or self.is_action_instance(atom)# or self.is_action_element(atom)
-
+        
     def is_action_instance(self, atom):        
         return atom.t == t.ConceptNode and len(atom.name) and atom.name[-1].isdigit()
-
+        
 #    def is_action_element(self, atom):
 #        return ':' in atom.name
-
+    
     #def is_important_atom(self, atom):
     #    return atom.name in ['actionFailed', 'actionDone'] or "DemandGoal" in atom.name
-
+    
     def object_label(self,  atom):
         return 'some_'+atom.type_name
 
@@ -222,7 +222,7 @@ class ForestExtractor:
         if atom.is_node():
             if (atom.name in self.unwanted_atoms or atom.name.startswith('id_CHUNK') or
                 atom.name.endswith('Stimulus') or atom.name.endswith('Modulator') or
-                    atom.is_a(t.VariableNode)):
+                atom.is_a(t.VariableNode)):
                 return False
         else:            
             if any([atom.is_a(ty) for ty in 
@@ -232,7 +232,7 @@ class ForestExtractor:
                 return False
 
         return True
-
+    
     def include_tree(self,  link):
         """Whether to make a separate tree corresponding to this link. If you don't, links in its outgoing set can
         still get their own trees."""
@@ -295,7 +295,7 @@ class ForestExtractor:
             for final_s in later:
                 if final_s not in ret:
                     ret.append(final_s)
-
+        
         return ret
 
 import pygephi
@@ -315,7 +315,7 @@ class GephiOutput:
 
     def outputNodeVertex(self, tr_a, label = None):
         a = atom_from_tree(tr_a,self._as)
-
+        
         assert a.is_node()
         if label==None:
             label = '%s:%s' % (a.name, a.type_name)
@@ -323,7 +323,7 @@ class GephiOutput:
         self.g.add_node(str(a.h.value()), label=label,  **self.node_attributes)
 
     def outputLinkEdge(self, a, label=None,outgoing=None):
-
+        
         assert a.is_link()
         assert len(a.out) == 2
         assert (label==None) == (outgoing==None)
@@ -340,19 +340,19 @@ class GephiOutput:
         out1 = atom_from_tree(out1_tr, self._as)
 
         (out0, out1) = out0.h.value(), out1.h.value()
-
+     
         self.g.add_edge(str(a.h.value()), out0, out1, directed=True, label=label)
-
+       
     def outputLinkVertex(self, a, label=None):
         #import code; code.interact(local=locals())
         #import ipdb; ipdb.set_trace()
         assert a.is_link()
-
+       
         if label==None:
             label = a.type_name
 
         self.g.add_node(str(a.h.value()), label=label, **self.node_attributes)
-
+   
     def outputLinkArgumentEdges(self,a, outgoing=None):
         '''a is an Atom but outgoing is a list of Trees.'''
         #import code; code.interact(local=locals())
@@ -374,10 +374,10 @@ class DottyOutput:
         self._as = space
 
     def start(self):
-        print("digraph OpenCog {")
+        print "digraph OpenCog {"
 
     def stop(self):
-        print("}")
+        print "}"
 
     def outputNodeVertex(self,a,label=None):
         assert a.is_node()
@@ -387,7 +387,7 @@ class DottyOutput:
         out = ""
         out+=str(a.h.value())+" "
         out+='[label="'+label+'"]'
-        print(out)
+        print out
 
     def outputLinkEdge(self,a, label=None,outgoing=None):
         assert a.is_link()
@@ -405,7 +405,7 @@ class DottyOutput:
         out = ""
         out+= str(out0) + '->' + str(out1) + ' '
         out+= '[label="' + label + '"]'
-        print(out)
+        print out
 
     def outputLinkVertex(self,a, label=None):
         assert a.is_link()
@@ -416,7 +416,7 @@ class DottyOutput:
         output = ""
         output+= str(a.h.value()) + " "
         output+= '[label="' + label + '" shape="diamond"]'
-        print(output)
+        print output
 
     def outputLinkArgumentEdges(self,a, outgoing=None):
         assert a.is_link()
@@ -431,7 +431,7 @@ class DottyOutput:
             output+= str(a.h.value())+"->"+str(outi.h.value())+' '
             output+= '[label="'+str(i)+'"]'
             output+= '\n'
-        print(output,)
+        print output,
 
 class SubdueTextOutput:
     def __init__(self,space):
@@ -443,7 +443,7 @@ class SubdueTextOutput:
         self.process = True
 
     def start(self):
-        print("XP")
+        print "XP"
 
     def stop(self):
         pass
@@ -458,7 +458,7 @@ class SubdueTextOutput:
         out = 'v %s "%s"' % (str(self.i), label)
 
         self.i+=1
-        print(out)
+        print out
 
     def outputLinkEdge(self,a, label=None,outgoing=None):
         assert a.is_link()
@@ -478,7 +478,7 @@ class SubdueTextOutput:
             out = 'd %s %s "%s"' %(str(out0), str(out1), label)
         else:
             out = 'u %s %s "%s"' %(str(out0), str(out1), label)
-        print(out)
+        print out
 
     def outputLinkVertex(self,a, label=None):
         assert a.is_link()
@@ -490,7 +490,7 @@ class SubdueTextOutput:
 
         output = 'v %s "%s"' % (str(self.i), label)
         self.i+=1
-        print(output)
+        print output
 
     def outputLinkArgumentEdges(self,a, outgoing=None):
         assert a.is_link()
@@ -511,10 +511,10 @@ class SubdueTextOutput:
                     output+= 'd %s %s "%s"\n' % (str(a_id), str(outi_id), str(i))
                 else:
                     output+= 'u %s %s "%s"\n' % (str(a_id), str(outi_id), str(i))
-        except KeyError as e:
-            print("%% Processing", str(a), "!!! Error - did not previously output the vertex for this link:", str(Atom(Handle(e.args[0]),  self._as)))
+        except KeyError, e:
+            print "%% Processing", str(a), "!!! Error - did not previously output the vertex for this link:", str(Atom(Handle(e.args[0]),  self._as))
 
-        print(output,)
+        print output,
 
 # Hacks
 class GephiMindAgent(opencog.cogserver.MindAgent):
@@ -525,20 +525,20 @@ class GephiMindAgent(opencog.cogserver.MindAgent):
 
         try:
             #import pdb; pdb.set_trace()
-            #            g = GraphConverter(atomspace,
-            #                FishgramFilter(atomspace,
-            #                SubdueTextOutput(atomspace)))
-            #            g.output()
+#            g = GraphConverter(atomspace,
+#                FishgramFilter(atomspace,
+#                SubdueTextOutput(atomspace)))
+#            g.output()
 
             te = ForestExtractor(atomspace, GephiOutput(atomspace))
             te.output()
-        except KeyError as e:
+        except KeyError,  e:
             KeyError
-        except Exception as e:
+        except Exception, e:
             import traceback; traceback.print_exc(file=sys.stdout)
         self.cycles+=1
 
-print(__name__)
+print __name__
 if __name__ == "__main__":
     a = AtomSpace()
     t=types
@@ -552,8 +552,8 @@ if __name__ == "__main__":
     obj1 = a.add_node(t.AccessoryNode, 'ball1')
     obj2 = a.add_node(t.StructureNode, 'tree1')
     next = a.add_link(t.EvaluationLink,
-                      [a.add_node(t.PredicateNode, 'next'),
-                       a.add_link(t.ListLink, [obj1, obj2])])
+                   [a.add_node(t.PredicateNode, 'next'),
+                    a.add_link(t.ListLink, [obj1, obj2])])
 
     next.tv = TruthValue(1, 1)
 
@@ -562,7 +562,7 @@ if __name__ == "__main__":
     time = a.add_link(t.AtTimeLink, [a.add_node(t.ConceptNode, "blast-off"), a.add_node(t.TimeNode, "t-0")])
 
     eval_arity1 = a.add_link(t.EvaluationLink, [a.add_node(t.PredicateNode, "is_edible"),
-                                                a.add_link(t.ListLink, [a.add_node(t.ConceptNode, "bowl123")])])
+                    a.add_link(t.ListLink, [a.add_node(t.ConceptNode, "bowl123")])])
     eval_arity1.tv = TruthValue(1,  1)
 
     #    f = FishgramFilter(a,SubdueTextOutput(a))

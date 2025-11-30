@@ -45,12 +45,12 @@ def output_atomspace(a, filename):
         f = open(filename, 'w')
         atoms = a.get_atoms_by_type(types.Atom)
         for atom in atoms:
-            print(atom)
-            print(>> f, atom)
+            print atom
+            print >> f, atom
             #print >> f, a.get_tv(atom.h).mean, a.get_tv(atom.h).count, a.get_tv(atom.h).confidence
         f.close()
-    except IOError as e:
-        print(e)
+    except IOError, e:
+        print e
         raise e
     finally:
         f.close()

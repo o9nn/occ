@@ -7,7 +7,7 @@ class IncrementalLearnerMcsMinimal(incLer.IncrementalLearnerBase):
 
     def triangulate(self, graph):
         def check(start,goal):
-            #            return True
+#            return True
             def is_goal(node):
                 return node == goal
             def get_successors(node):
@@ -102,9 +102,9 @@ if __name__ == "__main__":
 #        print (e[0].nodes(),e[1].nodes())
 
     t_mpd = il.construct_mpd_tree(t_min,gm)
-    print('Nodes of junction tree:')
+    print 'Nodes of junction tree:'
     for n in t_mpd.nodes_iter():
-        print(n.nodes())
-    print('Edges of junction tree:')
+        print n.nodes()
+    print 'Edges of junction tree:'
     for e in t_mpd.edges_iter():
-        print((e[0].nodes(),e[1].nodes()))
+        print (e[0].nodes(),e[1].nodes())
