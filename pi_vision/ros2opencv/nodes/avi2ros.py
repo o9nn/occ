@@ -33,50 +33,50 @@ from cv_bridge import CvBridge, CvBridgeError
 class AVI2ROS:
     def __init__(self):
         rospy.init_node('avi2ros', anonymous=True)
-
+        
         self.input = rospy.get_param("~input", "")
         image_pub = rospy.Publisher("output", Image)
-
+        
         self.fps = rospy.get_param("~fps", 25)
         self.loop = rospy.get_param("~loop", False)
         self.width = rospy.get_param("~width", "")
         self.height = rospy.get_param("~height", "")
         self.start_paused = rospy.get_param("~start_paused", False)
         self.show_text = True
-
+        
         rospy.on_shutdown(self.cleanup)
-
+        
         video = cv.CaptureFromFile(self.input)
         fps = int(cv.GetCaptureProperty(video, cv.CV_CAP_PROP_FPS))
-
+        
         """ Bring the fps up to the specified rate """
         try:
             fps = int(fps * self.fps / fps)
         except:
             fps = self.fps
-
+    
         cv.NamedWindow("AVI Video", True) # autosize the display
         cv.MoveWindow("AVI Video", 650, 100)
 
         bridge = CvBridge()
-
+                
         self.paused = self.start_paused
         self.keystroke = None
         self.restart = False
-
+        
         # Get the first frame to display if we are starting in the paused state.
         frame = cv.QueryFrame(video)
         image_size = cv.GetSize(frame)
-
+        
         if self.width and self.height and (self.width != image_size[0] or self.height != image_size[1]):
             rospy.loginfo("Resizing! " + str(self.width) + " x " + str(self.height))
             resized_frame = cv.CreateImage((self.width, self.height), frame.depth, frame.channels)
             cv.Resize(frame, resized_frame)
             frame = cv.CloneImage(resized_frame)
-
+                        
         text_frame = cv.CloneImage(frame)
         cv.Zero(text_frame)
-
+    
         while not rospy.is_shutdown():
             """ Handle keyboard events """
             self.keystroke = cv.WaitKey(1000 / fps)
@@ -96,18 +96,18 @@ class AVI2ROS:
                 elif cc == 't':
                     """ Toggle display of text help message """
                     self.show_text = not self.show_text
-
+                
             if self.restart:
                 video = cv.CaptureFromFile(self.input)
                 self.restart = None
-
+    
             if not self.paused:
                 frame = cv.QueryFrame(video)
                 if frame and self.width and self.height:
                     if self.width != image_size[0] or self.height != image_size[1]:
                         cv.Resize(frame, resized_frame)
                         frame = cv.CloneImage(resized_frame)
-
+                
             if frame == None:
                 if self.loop:
                     self.restart = True
@@ -121,32 +121,32 @@ class AVI2ROS:
                     cv.PutText(text_frame, "     r - restart video from beginning", (20, int(frame_size[1] * 0.79)), text_font, cv.RGB(255, 255, 0))
                     cv.PutText(text_frame, "     t - hide/show this text", (20, int(frame_size[1] * 0.86)), text_font, cv.RGB(255, 255, 0))
                     cv.PutText(text_frame, "     q - quit the program", (20, int(frame_size[1] * 0.93)), text_font, cv.RGB(255, 255, 0))
-
+                
                 cv.Add(frame, text_frame, text_frame)
                 cv.ShowImage("AVI Video", text_frame)
                 cv.Zero(text_frame)
-
+                
                 try:
                     image_pub.publish(bridge.cv_to_imgmsg(frame, "bgr8"))
-                except CvBridgeError as e:
-                    print(e)
-
+                except CvBridgeError, e:
+                    print e         
+    
     def cleanup(self):
-        print("Shutting down vision node.")
-        cv.DestroyAllWindows()
+            print "Shutting down vision node."
+            cv.DestroyAllWindows()
 
 def main(args):
     help_message =  "Hot keys: \n" \
-        "\tq     - quit the program\n" \
-        "\tr     - restart video from beginning\n" \
-        "\tspace - toggle pause/play\n"
+          "\tq     - quit the program\n" \
+          "\tr     - restart video from beginning\n" \
+          "\tspace - toggle pause/play\n"
 
-    print(help_message)
-
+    print help_message
+    
     try:
         a2r = AVI2ROS()
     except KeyboardInterrupt:
-        print("Shutting down avi2ros...")
+        print "Shutting down avi2ros..."
         cv.DestroyAllWindows()
 
 if __name__ == '__main__':
