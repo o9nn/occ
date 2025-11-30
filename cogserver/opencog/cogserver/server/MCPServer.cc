@@ -16,11 +16,12 @@
 
 #include <opencog/cogserver/server/CogServer.h>
 #include <opencog/cogserver/server/MCPServer.h>
-#include <opencog/cogserver/shell/McpEval.h>
+#include <opencog/cogserver/mcp-eval/McpEval.h>
 
 using namespace opencog;
 
-MCPServer::MCPServer(CogServer& cs) :
+MCPServer::MCPServer(CogServer& cs, SocketManager* mgr) :
+	ConsoleSocket(mgr),
 	_cserver(cs)
 {
 	_eval = nullptr;
@@ -71,7 +72,7 @@ void MCPServer::OnLine(const std::string& line)
 	// assumption for the base design. However, the MCP proxying breaks
 	// this assumption, so the code below loops, handing off each object
 	// that it finds. Its ... necessarily slow, because it passes over
-	// all the data cahracter by character, and then does some string
+	// all the data character by character, and then does some string
 	// copies. So taht's pretty dumb. For for now, I simply don't care.
 	// If you need a high-speed interface, use the sexpr API, not the
 	// JSON API.
