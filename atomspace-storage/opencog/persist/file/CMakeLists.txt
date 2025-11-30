@@ -1,10 +1,16 @@
 
+# The storage_types.h file is written to the build directory
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR})
+
 # -------------------------------
 # File-specific code.
 
 ADD_LIBRARY (fast_load_scm SHARED
 	fast_load.cc
 )
+
+# Without this, parallel make will race and crap up the generated files.
+ADD_DEPENDENCIES(fast_load_scm storage_types)
 
 TARGET_LINK_LIBRARIES(fast_load_scm
 	sexcom
@@ -27,8 +33,10 @@ ADD_LIBRARY (persist-file SHARED
 	PersistFileSCM.cc
 )
 
+# Without this, parallel make will race and crap up the generated files.
+ADD_DEPENDENCIES(persist-file storage_types)
+
 TARGET_LINK_LIBRARIES(persist-file
-	persist
 	storage-types
 	fast_load_scm
 	sexcom
