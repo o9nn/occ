@@ -23,26 +23,26 @@
 ;; value setter.  This is unintuitive to the casual user!
 (define (make-atoms N)
 	(define x (Concept "foo"))
-	(cog-set-value! x (Predicate "gee") (ctv 1 0 N))
+	(cog-set-value! x (Predicate "gee") (FloatValue 1 0 N))
 
 	(define y (Concept "bar"))
-	(cog-set-value! y (Predicate "gosh") (ctv 1 0 (+ 1 N)))
+	(cog-set-value! y (Predicate "gosh") (FloatValue 1 0 (+ 1 N)))
 
 	(define z (List x y))
-	(cog-set-value! z (Predicate "bang") (ctv 1 0 (+ 2 N)))
+	(cog-set-value! z (Predicate "bang") (FloatValue 1 0 (+ 2 N)))
 
 	; A different code-branch is taken, when a link contains other links.
 	(define w (List z x))
-	(cog-set-value! w (Predicate "bash") (ctv 1 0 (+ 3 N)))
+	(cog-set-value! w (Predicate "bash") (FloatValue 1 0 (+ 3 N)))
 )
 
 ; Recursive calls to above
 (define (recompute N NLOOP)
 	(when (< 0 NLOOP)
 		(make-atoms N)
-		(cog-set-atomspace! (cog-new-atomspace (cog-atomspace)))
+		(cog-set-atomspace! (AtomSpace (cog-atomspace)))
 		(cog-extract-recursive! (Concept "bar"))
-		(cog-set-atomspace! (cog-new-atomspace (cog-atomspace)))
+		(cog-set-atomspace! (AtomSpace (cog-atomspace)))
 		(recompute (+ N 3) (- NLOOP 1)))
 )
 

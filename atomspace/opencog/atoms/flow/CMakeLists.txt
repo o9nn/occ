@@ -3,22 +3,22 @@
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_LIBRARY (atomflow
+	AtomSpaceOfLink.cc
 	CollectionOfLink.cc
 	ConcatenateLink.cc
+	DrainLink.cc
 	FilterLink.cc
-	FormulaPredicateLink.cc
+	GlobMatch.cc
 	IncomingOfLink.cc
 	IncrementValueLink.cc
+	JsonSplitLink.cc
+	KeysOfLink.cc
 	LinkSignatureLink.cc
-	NumberOfLink.cc
-	PromiseLink.cc
-	SetTVLink.cc
+	MessagesOfLink.cc
 	SetValueLink.cc
 	SizeOfLink.cc
 	SplitLink.cc
 	StreamValueOfLink.cc
-	StringOfLink.cc
-	TruthValueOfLink.cc
 	TypeOfLink.cc
 	ValueOfLink.cc
 	ValueShimLink.cc
@@ -28,6 +28,7 @@ ADD_LIBRARY (atomflow
 ADD_DEPENDENCIES(atomflow opencog_atom_types)
 
 TARGET_LINK_LIBRARIES(atomflow
+	signature
 	atomcore
 	atombase
 	${COGUTIL_LIBRARY}
@@ -38,22 +39,22 @@ INSTALL (TARGETS atomflow EXPORT AtomSpaceTargets
 )
 
 INSTALL (FILES
+	AtomSpaceOfLink.h
 	CollectionOfLink.h
 	ConcatenateLink.h
+	DrainLink.h
 	FilterLink.h
-	FormulaPredicateLink.h
+	GlobMatch.h
 	IncomingOfLink.h
 	IncrementValueLink.h
+	JsonSplitLink.h
+	KeysOfLink.h
 	LinkSignatureLink.h
-	NumberOfLink.h
-	PromiseLink.h
-	SetTVLink.h
+	MessagesOfLink.h
 	SetValueLink.h
 	SizeOfLink.h
 	SplitLink.h
 	StreamValueOfLink.h
-	StringOfLink.h
-	TruthValueOfLink.h
 	TypeOfLink.h
 	ValueOfLink.h
 	ValueShimLink.h

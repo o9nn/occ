@@ -8,25 +8,27 @@
 
 (opencog-test-runner)
 
-(define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
+(define pk (Predicate "foobar"))
+(define (set-cnt! ATOM FV) (cog-set-value! ATOM pk FV))
+(define (get-cnt ATOM) (inexact->exact (cog-value-ref (cog-value ATOM pk) 2)))
 
 ; -------------------------------------------------------------------
 ; Common setup, used by all tests.
 
 (define base-space (cog-atomspace))
-(define mid1-space (cog-new-atomspace base-space))
-(define mid2-space (cog-new-atomspace mid1-space))
-(define surface-space (cog-new-atomspace mid2-space))
+(define mid1-space (AtomSpace base-space))
+(define mid2-space (AtomSpace mid1-space))
+(define surface-space (AtomSpace mid2-space))
 
 ; Splatter some atoms into the various spaces.
 (cog-set-atomspace! base-space)
-(Concept "foo" (ctv 1 0 3))
+(set-cnt! (Concept "foo") (FloatValue 1 0 3))
 
 (cog-set-atomspace! mid1-space)
-(Concept "bar" (ctv 1 0 4))
+(set-cnt! (Concept "bar") (FloatValue 1 0 4))
 
 (cog-set-atomspace! mid2-space)
-(ListLink (Concept "foo") (Concept "bar") (ctv 1 0 5))
+(set-cnt! (ListLink (Concept "foo") (Concept "bar")) (FloatValue 1 0 5))
 
 (cog-set-atomspace! surface-space)
 (List (Concept "foo") (Concept "x"))
@@ -57,7 +59,7 @@
 
 ; Alter counts in the outgoing set.
 ; The new ListLink should pick up the counts on the deeper one.
-(Concept "foo" (ctv 1 0 9))
+(set-cnt! (Concept "foo") (FloatValue 1 0 9))
 (define lifnd (cog-link 'ListLink (Concept "foo") (Concept "bar")))
 (define litop (ListLink (Concept "foo") (Concept "bar")))
 
