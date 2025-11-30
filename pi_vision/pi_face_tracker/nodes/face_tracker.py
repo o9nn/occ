@@ -451,11 +451,11 @@ class FaceTracker(ROS2OpenCV):
         faces =[]
         for f in self.faces.keys():
             #if self.faces[f].is_trackable():
-            face = Face()
-            face.id = f
-            face.point = self.faces[f].get_filtered_3d_point()
-            face.attention = self.faces[f].attention
-            faces.append(face)
+                face = Face()
+                face.id = f
+                face.point = self.faces[f].get_filtered_3d_point()
+                face.attention = self.faces[f].attention
+                faces.append(face)
         # Dispatch ROS event
         #print("publish TOPIC_FACES count=" + str(len(faces)))
         msg = Faces()
