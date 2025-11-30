@@ -74,7 +74,6 @@ Dispatcher::Dispatcher(void)
 	MASH(recur, "cog-extract-recursive!", cog_extract_recursive);
 	MASH(stval, "cog-set-value!",         cog_set_value);
 	MASH(svals, "cog-set-values!",        cog_set_values);
-	MASH(settv, "cog-set-tv!",            cog_set_tv);
 
 	MASH(dfine, "define",                 cog_define);
 	MASH(ping,  "ping)",                  cog_ping);
@@ -108,10 +107,14 @@ std::string Dispatcher::interpret_command(const std::string& cmd)
 
 	pos ++; // Skip over the open-paren
 
-	size_t epos = cmd.find_first_of(" \n\t", pos);
+	size_t epos = cmd.find_first_of(" \n\t)", pos);
 	if (std::string::npos == epos)
 		throw SyntaxException(TRACE_INFO, "Not a command: %s",
 			cmd.c_str());
+
+	// Argh. The sexpr websockets sends `(cog-version)` with no
+	// newline. Deal with it. Arghhh.
+	if (cmd[epos] == ')') epos++;
 
 	// Look up the method to call, based on the hash of the command string.
 	size_t action = std::hash<std::string>{}(cmd.substr(pos, epos-pos));

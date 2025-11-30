@@ -11,7 +11,10 @@ from cython.operator cimport dereference as deref
 
 from opencog.atomspace import types
 from opencog.atomspace import regenerate_types
-from opencog.utilities import add_node, add_link
+
+# These are imported so that they become available to the
+# autogened type constructors.
+from opencog.type_ctors import add_node, add_link
 
 # The list of Atom Types that python knows about has to be rebuilt,
 # before much else can be done.
@@ -19,11 +22,11 @@ regenerate_types()
 
 include "opencog/persist/storage/storage_types.pyx"
 
-from opencog.atomspace cimport AtomSpace
+from opencog.atomspace cimport AtomSpace, cAtomSpace
 # from opencog.storage cimport c_load_file
 
 def load_file(path, AtomSpace atomspace):
 	cdef string p = path.encode('utf-8')
-	c_load_file(p, deref(atomspace.atomspace))
+	c_load_file(p, deref(<cAtomSpace*>atomspace.shared_ptr.get()))
 
 # -----------------------------------------
