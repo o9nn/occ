@@ -115,14 +115,15 @@ jobs:
           # --no-grafts: Skip grafting (security updates) for faster builds
           # --verbosity=1: Show progress without overwhelming logs
           # --cores=0: Use all available CPU cores
-          guix build -f guix.scm --verbosity=1 --no-grafts --cores=0 | tee build-output.log
+          # guix build -f guix.scm --verbosity=1 --no-grafts --cores=0 | tee build-output.log
+          guix build guix.scm
           
           # Store the build result path for artifact upload
-          if [ -f build-output.log ]; then
-            BUILD_RESULT=$(tail -1 build-output.log)
-            echo "BUILD_RESULT=$BUILD_RESULT" >> $GITHUB_ENV
-            echo "Build completed successfully: $BUILD_RESULT"
-          fi
+          # if [ -f build-output.log ]; then
+          #  BUILD_RESULT=$(tail -1 build-output.log)
+          #  echo "BUILD_RESULT=$BUILD_RESULT" >> $GITHUB_ENV
+          #  echo "Build completed successfully: $BUILD_RESULT"
+          # fi
           
       - name: Upload build artifacts
         if: steps.guix-build.outcome == 'success' && env.BUILD_RESULT != ''
