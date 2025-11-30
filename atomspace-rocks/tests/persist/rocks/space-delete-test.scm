@@ -7,7 +7,7 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-space-delete-test")
 
 (opencog-test-runner)
 
@@ -16,25 +16,25 @@
 
 (define (setup-and-store)
 	(define base-space (cog-atomspace))
-	(define mid1-space (cog-new-atomspace base-space))
-	(define mid2-space (cog-new-atomspace mid1-space))
-	(define surface-space (cog-new-atomspace mid2-space))
+	(define mid1-space (AtomSpace base-space))
+	(define mid2-space (AtomSpace mid1-space))
+	(define surface-space (AtomSpace mid2-space))
 
 	; Splatter some atoms into the various spaces.
 	(cog-set-atomspace! base-space)
-	(Concept "foo" (ctv 1 0 3))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 3))
 
 	(cog-set-atomspace! mid1-space)
-	(Concept "bar" (ctv 1 0 4))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 4))
 
 	(cog-set-atomspace! mid2-space)
-	(ListLink (Concept "foo") (Concept "bar") (ctv 1 0 5))
+	(set-cnt! (ListLink (Concept "foo") (Concept "bar")) (FloatValue 1 0 5))
 
 	(cog-set-atomspace! surface-space)
 
 	; Store the content. Store the Concepts as well as the link,
 	; as otherwise, the TV's on the Concepts aren't stored.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-delete-test"))
 	(cog-open storage)
 	(store-frames surface-space)
 	(store-atom (ListLink (Concept "foo") (Concept "bar")))
@@ -55,10 +55,10 @@
 (define (delete-top-frame)
 
 	; Start with a blank slate.
-	(cog-set-atomspace! (cog-new-atomspace))
+	(cog-set-atomspace! (AtomSpace))
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-delete-test"))
 	(cog-open storage)
 	; (cog-rocks-print storage "")
 
@@ -70,8 +70,6 @@
 ; -------------------------------------------------------------------
 ; Test that frames can be deleted.
 
-(define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
-
 ; Return depth of the atomspace.
 (define (count-depth space cnt)
 	(if (< 0 (length (cog-outgoing-set space)))
@@ -81,7 +79,7 @@
 (define (test-delete-frame)
 	(setup-and-store)
 
-	; (cog-rocks-open "rocks:///tmp/cog-rocks-unit-test")
+	; (cog-rocks-open "rocks:///tmp/cog-rocks-space-delete-test")
 	; (cog-rocks-stats)
 	; (cog-rocks-get "")
 	; (cog-rocks-close)
@@ -95,11 +93,11 @@
 	; reference, and (this is important) **make sure** the ref
 	; is actually referenced at the very end, i.e. so that it does
 	; not accidentally go out of scope!
-	(define keep-me-around (cog-new-atomspace))
+	(define keep-me-around (AtomSpace))
 	(cog-set-atomspace! keep-me-around)
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-delete-test"))
 	(cog-open storage)
 	(define top-space (car (load-frames)))
 	(cog-set-atomspace! top-space)
@@ -111,7 +109,7 @@
 	(delete-top-frame)
 
 	; Load everything. Again.
-	(cog-set-atomspace! (cog-new-atomspace))
+	(cog-set-atomspace! (AtomSpace))
 	(cog-open storage)
 	(set! top-space (car (load-frames)))
 	(cog-set-atomspace! top-space)
@@ -123,7 +121,7 @@
 	(delete-top-frame)
 
 	; Load everything. Again.
-	(cog-set-atomspace! (cog-new-atomspace))
+	(cog-set-atomspace! (AtomSpace))
 	(cog-open storage)
 	(set! top-space (car (load-frames)))
 	(cog-set-atomspace! top-space)
@@ -157,5 +155,5 @@
 (test-end delete-frame)
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-space-delete-test")
 (opencog-test-end)
