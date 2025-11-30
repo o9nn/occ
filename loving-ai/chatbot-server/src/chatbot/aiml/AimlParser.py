@@ -156,7 +156,7 @@ class AimlHandler(ContentHandler):
         # process this start-element.
         try:
             self._startElement(name, attr)
-        except AimlParserError as msg:
+        except AimlParserError, msg:
             # Print the error message
             logger.error("PARSE ERROR: %s" % msg)
 
@@ -299,7 +299,7 @@ class AimlHandler(ContentHandler):
             return
         try:
             self._characters(ch)
-        except AimlParserError as msg:
+        except AimlParserError, msg:
             # Print the message
             logger.error("PARSE ERROR: %s" % msg)
             self._numParseErrors += 1  # increment error count
@@ -391,7 +391,7 @@ class AimlHandler(ContentHandler):
             return
         try:
             self._endElement(name)
-        except AimlParserError as msg:
+        except AimlParserError, msg:
             # Print the message
             logger.error("PARSE ERROR: %s" % msg)
             self._numParseErrors += 1  # increment error count

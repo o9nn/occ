@@ -89,7 +89,7 @@ class PatternMgr:
             marshal.dump(self._botName, outFile)
             marshal.dump(self._root, outFile)
             outFile.close()
-        except Exception as e:
+        except Exception, e:
             logger.error("Error saving PatternMgr to file %s:" % filename)
             raise Exception, e
 
@@ -101,7 +101,7 @@ class PatternMgr:
             self._botName = marshal.load(inFile)
             self._root = marshal.load(inFile)
             inFile.close()
-        except Exception as e:
+        except Exception, e:
             logger.error("Error restoring PatternMgr from file %s:" % filename)
             raise Exception, e
 
