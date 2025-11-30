@@ -34,7 +34,7 @@ class FishgramTest(TestCase):
         self.space = AtomSpace()
         self.fishgram = fishgram.Fishgram(self.space)
         add_fishgram_data(self.space)
-
+        
         tempfd, self.tempfn = tempfile.mkstemp()
         # close the temp file as Logger will want to manually
         # open it
@@ -46,14 +46,14 @@ class FishgramTest(TestCase):
         pass
 
     def test_bfs(self):
-        #        conj = (
-        #            a.add(t.AtTimeLink, out=[a.add(t.EvaluationLink, out=[a.add(t.PredicateNode, 'increased'), a.add(t.ListLink, out=[a.add(t.EvaluationLink, out=[a.add(t.PredicateNode, 'EnergyDemandGoal'), a.add(t.ListLink, out=[])])])]), a.add(t.TimeNode, '11210347010')]),
-        #            a.add(t.AtTimeLink, out=[a.add(t.EvaluationLink, out=[a.add(t.PredicateNode, 'actionDone'), a.add(t.ListLink, out=[a.add(t.ExecutionLink, out=[a.add(t.GroundedSchemaNode, 'eat'), a.add(t.ListLink, out=[a.add(t.AccessoryNode, 'id_-54646')])])])]), a.add(t.TimeNode, '11210347000')]),
-        #            a.add(t.SequentialAndLink, out=[a.add(t.TimeNode, '11210347000'), a.add(t.TimeNode, '11210347010')])
-        #            )
-        #        conj = tuple(map(tree.tree_from_atom, conj))
+#        conj = (
+#            a.add(t.AtTimeLink, out=[a.add(t.EvaluationLink, out=[a.add(t.PredicateNode, 'increased'), a.add(t.ListLink, out=[a.add(t.EvaluationLink, out=[a.add(t.PredicateNode, 'EnergyDemandGoal'), a.add(t.ListLink, out=[])])])]), a.add(t.TimeNode, '11210347010')]),
+#            a.add(t.AtTimeLink, out=[a.add(t.EvaluationLink, out=[a.add(t.PredicateNode, 'actionDone'), a.add(t.ListLink, out=[a.add(t.ExecutionLink, out=[a.add(t.GroundedSchemaNode, 'eat'), a.add(t.ListLink, out=[a.add(t.AccessoryNode, 'id_-54646')])])])]), a.add(t.TimeNode, '11210347000')]),
+#            a.add(t.SequentialAndLink, out=[a.add(t.TimeNode, '11210347000'), a.add(t.TimeNode, '11210347010')])
+#            )
+#        conj = tuple(map(tree.tree_from_atom, conj))
 
-        #res = tree.find_conj(conj,a.get_atoms_by_type(t.Atom))
+#res = tree.find_conj(conj,a.get_atoms_by_type(t.Atom))
         pass
 
 

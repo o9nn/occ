@@ -5,4 +5,4 @@ from opencog.cogserver import MindAgent
 class TheEyeAgent(MindAgent):
 
     def run(self, atomspace):
-        print('Hello!')
+        print 'Hello!'

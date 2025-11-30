@@ -145,14 +145,14 @@ if __name__ == '__main__':
         p = ''
         for point in [event.a, event.b, event.beginning, event.ending]:
             p += str((point - A.a) / (A.beginning - A.a)) + ', '
-        print(p)
+        print p
 
     # A = TemporalEventTrapezium(0, 30, 10, 20)
     # B = TemporalEventTrapezium(1, 9, 2, 8)
     # C = TemporalEventTrapezium(0, 30, 10, 20)
 
     actual_solution = (A * C).to_vector()
-    print('Actual\n', actual_solution)
+    print 'Actual\n', actual_solution
 
     goal = []
     events = {'A': A, 'B': B, 'C': C}
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     solutions = search_tree.find_solutions(rails)
     average_solution = numpy.zeros(13)
 
-    print('Solutions')
+    print 'Solutions'
     for railway_system in solutions:
         railway_system.compress()
         estimate = []
@@ -182,7 +182,7 @@ if __name__ == '__main__':
         C = convert_rail_to_trapezium_event(railway_system, 'C')
 
         solution = (A * C).to_vector()
-        print(solution)
+        print solution
         average_solution += solution / len(solutions)
 
         events = {'A': A, 'B': B, 'C': C}
@@ -194,6 +194,6 @@ if __name__ == '__main__':
                     estimate.append(relation)
         # print goal - numpy.array(estimate)
 
-    print(compute_railway_strength(solutions, goals=[('A', 'C')]))
-    print('Average\n', average_solution)
-    print('Error\n', actual_solution - average_solution)
+    print compute_railway_strength(solutions, goals=[('A', 'C')])
+    print 'Average\n', average_solution
+    print 'Error\n', actual_solution - average_solution

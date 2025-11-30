@@ -66,7 +66,7 @@ def generate_random_relations_file(size=20):
 
         percentage = (size - i + 1) / float(size) * 100
         if (size - i + 1) % 10**3 == 0:
-            print('%' + str(int(percentage)))
+            print '%' + str(int(percentage))
         i -= 1
 
 
@@ -111,9 +111,9 @@ def classify(size=10000, iterable=None):
 
     for i, row in enumerate(csv_reader):
         if i > size - 1:
-            print('number of classes:', len(classes))
+            print 'number of classes:', len(classes)
             for class_type in classes:
-                print(classes[class_type][0].type, len(classes[class_type]))
+                print classes[class_type][0].type, len(classes[class_type])
             return classes
         relation = TemporalRelation.from_list(row)
         if relation.type not in classes:
@@ -121,9 +121,9 @@ def classify(size=10000, iterable=None):
         else:
             classes[relation.type].append(relation)
 
-    print('number of classes:', len(classes))
+    print 'number of classes:', len(classes)
     for class_type in classes:
-        print(classes[class_type][0].type, len(classes[class_type]))
+        print classes[class_type][0].type, len(classes[class_type])
     return classes
 
 
@@ -157,17 +157,17 @@ def learn(size=10000):
         test_x.append([relation['O'], relation['M']])
         test_y.append(relation['P'])
 
-    print('\n', '///////// tests ////////')
+    print '\n', '///////// tests ////////'
 
     for i in xrange(5):
-        print('learning', clf.predict(train_x[i]))
-        print('actual', train_y[i], '\n-------------\n')
+        print 'learning', clf.predict(train_x[i])
+        print 'actual', train_y[i], '\n-------------\n'
 
-    print('***************************')
+    print '***************************'
 
     for i in xrange(5):
-        print('learning', clf.predict(test_x[i]))
-        print('actual', test_y[i], '\n-------------\n')
+        print 'learning', clf.predict(test_x[i])
+        print 'actual', test_y[i], '\n-------------\n'
 
 
 def learn_all(size=10000):
@@ -198,16 +198,16 @@ def learn_all(size=10000):
         test_x.append(numpy.array([relation['F']]))
         test_y.append(numpy.array([relation['o']]))
 
-    print('\n', '///////// tests ////////')
+    print '\n', '///////// tests ////////'
 
     for i in xrange(5):
-        print('F:', train_x[i])
-        print('learning', clf.predict(train_x[i]))
-        print('actual', train_y[i], '\n-------------\n')
+        print 'F:', train_x[i]
+        print 'learning', clf.predict(train_x[i])
+        print 'actual', train_y[i], '\n-------------\n'
 
-    print('***************************')
+    print '***************************'
 
     for i in xrange(5):
-        print('F:', test_x[i])
-        print('learning', clf.predict(test_x[i]))
-        print('actual', test_y[i], '\n-------------\n')
+        print 'F:', test_x[i]
+        print 'learning', clf.predict(test_x[i])
+        print 'actual', test_y[i], '\n-------------\n'

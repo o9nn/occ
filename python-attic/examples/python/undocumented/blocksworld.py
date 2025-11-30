@@ -58,16 +58,16 @@ def new_rule(atomspace, action_str, pre_str, post_str):
     postconditions = parse_conditions_list(vars, post_str)
 
     pil = T('PredictiveImplicationLink',
-            T('SimultaneousAndLink',
-              preconditions
-              ),
-            T('SimultaneousAndLink',
-              postconditions
-              )
-            )
+        T('SimultaneousAndLink',
+            preconditions
+        ),
+        T('SimultaneousAndLink',
+            postconditions
+        )
+    )
     atom_from_tree(pil, atomspace).tv = TruthValue(1, TruthValue().confidence_to_count(1))
 
-    print(pil)
+    print pil
     return pil
 
 
@@ -124,33 +124,33 @@ def blocksworld_rules(atomspace):
 #    ('stack',top, bottom)
 #    )
     new_rule(atomspace,
-             'unstack top bottom',
-             'clear top | on top bottom | handempty',
-             'holding top | clear bottom | ~clear top | ~on top bottom | ~handempty'
-             )
+        'unstack top bottom',
+        'clear top | on top bottom | handempty',
+        'holding top | clear bottom | ~clear top | ~on top bottom | ~handempty'
+    )
 
     new_rule(atomspace,
-             'stack top bottom',
-             'holding top | clear bottom',
-             'on top bottom | clear top | handempty | ~holding top | ~clear bottom'
-             )
+        'stack top bottom',
+        'holding top | clear bottom',
+        'on top bottom | clear top | handempty | ~holding top | ~clear bottom'
+    )
 
     new_rule(atomspace,
-             'pickup block',
-             'ontable block | clear block | handempty',
-             'holding block | ~ontable block | ~clear block | ~handempty'
-             )
+        'pickup block',
+        'ontable block | clear block | handempty',
+        'holding block | ~ontable block | ~clear block | ~handempty'
+    )
 
     new_rule(atomspace,
-             'putdown block',
-             'holding block',
-             'ontable block | clear block | handempty | ~holding block'
-             )
+        'putdown block',
+        'holding block',
+        'ontable block | clear block | handempty | ~holding block'
+    )
 
     initial_conditions_and = T('SimultaneousAndLink',
-                               #parse_conditions_list(blocks, 'on C A | handempty | ontable A | ontable B | clear B | clear C')
-                               parse_conditions_list(blocks, 'ontable C | handempty | ontable A | ontable B | clear B | clear C')
-                               )
+        #parse_conditions_list(blocks, 'on C A | handempty | ontable A | ontable B | clear B | clear C')
+        parse_conditions_list(blocks, 'ontable C | handempty | ontable A | ontable B | clear B | clear C')
+    )
     atom = atom_from_tree(initial_conditions_and, atomspace)
     atom.tv = TruthValue(1, TruthValue().confidence_to_count(1))
 
@@ -161,9 +161,9 @@ def blocksworld_test(atomspace):
     import logic
 
     target_tr = T('SimultaneousAndLink',
-                  #parse_conditions_list(blocks, 'on A B | on B C')
-                  parse_conditions_list(blocks, 'on A B')
-                  )
+        #parse_conditions_list(blocks, 'on A B | on B C')
+        parse_conditions_list(blocks, 'on A B')
+    )
 
     c = logic.Chainer(atomspace)
 
@@ -171,6 +171,6 @@ def blocksworld_test(atomspace):
 
     f = '<blocksworld_test>'
     if len(res):
-        print('PASSED')
+        print 'PASSED'
     else:
-        print('FAILED')
+        print 'FAILED'
