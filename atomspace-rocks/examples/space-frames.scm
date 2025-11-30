@@ -9,8 +9,8 @@
 ; "Kripke frame": each frame is a changeset, a delta, of all changes to
 ; the AtomSpace, sitting atop of a stack (or DAG) of AtomSpace
 ; changesets underneath. So, much like git changesets, each layered on
-; the last, and git branches, offering different merged histories of
-; changes, with the ability to explore each changeset, individually.
+; the last, and, like git branches, offering different merged histories
+; of changes, with the ability to explore each changeset, individually.
 ;
 ; Why is this useful? Several examples:
 ;
@@ -33,7 +33,14 @@
 ; AtomSpace Frame provides a place to record that context-specific
 ; knowledge: a different set of Atoms, and different Values attached to
 ; each Atom.
-
+;
+; One word of caution: Using frames can have significant impacts on
+; performance. This is not so much in storage, as in the AtomSpace
+; itself. If an atom is not immediately found in the top-most layer,
+; then progressively deeper layers must be searched. This can add up.
+; However, actual performance is very imlementation-dependent, and may
+; have changed substantially since this note was written! YMMV!
+;
 ; -------------------------------------------------------------------
 ; General boilerplate & setup.
 
@@ -64,22 +71,22 @@
 
 	; Splatter some atoms into the various spaces. Place some values on
 	; each, so that later one, we can verify the the restored spaces.
-	; Recall that `ctv` is short for `CountTruthValue`: its just a list
-   ; of three numbers.
 	(cog-set-atomspace! base-space)
-	(Concept "foo" (ctv 1 0 3))
+	(cog-set-value! (Concept "foo") (Predicate "key") (FloatValue 1 0 3))
 	(store-atom (Concept "foo"))
 
 	(cog-set-atomspace! mid1-space)
-	(Concept "bar" (ctv 1 0 4))
+	(cog-set-value! (Concept "bar") (Predicate "key") (FloatValue 1 0 4))
 	(store-atom (Concept "bar"))
 
 	(cog-set-atomspace! mid2-space)
-	(store-atom (ListLink (Concept "foo") (Concept "bar") (ctv 1 0 5)))
+	(cog-set-value! (ListLink (Concept "foo") (Concept "bar")
+		(Predicate "key") (FloatValue 1 0 5)))
+	(store-atom (ListLink (Concept "foo") (Concept "bar")))
 
 	; Change the ctv on `foo`. This will hade the earlier value.
 	(cog-set-atomspace! mid3-space)
-	(Concept "foo" (ctv 6 22 42))
+	(cog-set-value! (Concept "foo") (Predicate "key") (FloatValue 6 22 42))
 	(store-atom (Concept "foo"))
 
 	; Close storage
@@ -161,18 +168,20 @@
 (define (check-equal MSG A B)
 	(format #t "For ~A, expecting: ~A-- Got: ~A\n" MSG A B))
 
+(define (get-val ATM) (cog-vale ATM (Predicate "key")))
+
 ; Lets take a look at the TV on `foo` in the base space.
 (cog-set-atomspace! base-space)
-(check-equal "foo-tv in base" (ctv 1 0 3) (cog-tv (Concept "foo")))
+(check-equal "foo-tv in base" (FloatValue 1 0 3) (get-val (Concept "foo")))
 
 ; How aout on top?
 (cog-set-atomspace! surface-space)
-(check-equal "foo-tv on top" (ctv 6 22 42) (cog-tv (Concept "foo")))
+(check-equal "foo-tv on top" (FloatValue 6 22 42) (get-val (Concept "foo")))
 
 ; How about the others?
-(check-equal "bar-tv" (ctv 1 0 4) (cog-tv (Concept "bar")))
-(check-equal "lilly-tv" (ctv 1 0 5) (cog-tv lilly))
-(check-equal "top-tv" (ctv 1 0 5) (cog-tv top-lilly))
+(check-equal "bar-tv" (FloatValue 1 0 4) (get-val (Concept "bar")))
+(check-equal "lilly-tv" (FloatValue 1 0 5) (get-val lilly))
+(check-equal "top-tv" (FloatValue 1 0 5) (get-val top-lilly))
 
 (exit)
 ; The end!

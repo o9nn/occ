@@ -12,7 +12,7 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-frame-print-test")
 
 (opencog-test-runner)
 
@@ -34,7 +34,7 @@
 	(cog-prt-atomspace)
 
 	(cog-set-atomspace! c)
-	(define rsn (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define rsn (RocksStorageNode "rocks:///tmp/cog-rocks-frame-print-test"))
 	(cog-open rsn)
 	(store-atomspace)
 	(cog-prt-atomspace)
@@ -48,5 +48,5 @@
 (test-end test-name)
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-frame-print-test")
 (opencog-test-end)
