@@ -62,8 +62,20 @@ function init() {
         if (e.key === 'Enter') sendDebugCommand();
     });
 
-    // Set default values
-    serverInput.value = serverInput.value || 'ws://localhost:18080/';
+    // Set default values - use current hostname/IP
+    const defaultUrl = `ws://${window.location.hostname}:18080/`;
+    serverInput.value = serverInput.value || defaultUrl;
+
+    // Check for autoconnect URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoconnect = urlParams.get('autoconnect');
+    if (autoconnect === 'true') {
+        // Auto-connect after a short delay to ensure UI is ready
+        setTimeout(() => {
+            console.log('Auto-connecting based on URL parameter...');
+            connect();
+        }, 500);
+    }
 }
 
 function toggleConnection() {
@@ -86,6 +98,9 @@ function connect() {
     // Ensure URL ends with /
     const normalizedURL = baseURL.endsWith('/') ? baseURL : baseURL + '/';
     serverURL = normalizedURL + endpoint;
+
+    // Save the base URL to localStorage so other pages can use it
+    localStorage.setItem('cogserver-url', normalizedURL);
 
     console.log('Connecting to:', serverURL);
 
@@ -185,9 +200,24 @@ function onMessage(event) {
         // Display in debug console
         debugResponse.textContent = JSON.stringify(data, null, 2);
 
-        // Check if this is a success response
-        if (data.success === true && data.result !== undefined) {
-            const result = data.result;
+        // Check if this is an MCP content-based response
+        if (data.content && Array.isArray(data.content)) {
+            // Check for error first
+            if (data.isError === true) {
+                const errorText = data.content[0]?.text || 'Unknown error';
+                console.error('Server returned error:', errorText);
+                showError('Server error: ' + errorText);
+                return;
+            }
+
+            // Parse the content text (may be JSON string)
+            const contentText = data.content[0]?.text || '';
+            let result;
+            try {
+                result = JSON.parse(contentText);
+            } catch {
+                result = contentText;
+            }
 
             // Handle different result types
             if (typeof result === 'string') {
@@ -239,7 +269,8 @@ function onMessage(event) {
                 } else {
                     // Check if it's the reportCounts response (object with type names as keys)
                     const keys = Object.keys(result);
-                    if (keys.length > 0 && keys.every(key => typeof result[key] === 'number')) {
+                    // Handle both empty objects (empty atomspace) and populated count objects
+                    if (keys.length === 0 || keys.every(key => typeof result[key] === 'number')) {
                         console.log('Received atom counts:', result);
                         processAtomCounts(result);
                     } else {
@@ -248,11 +279,6 @@ function onMessage(event) {
                     }
                 }
             }
-        } else if (data.success === false) {
-            // Error response
-            const errorMsg = data.error?.message || data.error || 'Unknown error';
-            console.error('Server returned error:', errorMsg);
-            showError('Server error: ' + errorMsg);
         } else {
             // Unknown response format
             console.warn('Unknown response format:', data);
@@ -737,8 +763,8 @@ function valueToSExpression(value) {
     } else if (Array.isArray(values)) {
         // FloatValue, LinkValue, etc.: just space-separated values
         return `(${valueType} ${values.join(' ')})`;
-    } else if (valueType === 'TruthValue' && values && Array.isArray(values.value)) {
-        // TruthValue has nested structure
+    } else if (valueType === 'SimpleTruthValue' && values && Array.isArray(values.value)) {
+        // SimpleTruthValue has nested structure
         return `(${valueType} ${values.value.join(' ')})`;
     } else {
         // Fallback: try to stringify the value part
@@ -900,7 +926,7 @@ function openStatsPage() {
 function openGraphVisualization(atom) {
     // Encode the atom data in the URL
     const atomData = encodeURIComponent(JSON.stringify(atom));
-    const graphUrl = `tree-view.html?atom=${atomData}&server=${encodeURIComponent(serverInput.value)}`;
+    const graphUrl = `tree-view.html?atom=${atomData}`;
 
     // Open in new tab
     window.open(graphUrl, '_blank');
@@ -917,7 +943,7 @@ function visualizeCheckedAtoms() {
 
     // Encode the atoms data in the URL
     const atomsData = encodeURIComponent(JSON.stringify(atoms));
-    const graphUrl = `tree-view.html?atoms=${atomsData}&server=${encodeURIComponent(serverInput.value)}`;
+    const graphUrl = `tree-view.html?atoms=${atomsData}`;
 
     // Open in new tab
     window.open(graphUrl, '_blank');
