@@ -242,3 +242,31 @@ Input
 Failed to store memory with error: Resource not found
 
 The memory storage didn't work, but that's okay. Now let me create a final summary and complete the task. Let me verify once more that all the changes are correct
+
+---
+
+Excellent! Now let me store some memory about what was learned and run a final code review:
+
+Call to store_memory
+Input
+{
+  "subject": "Debian packaging structure",
+  "fact": "The opencog-debian directory contains authoritative package metadata in update-*.sh scripts (REPO_NAME, DEB_NAME, VERSION) and debian/ subdirectories with packaging files",
+  "citations": "opencog-debian/cogutil/update-cogutil.sh:3-7, opencog-debian/atomspace/update-atomspace.sh:3-7, opencog-debian/README.md:54-105",
+  "reason": "This is critical for understanding the packaging system. Future work on debian packaging or GitHub Actions workflows for package building should reference the opencog-debian update scripts as the single source of truth for package metadata. This fact will help avoid hardcoding package versions or names in workflows.",
+  "category": "file_specific"
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "GitHub Actions debian build workflow",
+  "fact": "The debian-packages.yml workflow uses helper scripts in .github/scripts/ to prepare packages: parse-package-info.sh extracts metadata, prepare-package-build.sh sets up debian/ directories",
+  "citations": ".github/workflows/debian-packages.yml:1-14, .github/scripts/parse-package-info.sh:1-44, .github/scripts/prepare-package-build.sh:1-109",
+  "reason": "Understanding this workflow structure is important for maintaining or extending the CI/CD pipeline. Future changes to package building should use these helper scripts rather than duplicating logic, ensuring consistency between local builds and CI builds.",
+  "category": "general"
+}
+Failed to store memory with error: Resource not found
+
+Now let me do a final code review
