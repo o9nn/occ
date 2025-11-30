@@ -22,4 +22,5 @@ IF (HAVE_MCP)
 	TARGET_LINK_LIBRARIES(McpShellUTest mcp-shell mcp-eval)
 ENDIF (HAVE_MCP)
 
+ADD_CXXTEST(IPv6UTest)
 ADD_CXXTEST(ShellUTest)

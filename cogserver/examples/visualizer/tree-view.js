@@ -1,6 +1,12 @@
 // AtomSpace Graph Visualization using vis-network
 // This file handles the graph rendering and interaction logic
 
+// Helper function to get current edge color from theme
+function getEdgeColor() {
+    const color = getComputedStyle(document.body).getPropertyValue('--text-primary').trim();
+    return color || '#212121'; // Fallback to light mode color
+}
+
 // Global variables
 let network = null;
 let vertices = null;  // vis-network vertices (not to be confused with AtomSpace Nodes)
@@ -16,7 +22,7 @@ let pendingOperation = null;
 let operationStartTime = null;
 let stopButtonTimer = null;
 const LARGE_ATOM_THRESHOLD = 300; // Warn if more than 300 atoms
-const STOP_BUTTON_DELAY = 2000;   // Show stop button after 2 seconds
+const STOP_BUTTON_DELAY = 5000;   // Show stop button after 5 seconds
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -24,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const atomParam = urlParams.get('atom');
     const atomsParam = urlParams.get('atoms');
-    const serverParam = urlParams.get('server');
 
     // Handle single atom parameter
     if (atomParam) {
@@ -57,10 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    if (serverParam) {
-        serverUrl = decodeURIComponent(serverParam);
-        console.log('Server URL:', serverUrl);
-    }
+    // Get server URL from localStorage (same as type-view)
+    const savedBaseUrl = localStorage.getItem('cogserver-url');
+    serverUrl = savedBaseUrl || `ws://${window.location.hostname}:18080/`;
+    console.log('Server URL:', serverUrl, savedBaseUrl ? '(from localStorage)' : '(default)');
 
     // Initialize the graph
     initializeGraph();
@@ -72,6 +77,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up event handlers
     setupEventHandlers();
+
+    // Set up theme change listener
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+                console.log('Theme changed, updating edge colors');
+                updateEdgeColorsForTheme();
+            }
+        });
+    });
+
+    observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+    });
 });
 
 function initializeGraph() {
@@ -123,6 +143,11 @@ function initializeGraph() {
             },
             smooth: {
                 enabled: false  // Straight lines
+            },
+            color: {
+                color: getEdgeColor(),
+                highlight: getEdgeColor(),
+                hover: getEdgeColor()
             }
         },
         physics: {
@@ -703,6 +728,11 @@ function setupEventHandlers() {
                                 enabled: true,
                                 scaleFactor: 0.5
                             }
+                        },
+                        color: {
+                            color: getEdgeColor(),
+                            highlight: getEdgeColor(),
+                            hover: getEdgeColor()
                         }
                     },
                     physics: {
@@ -760,6 +790,11 @@ function setupEventHandlers() {
                                 enabled: true,
                                 scaleFactor: 0.5
                             }
+                        },
+                        color: {
+                            color: getEdgeColor(),
+                            highlight: getEdgeColor(),
+                            hover: getEdgeColor()
                         }
                     },
                     physics: {
@@ -879,6 +914,36 @@ function updateStatus(message, className) {
     const statusElement = document.getElementById('status');
     statusElement.textContent = message;
     statusElement.className = className || '';
+}
+
+// Update all edge colors when theme changes
+function updateEdgeColorsForTheme() {
+    if (!edges) return;
+
+    const newColor = getEdgeColor();
+    const newBackground = getComputedStyle(document.body).getPropertyValue('--surface').trim() || '#FFFFFF';
+    console.log('Updating edge colors to:', newColor, 'background:', newBackground);
+
+    // Get all edge IDs
+    const allEdges = edges.get();
+
+    // Update each edge with new color and font color
+    const updatedEdges = allEdges.map(edge => ({
+        id: edge.id,
+        color: {
+            color: newColor,
+            highlight: newColor,
+            hover: newColor
+        },
+        font: {
+            ...edge.font,
+            color: newColor,
+            background: newBackground
+        }
+    }));
+
+    // Batch update all edges
+    edges.update(updatedEdges);
 }
 
 // Warning and cancellation functions
