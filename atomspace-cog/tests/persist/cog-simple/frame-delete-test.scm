@@ -7,10 +7,7 @@
 ;
 (use-modules (srfi srfi-1))
 (use-modules (opencog) (opencog test-runner))
-(use-modules (opencog persist) (opencog persist-rocks))
-
-(include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(use-modules (opencog persist) (opencog persist-cog-simple))
 
 (define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
 
@@ -140,6 +137,7 @@
 ; Building on the above, verify that values work
 
 (define (setup-deep-change)
+	(define tvkey (Predicate "*-TruthValueKey-*"))
 
 	; This uses the spaces built prviously.
 	; The previous spaces were built on the current space.
@@ -151,13 +149,13 @@
 
 	; Repeatedly add and remove the same atom
 	(cog-set-atomspace! base-space)
-	(cog-set-tv! (Concept "foo") (ctv 1 0 2))
+	(cog-set-value! (Concept "foo") tvkey (FloatValue 1 0 2))
 
 	(cog-set-atomspace! mid2-space)
-	(cog-set-tv! (Concept "foo") (ctv 1 0 4))
+	(cog-set-value! (Concept "foo") tvkey (FloatValue 1 0 4))
 
 	(cog-set-atomspace! surface-space)
-	(cog-set-tv! (Concept "foo") (ctv 1 0 6))
+	(cog-set-value! (Concept "foo") tvkey (FloatValue 1 0 6))
 
 	; Store the changed content. Toggle through all the atomspaces,
 	; as otherwise, the TV's on the Concepts aren't stored.
