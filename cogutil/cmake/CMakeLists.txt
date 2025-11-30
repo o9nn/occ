@@ -43,15 +43,10 @@ INSTALL(FILES
 	DESTINATION
 	${DATADIR}/cmake/)
 
-# Use GNUInstallDirs for proper multiarch support
-include(GNUInstallDirs)
+set(INCLUDE_INSTALL_DIR include/ )
+set(LIB_INSTALL_DIR lib/ )
 
-# Set installation directories (for PATH_VARS in configure_package_config_file)
-set(INCLUDE_INSTALL_DIR include )
-set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR} )
-
-# CMake config files should be in lib/cmake/CogUtil or lib/<multiarch>/cmake/CogUtil
-set(COGUTIL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/CogUtil)
+set(COGUTIL_CMAKE_DIR lib/cmake/CogUtil)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(CogUtilConfig.cmake.in
