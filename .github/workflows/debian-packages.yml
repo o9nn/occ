@@ -209,8 +209,8 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        sudo dpkg -i ./deps/cogutil/*.deb || true
-        sudo dpkg -i ./deps/atomspace/*.deb || true
+        sudo dpkg -i ./deps/cogutil/*.deb || echo "Some packages failed to install"
+        sudo dpkg -i ./deps/atomspace/*.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
@@ -278,7 +278,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        sudo dpkg -i ./deps/*.deb || true
+        sudo dpkg -i ./deps/*.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
@@ -340,7 +340,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        sudo dpkg -i ./deps/*.deb || true
+        sudo dpkg -i ./deps/*.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
@@ -402,7 +402,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        sudo dpkg -i ./deps/*.deb || true
+        sudo dpkg -i ./deps/*.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
@@ -523,7 +523,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        sudo dpkg -i ./deps/*.deb || true
+        sudo dpkg -i ./deps/*.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
@@ -585,7 +585,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        sudo dpkg -i ./deps/*.deb || true
+        sudo dpkg -i ./deps/*.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
@@ -647,7 +647,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        sudo dpkg -i ./deps/*.deb || true
+        sudo dpkg -i ./deps/*.deb || echo "Some packages failed to install"
         sudo apt-get install -f -y
     
     - name: Copy Debian packaging files
