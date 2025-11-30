@@ -16,7 +16,7 @@ storage, placing them in the local AtomSpace. Because this is done
 before the sexcom reply is generated, it allows the AtomSpace to be
 dynamically updated.
 
-If the central StorageNode is not set, all sexcoms workt directly with
+If the central StorageNode is not set, all sexcoms work directly with
 the current AtomSpace (i.e. with whatever it currently contains).
 
 These sexcoms are used by the CogServer, working together with the
@@ -73,7 +73,6 @@ cog_extract -> remove_atom =>> removeAtom
 cog_extract_recursive -> remove_atom
 cog_set_value -> store_value =>> storeValue
 cog_set_values -> store_atom =>> storeAtom
-cog_set_tv -> store_value =>> storeValue
 cog_update_value -> update_value =>> updateValue
 
 Misc:
