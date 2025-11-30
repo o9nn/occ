@@ -125,7 +125,7 @@ bool AtomSpace::content_compare(const AtomSpace& space_first,
 
         // If the atoms don't match... Compare the atoms not the pointers
         // which is the default if we just use Handle operator ==.
-        if (*((AtomPtr) atom_first) != *((AtomPtr) atom_second))
+        if (*atom_first != *atom_second)
         {
             if (emit_diagnostics)
                 std::cout << "compare_atomspaces - first atom " <<
@@ -211,19 +211,27 @@ bool AtomSpace::operator==(const Atom& other) const
     return get_name() == other.get_name();
 }
 
+// Imlementation is the same as Node::operator<()
 bool AtomSpace::operator<(const Atom& other) const
 {
     // If other points to this, then have equality.
     if (this == &other) return false;
 
-    if (ATOM_SPACE != other.get_type()) return false;
-    AtomSpace* asp = (AtomSpace*) &other;
-    return _uuid  < (asp->_uuid);
+    ContentHash cht = get_hash();
+    ContentHash cho = other.get_hash();
+    if (cht != cho) return cht < cho;
+
+    // We get to here only if the hashes are equal. This is
+    // extremely unlikely; it requires a 64-bit hash collision.
+    // Compare the contents directly, for this case.
+    if (get_type() != other.get_type())
+        return get_type() < other.get_type();
+
+    return get_name() < other.get_name();
 }
 
 ContentHash AtomSpace::compute_hash() const
 {
-	if (_name.empty()) return _uuid;
 	ContentHash hsh = std::hash<std::string>()(get_name());
 
 	// Nodes will never have the MSB set.
@@ -253,25 +261,6 @@ Handle AtomSpace::getOutgoingAtom(Arity n) const
 {
 	if (_outgoing.size() <= n) return Handle::UNDEFINED;
 	return _outgoing[n];
-}
-
-void AtomSpace::setAtomSpace(AtomSpace* as)
-{
-	if (as == _atom_space) return;
-
-	// This is identical to the code in Atom::setAtomSpace() except that
-	// we print a different error message. I see nothing wrong with
-	// having one AtomSpace be placed as a member into many others,
-	// except that we don't have any viable mechanisms for such multiple
-	// membership, and so I don't know how to treat this right now.
-	// Fixme maybe later someday, if/when this is needed.
-	if (not (nullptr == _atom_space or as == nullptr))
-		throw RuntimeException(TRACE_INFO,
-			"At this time, an AtomSpace can only be placed in one other\n"
-			"AtomSpace. If you are reading this error message and you don't\n"
-			"like it, please open a bug report\n");
-
-	_atom_space = as;
 }
 
 // ====================================================================
@@ -352,48 +341,6 @@ Handle AtomSpace::add_atom(const Handle& h)
 
     // If it is a DeleteLink, then the addition will fail. Deal with it.
     // If its a GrantLink, addition might require extra care.
-    Handle rh;
-    try {
-        rh = add(h);
-    }
-    catch (const DeleteException& ex) {
-        // Hmmm. Need to notify the backing store
-        // about the deleted atom. But how?
-    }
-    catch (const SilentException& ex) {
-        // The SilentException is thrown by GrantLink, when the
-        // user attempts grants in non-base Frames. We want to
-        // disallow hiding of grants, so we end up here.
-        return lookupHide(h, false);  // Do not allow hiding!
-    }
-    return rh;
-}
-
-Handle AtomSpace::add_node(Type t, std::string&& name)
-{
-    // Cannot add atoms to a read-only atomspace. But if it's already
-    // in the atomspace, return it.
-    if (_read_only)
-        return lookupHandle(createNode(t, std::move(name)));
-
-    return add(createNode(t, std::move(name)));
-}
-
-Handle AtomSpace::get_node(Type t, std::string&& name) const
-{
-    return lookupHandle(createNode(t, std::move(name)));
-}
-
-Handle AtomSpace::add_link(Type t, HandleSeq&& outgoing)
-{
-    // Cannot add atoms to a read-only atomspace. But if it's already
-    // in the atomspace, return it.
-    if (_read_only)
-        return lookupHandle(createLink(std::move(outgoing), t));
-
-    // If it is a DeleteLink, then the addition will fail. Deal with it.
-    // If its a GrantLink, addition might require extra care.
-    Handle h(createLink(std::move(outgoing), t));
     try {
         return add(h);
     }
@@ -408,11 +355,6 @@ Handle AtomSpace::add_link(Type t, HandleSeq&& outgoing)
         return lookupHide(h, false);  // Do not allow hiding!
     }
     return Handle::UNDEFINED;
-}
-
-Handle AtomSpace::get_link(Type t, HandleSeq&& outgoing) const
-{
-    return lookupHandle(createLink(std::move(outgoing), t));
 }
 
 ValuePtr AtomSpace::add_atoms(const ValuePtr& vptr)
@@ -484,23 +426,15 @@ Handle AtomSpace::set_value(const Handle& h,
                             const Handle& key,
                             const ValuePtr& value)
 {
-   #define SETV(atm) atm->setValue(key, value);
+	// Skip R/O and COW checking if key is a message.
+	if (h->usesMessage(key))
+	{
+		h->setValue(key, value);
+		return h;
+	}
+
+	#define SETV(atm) atm->setValue(key, value);
 	COWBOY_CODE(SETV);
-}
-
-// Copy-on-write for setting truth values.
-Handle AtomSpace::set_truthvalue(const Handle& h, const TruthValuePtr& tvp)
-{
-   #define SET_TV(atm) atm->setTruthValue(tvp);
-	COWBOY_CODE(SET_TV);
-}
-
-// Copy-on-write for incrementing truth values.
-// The increment is atomic i.e. thread-safe.
-Handle AtomSpace::increment_countTV(const Handle& h, double cnt)
-{
-	#define INC_TV(atm) atm->incrementCountTV(cnt);
-	COWBOY_CODE(INC_TV);
 }
 
 // The increment is atomic i.e. thread-safe.
