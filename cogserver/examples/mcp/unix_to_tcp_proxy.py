@@ -109,7 +109,7 @@ class ProxyThread(threading.Thread):
         finally:
             self.logger.info(f"[{self.direction}] Thread shutting down")
             self.logger.info(f"[{self.direction}] Transferred {self.bytes_transferred} bytes "
-                             f"in {self.messages_transferred} messages")
+                           f"in {self.messages_transferred} messages")
 
     def process_and_forward(self, data):
         """Process and forward data (can be overridden in subclasses)"""
@@ -196,7 +196,7 @@ class TcpToUnixThread(ProxyThread):
         finally:
             self.logger.info(f"[{self.direction}] Thread shutting down")
             self.logger.info(f"[{self.direction}] Transferred {self.bytes_transferred} bytes "
-                             f"in {self.messages_transferred} messages")
+                           f"in {self.messages_transferred} messages")
 
 class ConnectionHandler:
     """Handles a single client connection with bidirectional communication"""
