@@ -20,7 +20,7 @@
  * Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-#include <opencog/atoms/core/FindUtils.h>
+#include <opencog/atoms/free/FindUtils.h>
 #include "PatternUtils.h"
 
 using namespace opencog;
@@ -47,10 +47,15 @@ bool can_evaluate(const Handle& clause)
 		   and not (PRESENT_LINK == ct)
 		   and not (ABSENT_LINK == ct)
 		   and not (CHOICE_LINK == ct)
+		   and not (MEMBER_LINK == ct)
+		   and not (SUBSET_LINK == ct)
 		   and (not (EVALUATION_LINK == ct)
 		      or 0 == clause->get_arity()
 		      or nameserver().isA(clause->getOutgoingAtom(0)->get_type(),
 		                          EVALUATABLE_LINK)))
+
+		// BoolValueOfLink can be evaluated in boolean contexts
+		or nameserver().isA(ct, BOOL_VALUE_OF_LINK)
 
 		// XXX FIXME Are the below needed?
 		or contains_atomtype(clause, DEFINED_PREDICATE_NODE)

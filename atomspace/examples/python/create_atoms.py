@@ -16,9 +16,6 @@ be a big deal.
 from opencog.atomspace import *
 from opencog.type_constructors import *
 
-# Create an AtomSpace, and tell the type constructors to use it.
-set_default_atomspace(AtomSpace())
-
 # Add three nodes
 A = ConceptNode('Apple')
 B = ConceptNode('Berry')
@@ -82,6 +79,6 @@ ValueOfLink(is_red, key).execute()
 # the entire contents of the AtomSpace. Queries are demoed in later
 # files. This is the simplest demo.
 print("The atomspace contains:\n\n",
-      MeetLink(VariableNode("x")).execute())
+   MeetLink(VariableNode("x")).execute())
 
 # THE END. That's All, Folks!
