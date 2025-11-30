@@ -46,9 +46,9 @@ import numpy
 class ROS2OpenCV:
     def __init__(self, node_name):
         rospy.init_node(node_name)
-
+        
         rospy.on_shutdown(self.cleanup)
-
+        
         self.node_name = node_name
         self.input_rgb_image = "input_rgb_image"
         self.input_depth_image = "input_depth_image"
@@ -63,7 +63,7 @@ class ROS2OpenCV:
         """ Do the same for the point cluster publisher """
         #self.cluster3d = PointStamped()
         #self.pub_cluster3d = rospy.Publisher("/target_point", PointStamped)
-
+        
         """ Initialize a number of global variables """
         self.image = None
         self.image_size = None
@@ -89,20 +89,20 @@ class ROS2OpenCV:
         self.cv_window_name = self.node_name
         cv.NamedWindow(self.cv_window_name, cv.CV_NORMAL)
         cv.ResizeWindow(self.cv_window_name, 640, 480)
-
+        
         """ Create the cv_bridge object """
         self.bridge = CvBridge()
-
+        
         """ Set a call back on mouse clicks on the image window """
         cv.SetMouseCallback (self.node_name, self.on_mouse_click, None)
-
+        
         """ A publisher to output the display image back to a ROS topic """
         self.output_image_pub = rospy.Publisher(self.output_image, Image)
-
+        
         """ Subscribe to the raw camera image topic and set the image processing callback """
         self.image_sub = rospy.Subscriber(self.input_rgb_image, Image, self.image_callback, queue_size=1)
         self.depth_sub = rospy.Subscriber(self.input_depth_image, Image, self.depth_callback, queue_size=1)
-
+        
         rospy.loginfo("Starting " + self.node_name)
 
 
@@ -135,27 +135,27 @@ class ROS2OpenCV:
 
     def depth_callback(self, data):
         depth_image = self.convert_depth_image(data)
-
+        
         if self.flip_image:    
             cv.Flip(depth_image)
-
+            
         if not self.depth_image:
             (cols, rows) = cv.GetSize(depth_image)
             self.depth_image = cv.CreateMat(rows, cols, cv.CV_32FC1)
-
+            
         cv.Copy(depth_image, self.depth_image)
 
     def image_callback(self, data):
         """ Time this loop to get cycles per second """
         start = rospy.Time.now()
-
+        
         """ Convert the raw image to OpenCV format using the convert_image() helper function """
         cv_image = self.convert_image(data)
-
+        
         """ Some webcams invert the image """
         if self.flip_image:
             cv.Flip(cv_image)
-
+                    
         """ Create a few images we will use for display """
         if not self.image:
             self.image_size = cv.GetSize(cv_image)
@@ -167,26 +167,26 @@ class ROS2OpenCV:
 
         """ Copy the current frame to the global image in case we need it elsewhere"""
         cv.Copy(cv_image, self.image)
-
+        
         if not self.keep_marker_history:
             cv.Zero(self.marker_image)
-
+        
         """ Process the image to detect and track objects or features """
         processed_image = self.process_image(cv_image)
-
+        
         """ If the result is a greyscale image, convert to 3-channel for display purposes """
         if processed_image.channels == 1:
             cv.CvtColor(processed_image, self.processed_image, cv.CV_GRAY2BGR)
         else:
             cv.Copy(processed_image, self.processed_image)
-
+        
         """ Display the user-selection rectangle or point."""
         self.display_markers()
-
+        
         if self.night_mode:
             """ Night mode: only display the markers """
             cv.SetZero(self.processed_image)
-
+        
         """ Merge the processed image and the marker image """
         cv.Or(self.processed_image, self.marker_image, self.display_image)
         # TODO Draw the images on the rectangle
@@ -203,10 +203,10 @@ class ROS2OpenCV:
         # elif self.detect_box:
         #     (pt1_x, pt1_y, w, h) = self.detect_box
         #     cv.Rectangle(self.display_image, (pt1_x, pt1_y), (pt1_x + w, pt1_y + h), cv.RGB(255, 0, 0), 2, 8, 0)
-
+        
         """ Handle keyboard events """
         self.keystroke = cv.WaitKey(5)
-
+            
         duration = rospy.Time.now() - start
         duration = duration.to_sec()
         fps = int(1.0 / duration)
@@ -214,7 +214,7 @@ class ROS2OpenCV:
         if len(self.cps_values) > self.cps_n_values:
             self.cps_values.pop(0)
         self.cps = int(sum(self.cps_values) / len(self.cps_values))
-
+        
         if self.show_text:
             hscale = 0.2 * self.image_size[0] / 160. + 0.1
             vscale = 0.2 * self.image_size[1] / 120. + 0.1
@@ -233,15 +233,15 @@ class ROS2OpenCV:
             cv.PutText(self.display_image, "RES: " + str(self.image_size[0]) + "X" + str(self.image_size[1]), (10, voffset), text_font, cv.RGB(255, 255, 0))
         # Now display the image.
         cv.ShowImage(self.node_name, self.display_image)
-
+        
         """ Publish the display image back to ROS """
         try:
             """ Convertion for cv2 is needed """
             cv2_image = numpy.asarray(self.display_image[:,:])
             self.output_image_pub.publish(self.bridge.cv2_to_imgmsg(cv2_image, "bgr8"))
-        except CvBridgeError as e:
-            print(e)
-
+        except CvBridgeError, e:
+            print e
+        
         """ Process any keyboard commands or command sent via the key_command service """
         if self.key_command:
             self.keystroke = ord(self.key_command)
@@ -269,34 +269,34 @@ class ROS2OpenCV:
         #         """ user has press the q key, so exit """
         #         rospy.signal_shutdown("User hit q key to quit.")
 
-
+          
     def convert_image(self, ros_image):
         try:
-            """ Convert to old cv image """
+	    """ Convert to old cv image """
             cv2_image = self.bridge.imgmsg_to_cv2(ros_image, "bgr8")
-            cv_image = cv.CreateImageHeader((cv2_image.shape[1], cv2_image.shape[0]), 8, 3)
-            cv.SetData(cv_image, cv2_image.tostring(), cv2_image.dtype.itemsize * 3 * cv2_image.shape[1])	
+	    cv_image = cv.CreateImageHeader((cv2_image.shape[1], cv2_image.shape[0]), 8, 3)
+	    cv.SetData(cv_image, cv2_image.tostring(), cv2_image.dtype.itemsize * 3 * cv2_image.shape[1])	
             return cv_image
-        except CvBridgeError as e:
-            print(e)
-
+        except CvBridgeError, e:
+          print e
+          
     def convert_depth_image(self, ros_image):
         try:
             depth_image = self.bridge.imgmsg_to_cv(ros_image, "32FC1")
             return depth_image
-
-        except CvBridgeError as e:
-            print(e)
-
+    
+        except CvBridgeError, e:
+            print e
+          
     def process_image(self, cv_image):
         if not self.grey:
             """ Allocate temporary images """      
             self.grey = cv.CreateImage(self.image_size, 8, 1)
-
+            
         """ Convert color input image to grayscale """
         cv.CvtColor(cv_image, self.grey, cv.CV_BGR2GRAY)
         cv.EqualizeHist(self.grey, self.grey)
-
+        
         # Since we aren't applying any filters in this base class, set the ROI to the selected region, if any.
         #TODO Implement publishing
         # if not self.drag_start and not self.detect_box is None:
@@ -307,9 +307,9 @@ class ROS2OpenCV:
         #     self.ROI.height = self.detect_box[3]
         #
         # self.pubROI.publish(self.ROI)
-
+        
         return self.grey
-
+    
     def display_markers(self):
         # If the user is selecting a region with the mouse, display the corresponding rectangle for feedback.
         if self.drag_start and self.is_rect_nonzero(self.selection):
@@ -322,7 +322,7 @@ class ROS2OpenCV:
             x = self.selected_point[0]
             y = self.selected_point[1]
             cv.Circle(self.marker_image, (x, y), 3, (0, 255, 255), 2)
-
+        
     def is_rect_nonzero(self, r):
         # First assume a simple CvRect type
         try:
@@ -335,16 +335,16 @@ class ROS2OpenCV:
                 return (w > 0) and (h > 0)
             except:
                 return False
-
+        
     def cleanup(self):
-        print("Shutting down vision node.")
+        print "Shutting down vision node."
         cv.DestroyAllWindows()       
 
 def main(args):
     # Display a help message if appropriate.
     help_message = ""
-
-    print(help_message)
+          
+    print help_message
 
     try:   
         # Fire up the node.
@@ -352,7 +352,7 @@ def main(args):
         # Spin so our services will work
         rospy.spin()
     except KeyboardInterrupt:
-        print("Shutting down vision node.")
+        print "Shutting down vision node."
         cv.DestroyAllWindows()
 
 if __name__ == '__main__':
