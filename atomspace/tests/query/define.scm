@@ -15,19 +15,19 @@
 	(ConceptNode "transistor")
 	(ConceptNode "electrical device"))
 
-(EvaluationLink
+(EdgeLink
 	(PredicateNode "PartOf")
 	(ListLink
 		(ConceptNode "battery")
 		(VariableNode "car")))
 
-(EvaluationLink
+(EdgeLink
 	(PredicateNode "PartOf")
 	(ListLink
 		(ConceptNode "transistor")
 		(VariableNode "phone")))
 
-(EvaluationLink
+(EdgeLink
 	(PredicateNode "PartOf")
 	(ListLink
 		(ConceptNode "windsheild")
@@ -40,7 +40,7 @@
 		(InheritanceLink
 			(VariableNode "$x")
 			(ConceptNode "electrical device"))
-		(EvaluationLink
+		(EdgeLink
 			(PredicateNode "PartOf")
 			(ListLink
 				(VariableNode "$x")
@@ -55,7 +55,7 @@
 			(InheritanceLink
 				(VariableNode "$x")
 				(ConceptNode "electrical device"))
-			(EvaluationLink
+			(EdgeLink
 				(PredicateNode "PartOf")
 				(ListLink
 					(VariableNode "$x")
@@ -70,7 +70,7 @@
 
 (DefineLink
    (DefinedPredicateNode "Part-whole Relation")
-   (EvaluationLink
+   (EdgeLink
       (PredicateNode "PartOf")
       (ListLink
          (VariableNode "$x")
@@ -80,13 +80,13 @@
 ;; At this time, an explicit variable declaration has to be done;
 ;; this needs to be fixed...
 (define get-elect
-	(GetLink (DefinedPredicateNode "Electrical Part Of")))
+	(MeetLink (DefinedPredicateNode "Electrical Part Of")))
 
 (define get-elect-bound
-	(GetLink (DefinedPredicateNode "Elect-Part bound")))
+	(MeetLink (DefinedPredicateNode "Elect-Part bound")))
 
 (define get-parts
-	(GetLink
+	(MeetLink
 		(AndLink
 			(DefinedPredicateNode "Electrical Thing")
 			(DefinedPredicateNode "Part-whole Relation"))))
