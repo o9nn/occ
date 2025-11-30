@@ -22,8 +22,8 @@ from pi_face_tracker.msg import FaceEvent
 from blender_api_msgs.msg import EmotionState
 from std_msgs.msg import String
 from testing_tools import (wait_for, play_rosbag, create_msg_listener,
-                           capture_screen, capture_camera, startxvfb, stopxvfb,
-                           get_rosbag_file, MessageQueue)
+                            capture_screen, capture_camera, startxvfb, stopxvfb,
+                            get_rosbag_file, MessageQueue)
 
 CWD = os.path.abspath(os.path.dirname(__file__))
 PKG = 'robots_config'
@@ -59,7 +59,7 @@ class RobotTest(unittest.TestCase):
                 args='-y %s/Eva.blend -P %s/autostart.py' % (
                         blender_api_path, blender_api_path),
                 name='blender_api')
-        )
+            )
 
         # eva_behavior
         eva_behavior_path = rospack.get_path('eva_behavior')
@@ -70,8 +70,8 @@ class RobotTest(unittest.TestCase):
             core.Node(
                 package='eva_behavior', node_type='main.py',
                 name='Eva_behavior')
-        )
-
+            )
+        
         # pi_face_tracker
         config_file = os.path.join(
             rospack.get_path('pi_face_tracker'), 'launch',
@@ -84,7 +84,7 @@ class RobotTest(unittest.TestCase):
             core.Node(
                 package='tts', node_type='tts_talker.py',
                 name='tts')
-        )
+            )
 
         # chatbot
         config.add_node(
@@ -92,7 +92,7 @@ class RobotTest(unittest.TestCase):
                 package='chatbot', node_type='ai.py',
                 args='%s/../../chatbot/aiml' % CWD,
                 name='chatbot_ai')
-        )
+            )
 
         config.add_param(core.Param('/tts/topic_name', 'chatbot_responses'))
         self.runner = roslaunch.launch.ROSLaunchRunner(
@@ -116,7 +116,7 @@ class RobotTest(unittest.TestCase):
     def test(self):
         new_arrival_emotions = [
             x.strip() for x in self.behavior_config.get(
-                'emotion', 'new_arrival_emotions').split(',')]
+                    'emotion', 'new_arrival_emotions').split(',')]
         pub, msg_class = rostopic.create_publisher(
             '/behavior_switch', 'std_msgs/String', True)
         pub.publish(msg_class('btree_on'))
@@ -126,7 +126,7 @@ class RobotTest(unittest.TestCase):
             '/blender_api/set_emotion_state', EmotionState, 10)
         emo_msg_listener.start()
         cam_output = '%s/cam_new_arrival_emotion.avi' % \
-            self.output_video
+                        self.output_video
         screen_output = '%s/screen_new_arrival_emotion.avi' % \
                         self.output_video
         duration = 5
