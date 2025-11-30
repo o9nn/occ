@@ -9,14 +9,12 @@
 
 (use-modules (opencog))
 (use-modules (opencog as-storage-config))
-(load-extension (string-append opencog-ext-path-persist "libpersist")
-	"opencog_persist_init")
 
-; And another one, for force the shlib ctor to run.
+; Force the shlib ctor to run.
 (load-extension (string-append opencog-ext-path-persist-flow "libpersist-flow")
 	"opencog_persist_flow_init")
 
-; And another one, for force the shlib ctor to run.
+; And another one; force the shlib ctor to run.
 (load-extension (string-append opencog-ext-path-persist-proxy "libpersist-proxy")
 	"opencog_persist_proxy_init")
 
@@ -96,7 +94,7 @@
        `monitor-storage` to print connection information.
 "
 	(if STORAGE
-		(direct-setvalue! STORAGE (*-close-*) (VoidValue)))
+		(cog-set-value! STORAGE (*-close-*) (VoidValue)))
 	(set! *-current-storage-node-* #f)
 )
 
@@ -147,9 +145,9 @@
        `monitor-storage` to print connection information.
 "
 	(if *-current-storage-node-*
-		(direct-setvalue! STORAGE (*-close-*) (VoidValue)))
+		(cog-set-value! STORAGE (*-close-*) (VoidValue)))
 
-	(direct-setvalue! STORAGE (*-open-*) (VoidValue))
+	(cog-set-value! STORAGE (*-open-*) (VoidValue))
 	(set! *-current-storage-node-* STORAGE)
 )
 
@@ -224,18 +222,18 @@
        `fetch-value` to get only one Value.
        `store-atom` to store all Values.
 "
-	; Need to use direct-setvalue! here, instead of cog-set-value! in order
+	; Need to use cog-set-value! here, instead of cog-set-value! in order
 	; to get correct behavior for working with frames. This is due to
 	; an unpatched bug: calling cog-set-value! in some frame where
 	; the storage node is only in a lower frame causes a COW of that
 	; StorageNode into that frame. But the COW is a copy, and that
-	; copy isn't actually open. So direct-setvalue! just bypasses the COW
+	; copy isn't actually open. So cog-set-value! just bypasses the COW
 	; and everything works. I'm not sure what the best long-term fix
 	; for this is. At any rate, XXX FIXME.
 	;
 	; For backwards compat, throw a C++ exception if not open.
 	(if STORAGE
-		(direct-setvalue! STORAGE (*-fetch-atom-*)
+		(cog-set-value! STORAGE (*-fetch-atom-*)
 			(LinkValue (cog-atomspace) ATOM))
 		(throw 'C++-EXCEPTION fetch-atom "StorageNode is not open for reading!"))
 	ATOM
@@ -278,7 +276,7 @@
        `fetch-atom` to get all Values.
        `store-value` to store only one Value.
 "
-	(direct-setvalue! STORAGE (*-fetch-value-*)
+	(cog-set-value! STORAGE (*-fetch-value-*)
 		(LinkValue (cog-atomspace) ATOM KEY))
 	ATOM
 )
@@ -319,7 +317,7 @@
       `fetch-incoming-by-type` to fetch a subset of a given type.
       `fetch-query` to fetch a query-defined collection of Atoms.
 "
-	(direct-setvalue! STORAGE (*-fetch-incoming-set-*)
+	(cog-set-value! STORAGE (*-fetch-incoming-set-*)
 		(LinkValue (cog-atomspace) ATOM))
 	ATOM
 )
@@ -363,7 +361,7 @@
       `fetch-incoming-set` to fetch all of the incoming set.
       `fetch-query` to fetch a query-defined collection of Atoms.
 "
-	(direct-setvalue! STORAGE (*-fetch-incoming-by-type-*)
+	(cog-set-value! STORAGE (*-fetch-incoming-by-type-*)
 		(LinkValue (cog-atomspace) ATOM (TypeNode TYPE)))
 	ATOM
 )
@@ -405,18 +403,18 @@
        `store-value` to store just one Value.
        `fetch-atom` to fetch all Values on an Atom.
 "
-	; Need to use direct-setvalue! here, instead of cog-set-value! in order
+	; Need to use cog-set-value! here, instead of cog-set-value! in order
 	; to get correct behavior for working with frames. This is due to
 	; an unpatched bug: calling cog-set-value! in some frame where
 	; the storage node is only in a lower frame causes a COW of that
 	; StorageNode into that frame. But the COW is a copy, and that
-	; copy isn't actually open. So direct-setvalue! just bypasses the COW
+	; copy isn't actually open. So cog-set-value! just bypasses the COW
 	; and everything works. I'm not sure what the best long-term fix
 	; for this is. At any rate, XXX FIXME.
 	;
 	; For backwards compat, throw a C++ exception if not open.
 	(if STORAGE
-		(direct-setvalue! STORAGE (*-store-atom-*) ATOM)
+		(cog-set-value! STORAGE (*-store-atom-*) ATOM)
 		(throw 'C++-EXCEPTION cog-open "StorageNode is not open for writing!"))
 	ATOM
 )
@@ -457,7 +455,7 @@
        `store-atom` to store all values on an Atom.
        `fetch-value` to fetch just one Value.
 "
-	(direct-setvalue! STORAGE (*-store-value-*) (LinkValue ATOM KEY))
+	(cog-set-value! STORAGE (*-store-value-*) (LinkValue ATOM KEY))
 )
 
 (define-public (*-update-value-*)
@@ -470,10 +468,9 @@
     performs an atomic read-modify-write of the Value located at KEY.
 
     At this time, the only implemented updates are atomic increments
-    of floating-point values stored in a FloatValue or in a TruthValue.
-    The intended use is to allow lots of clients to simultaneously
-    update counts on ATOM, without having them clobber each-other with
-    a non-atomic update.
+    of floating-point values stored in a FloatValue.  The intended use
+    is to allow lots of clients to simultaneously update counts on ATOM,
+    without having them clobber each-other with a non-atomic update.
 
     Usage:
        (cog-set-value! (StorageNode ...) (*-update-value-*)
@@ -501,7 +498,7 @@
        `store-atom` to store all values on an Atom.
        `fetch-value` to fetch just one Value.
 "
-	(direct-setvalue! STORAGE (*-update-value-*) (LinkValue ATOM KEY DELTA))
+	(cog-set-value! STORAGE (*-update-value-*) (LinkValue ATOM KEY DELTA))
 )
 
 (define-public (*-load-atoms-of-type-*)
@@ -540,7 +537,7 @@
     *-load-atomspace-* -- Load all atoms.
     *-load-frames-* -- load DAG of AtomSpaces.
 "
-	(direct-setvalue! STORAGE (*-load-atoms-of-type-*) (TypeNode TYPE))
+	(cog-set-value! STORAGE (*-load-atoms-of-type-*) (TypeNode TYPE))
 )
 
 (define-public (*-load-atomspace-*)
@@ -598,7 +595,7 @@
 
 	(if (not ATOMSPACE) (set! ATOMSPACE (cog-atomspace)))
 	(if (not STORAGE) (set! STORAGE (cog-storage-node)))
-	(direct-setvalue! STORAGE (*-load-atomspace-*) ATOMSPACE)
+	(cog-set-value! STORAGE (*-load-atomspace-*) ATOMSPACE)
 )
 
 (define-public (*-store-atomspace-*)
@@ -657,7 +654,7 @@
 
 	(if (not ATOMSPACE) (set! ATOMSPACE (cog-atomspace)))
 	(if (not STORAGE) (set! STORAGE (cog-storage-node)))
-	(direct-setvalue! STORAGE (*-store-atomspace-*) ATOMSPACE)
+	(cog-set-value! STORAGE (*-store-atomspace-*) ATOMSPACE)
 )
 
 ;
@@ -687,7 +684,7 @@
        (cog-set-value! (StorageNode ...) (*-fetch-query-*)
                        (LinkValue ATOMSPACE QUERY KEY METADATA FRESH))
 
-    Where FRESH is either (TrueLink) for true or (FalseLink) for false.
+    Where FRESH is either (BoolValue #t) or (BoolValue #f).
 
     See also:
     *-fetch-incoming-set-* -- to fetch the incoming set of an Atom.
@@ -739,19 +736,25 @@
 		; Simple case: just QUERY and KEY
 		(begin
 			(if (not STORAGE) (set! STORAGE (cog-storage-node)))
-			(direct-setvalue! STORAGE (*-fetch-query-*)
+			(if (not (cog-atom? STORAGE))
+				(throw 'C++-EXCEPTION fetch-query
+					"StorageNode is not open for reading!"))
+			(cog-set-value! STORAGE (*-fetch-query-*)
 				(LinkValue (cog-atomspace) QUERY KEY)))
 		; METADATA provided
 		(if (cog-subtype? METADATA 'StorageNode)
 			; oh wait; METADATA is actually a StorageNode
-			(direct-setvalue! METADATA (*-fetch-query-*)
+			(cog-set-value! METADATA (*-fetch-query-*)
 				(LinkValue (cog-atomspace) QUERY KEY))
 			; METADATA is a real metadata handle
 			(begin
 				(if (not STORAGE) (set! STORAGE (cog-storage-node)))
-				(direct-setvalue! STORAGE (*-fetch-query-*)
+				(if (not (cog-atom? STORAGE))
+					(throw 'C++-EXCEPTION fetch-query
+						"StorageNode is not open for reading!"))
+				(cog-set-value! STORAGE (*-fetch-query-*)
 					(LinkValue (cog-atomspace) QUERY KEY METADATA
-						(if FRESH (TrueLink) (FalseLink)))))))
+						(if FRESH (BoolValue #t) (BoolValue #f)))))))
 	QUERY
 )
 
@@ -946,7 +949,7 @@
 	(if (< 0 (cog-incoming-size ATOM))
 		#f
 		(begin
-			(direct-setvalue! STORAGE (*-delete-*)
+			(cog-set-value! STORAGE (*-delete-*)
 				(LinkValue (cog-atomspace) ATOM)) #t))
 )
 
@@ -975,7 +978,7 @@
        cog-extract-recursive! -- Remove an atom form the AtomSpace only.
        delete-frame! -- Delete all the Atoms in the frame.
 "
-	(direct-setvalue! STORAGE (*-delete-recursive-*)
+	(cog-set-value! STORAGE (*-delete-recursive-*)
 		(LinkValue (cog-atomspace) ATOM))
 )
 
@@ -1009,7 +1012,7 @@
     If the optional STORAGE argument is provided, then the erase will
     be applied to it. It must be a StorageNode.
 "
-	(direct-setvalue! STORAGE (*-erase-*) (VoidValue))
+	(cog-set-value! STORAGE (*-erase-*) (VoidValue))
 )
 
 (define-public (*-load-frames-*)
@@ -1086,7 +1089,7 @@
     If the optional STORAGE argument is provided, then it will be
     used as the target of the store. It must be a StorageNode.
 "
-	(direct-setvalue! STORAGE (*-store-frames-*) ATOMSPACE)
+	(cog-set-value! STORAGE (*-store-frames-*) ATOMSPACE)
 )
 
 (define-public (*-delete-frame-*)
@@ -1128,7 +1131,7 @@
     Same as
        (cog-set-value! STORAGE (*-delete-frame-*) ATOMSPACE)
 "
-	(direct-setvalue! STORAGE (*-delete-frame-*) ATOMSPACE)
+	(cog-set-value! STORAGE (*-delete-frame-*) ATOMSPACE)
 )
 
 (define-public (*-barrier-*)
@@ -1158,7 +1161,7 @@
     If the optional STORAGE argument is provided, then the barrier will
     be applied to it. It must be a StorageNode.
 "
-	(direct-setvalue! STORAGE (*-barrier-*) (cog-atomspace))
+	(cog-set-value! STORAGE (*-barrier-*) (cog-atomspace))
 )
 
 (define-public (*-monitor-*)
@@ -1290,7 +1293,7 @@
     Same as
        (cog-set-value! STORAGE (*-proxy-open-*) (VoidValue))
 "
-	(direct-setvalue! STORAGE (*-proxy-open-*) (VoidValue))
+	(cog-set-value! STORAGE (*-proxy-open-*) (VoidValue))
 )
 
 (define-public (*-proxy-close-*)
@@ -1318,7 +1321,7 @@
     Same as
        (cog-set-value! STORAGE (*-proxy-close-*) (VoidValue))
 "
-	(direct-setvalue! STORAGE (*-proxy-close-*) (VoidValue))
+	(cog-set-value! STORAGE (*-proxy-close-*) (VoidValue))
 )
 
 (define-public (*-set-proxy-*)
@@ -1355,7 +1358,7 @@
     Same as
        (cog-set-value! STORAGE (*-set-proxy-*) PROXY)
 "
-	(direct-setvalue! STORAGE (*-set-proxy-*) PROXY)
+	(cog-set-value! STORAGE (*-set-proxy-*) PROXY)
 )
 
 ; --------------------------------------------------------------------
