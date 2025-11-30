@@ -184,7 +184,7 @@ uint64_t RocksStorage::strtoaid(const std::string& sid) const
 // This encoding is far more compact than an s-expression encoding.
 // However, it has a downside: one must maintain a local in-RAM cache
 // of sid-to-frame mappings. Since the grand-total number of AtomSpaces
-// is unlikely to ever exceeed a few ten-thousand, the RAM footprint of
+// is unlikely to ever exceed a few ten-thousand, the RAM footprint of
 // this lookup remains tolerably small.
 //
 // The downside explains why this same encoding is not used for Atoms.
@@ -267,7 +267,7 @@ std::string RocksStorage::writeAtom(const Handle& h, bool need_mark)
 	std::string shash, sid, satom, pfx;
 
 	// If it's alpha-convertible, then look for equivalents.
-	bool convertible = nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_LINK);
+	bool convertible = nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_SIG);
 	if (convertible)
 	{
 		shash = "h@" + aidtostr(h->get_hash());
@@ -486,7 +486,12 @@ Handle RocksStorage::getAtom(const std::string& sid)
 		throw IOException(TRACE_INFO, "Internal Error!");
 
 	size_t pos = satom.find('('); // skip over hash, if present
-	return Sexpr::decode_atom(satom, pos);
+	try {
+		return Sexpr::decode_atom(satom, pos);
+	} catch (const SyntaxException& ex) {
+		logger().warn("RocksStorage: %s\n", ex.get_message());
+	}
+	return Handle::UNDEFINED;
 }
 
 /// Return the Value located at skid.
@@ -576,7 +581,7 @@ void RocksStorage::getKeysMonospace(AtomSpace* as,
 			{
 				size_t junk = 0;
 				ValuePtr vp = Sexpr::decode_value(it->value().ToString(), junk);
-				h->setTruthValue(TruthValueCast(vp));
+				h->setValue(truth_key(), vp);
 			}
 			continue;
 		}
@@ -684,8 +689,7 @@ void RocksStorage::getAtom(const Handle& h)
 
 	// For multi-spaces, determine the path-DAG from the top space
 	// to the bottom, and load from the bottom-up.
-	std::map<uint64_t, Handle> frame_order;
-	makeOrder(HandleCast(h->getAtomSpace()), frame_order);
+	FramePath frame_order = getPath(HandleCast(h->getAtomSpace()));
 	for (const auto& frit: frame_order)
 	{
 		AtomSpace* as = (AtomSpace*) frit.second.get();
@@ -700,7 +704,7 @@ Handle RocksStorage::getLink(Type t, const HandleSeq& hs)
 {
 	CHECK_OPEN;
 	// If it's alpha-convertible, then look for equivalents.
-	bool convertible = nameserver().isA(t, ALPHA_CONVERTIBLE_LINK);
+	bool convertible = nameserver().isA(t, ALPHA_CONVERTIBLE_SIG);
 	if (convertible)
 	{
 		Handle h = createLink(hs, t);
@@ -734,7 +738,7 @@ std::string RocksStorage::findAtom(const Handle& h)
 	CHECK_OPEN;
 	// If it's alpha-convertible, maybe we already know about
 	// an alpha-equivalent form...
-	if (nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_LINK))
+	if (nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_SIG))
 	{
 		std::string shash = "h@" + aidtostr(h->get_hash());
 		std::string sid;
@@ -750,7 +754,7 @@ std::string RocksStorage::findAtom(const Handle& h)
 	return sid;
 }
 
-/// If an Atom is an ALPHA_CONVERTIBLE_LINK, then we have to look
+/// If an Atom is an ALPHA_CONVERTIBLE_SIG, then we have to look
 /// for it's hash, and figure out if we already know it in a different
 /// but alpha-equivalent form. Return the sid of that form, if found.
 Handle RocksStorage::findAlpha(const Handle& h, const std::string& shash,
@@ -787,7 +791,7 @@ void RocksStorage::removeAtom(AtomSpace* frame, const Handle& h, bool recursive)
 		// It might be safe to auto-store, here, i.e. by calling
 		// convertForFrames(HandleCast(getAtomSpace()));
 		// and then silently proceeding. But for now, we throw,
-		// until general usage patterns and desirable beahvior
+		// until general usage patterns and desirable behavior
 		// becomes a bit more clear.
 		throw IOException(TRACE_INFO,
 			"Attempting to delete %s from %s, "
@@ -820,7 +824,7 @@ void RocksStorage::doRemoveAtom(const Handle& h, bool recursive)
 #endif
 
 	// Are we even holding the Atom to be deleted?
-	bool convertible = nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_LINK);
+	bool convertible = nameserver().isA(h->get_type(), ALPHA_CONVERTIBLE_SIG);
 	std::string sid;
 	std::string satom;
 	if (convertible)
@@ -1056,9 +1060,9 @@ void RocksStorage::loadInset(AtomSpace* as, const std::string& ist)
 	size_t offset = -1;
 	if ('-' == ist[istlen - 1]) offset = 0;
 
-	std::map<uint64_t, Handle> frame_order;
+	FramePath frame_order;
 	if (_multi_space)
-		makeOrder(HandleCast(as), frame_order);
+		frame_order = getPath(HandleCast(HandleCast(as)));
 
 	auto it = _rfile->NewIterator(rocksdb::ReadOptions());
 	for (it->Seek(ist); it->Valid() and it->key().starts_with(ist); it->Next())
@@ -1116,18 +1120,32 @@ void RocksStorage::loadAtoms(AtomSpace* as)
 	auto it = _rfile->NewIterator(rocksdb::ReadOptions());
 	for (it->Seek("a@"); it->Valid() and it->key().starts_with("a@"); it->Next())
 	{
-		Handle h = Sexpr::decode_atom(it->value().ToString());
-		h = add_nocheck(as, h);
-		// There's a trailing colon. Drop it.
-		const std::string& sidcolon = it->key().ToString().substr(2);
-		size_t len = sidcolon.size();
-		getKeysMonospace(as, sidcolon.substr(0, len-1), h);
+		try {
+			Handle h = Sexpr::decode_atom(it->value().ToString());
+			h = add_nocheck(as, h);
+			// There's a trailing colon. Drop it.
+			const std::string& sidcolon = it->key().ToString().substr(2);
+			size_t len = sidcolon.size();
+			getKeysMonospace(as, sidcolon.substr(0, len-1), h);
+		} catch (const SyntaxException& ex) {
+			// This will happen if a Type is unknown. Either the user forgot
+			// to load the module that defines that type, or this is an old
+			// dataset that contains an obsolete type. Either way, a loud warning.
+			logger().warn("RocksStorage: %s\n", ex.get_message());
+			_unknown_type = true;
+		}
 	}
 	delete it;
+
+	if (_unknown_type)
+	{
+		fprintf(stderr, "Unknown Atom type encountered during load; check logfile!\n");
+		_unknown_type = false;
+	}
 }
 
 size_t RocksStorage::loadAtomsPfx(
-                        const std::map<uint64_t, Handle>& frame_order,
+                        const FramePath& frame_order,
                         const std::string& pfx)
 {
 	size_t cnt = 0;
@@ -1138,12 +1156,20 @@ size_t RocksStorage::loadAtomsPfx(
 	for (it->Seek(pfx); it->Valid() and it->key().starts_with(pfx); it->Next())
 	{
 		cnt ++;
-		Handle h = Sexpr::decode_atom(it->key().ToString().substr(2));
-		const std::string& sid = it->value().ToString();
-		for (const auto& frit: frame_order)
-		{
-			AtomSpace* as = (AtomSpace*) frit.second.get();
-			getKeysMulti(as, sid, h);
+		try {
+			Handle h = Sexpr::decode_atom(it->key().ToString().substr(2));
+			const std::string& sid = it->value().ToString();
+			for (const auto& frit: frame_order)
+			{
+				AtomSpace* as = (AtomSpace*) frit.second.get();
+				getKeysMulti(as, sid, h);
+			}
+		} catch (const SyntaxException& ex) {
+			// This will happen if a Type is unknown. Either the user forgot
+			// to load the module that defines that type, or this is an old
+			// dataset that contains an obsolete type. Either way, a loud warning.
+			logger().warn("RocksStorage: %s\n", ex.get_message());
+			_unknown_type = true;
 		}
 	}
 	delete it;
@@ -1167,16 +1193,24 @@ size_t RocksStorage::loadAtomsHeight(
 		cnt ++;
 		const std::string& sid = it->key().ToString().substr(zsid);
 
-		// Get the matching satom string.
-		std::string satom;
-		_rfile->Get(rocksdb::ReadOptions(), "a@" + sid + ":", &satom);
-		Handle h = Sexpr::decode_atom(satom);
+		try {
+			// Get the matching satom string.
+			std::string satom;
+			_rfile->Get(rocksdb::ReadOptions(), "a@" + sid + ":", &satom);
+			Handle h = Sexpr::decode_atom(satom);
 
-		// Load the values, in frame-DAG order.
-		for (const auto& frit: frame_order)
-		{
-			AtomSpace* as = (AtomSpace*) frit.second.get();
-			getKeysMulti(as, sid, h);
+			// Load the values, in frame-DAG order.
+			for (const auto& frit: frame_order)
+			{
+				AtomSpace* as = (AtomSpace*) frit.second.get();
+				getKeysMulti(as, sid, h);
+			}
+		} catch (const SyntaxException& ex) {
+			// This will happen if a Type is unknown. Either the user forgot
+			// to load the module that defines that type, or this is an old
+			// dataset that contains an obsolete type. Either way, a loud warning.
+			logger().warn("RocksStorage: %s\n", ex.get_message());
+			_unknown_type = true;
 		}
 	}
 	delete it;
@@ -1190,9 +1224,7 @@ void RocksStorage::loadAtomsAllFrames(AtomSpace* as)
 	if (not _multi_space)
 		throw IOException(TRACE_INFO, "Internal Error!");
 
-	std::map<uint64_t, Handle> frame_order;
-	makeOrder(HandleCast(as), frame_order);
-
+	FramePath frame_order = getPath(HandleCast(HandleCast(as)));
 	loadAtomsPfx(frame_order, "n@");
 
 	size_t height = 1;
@@ -1201,6 +1233,12 @@ void RocksStorage::loadAtomsAllFrames(AtomSpace* as)
 		size_t found = loadAtomsHeight(frame_order, height);
 		if (0 == found) break;
 		height ++;
+	}
+
+	if (_unknown_type)
+	{
+		fprintf(stderr, "Unknown Atom type encountered during load; check logfile!\n");
+		_unknown_type = false;
 	}
 }
 
@@ -1235,9 +1273,17 @@ void RocksStorage::loadTypeMonospace(AtomSpace* as, Type t)
 	auto it = _rfile->NewIterator(rocksdb::ReadOptions());
 	for (it->Seek(typ); it->Valid() and it->key().starts_with(typ); it->Next())
 	{
-		Handle h = Sexpr::decode_atom(it->key().ToString().substr(2));
-		h = add_nocheck(as, h);
-		getKeysMonospace(as, it->value().ToString(), h);
+		try {
+			Handle h = Sexpr::decode_atom(it->key().ToString().substr(2));
+			h = add_nocheck(as, h);
+			getKeysMonospace(as, it->value().ToString(), h);
+		} catch (const SyntaxException& ex) {
+			// This will happen if a Type is unknown. Either the user forgot
+			// to load the module that defines that type, or this is an old
+			// dataset that contains an obsolete type. Either way, a loud warning.
+			logger().warn("RocksStorage: %s\n", ex.get_message());
+			_unknown_type = true;
+		}
 	}
 	delete it;
 }
@@ -1249,8 +1295,7 @@ void RocksStorage::loadTypeAllFrames(AtomSpace* as, Type t)
 	if (not _multi_space)
 		throw IOException(TRACE_INFO, "Internal Error!");
 
-	std::map<uint64_t, Handle> frame_order;
-	makeOrder(HandleCast(as), frame_order);
+	FramePath frame_order = getPath(HandleCast(HandleCast(as)));
 
 	std::string pfx = nameserver().isNode(t) ? "n@(" : "l@(";
 	std::string typ = pfx + nameserver().getTypeName(t);

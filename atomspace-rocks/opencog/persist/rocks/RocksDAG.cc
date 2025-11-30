@@ -42,11 +42,11 @@ using namespace opencog;
 /// where the numbers are the string sid's of the outgoing set.
 std::string RocksStorage::encodeFrame(const Handle& hasp)
 {
-	// We should say `getTypeName()` as below, expect that today,
+	// We should say `getTypeName()` as below, except that today,
 	// this will always be `AtomSpace`, 100% of the time. So the
 	// fancier type lookup is not needed.
 	// std::string txt = "(" + nameserver().getTypeName(hasp->get_type()) + " ";
-	std::string txt = "(as ";
+	std::string txt = "(AtomSpace ";
 
 	std::stringstream ss;
 	ss << std::quoted(hasp->get_name());
@@ -57,6 +57,25 @@ std::string RocksStorage::encodeFrame(const Handle& hasp)
 
 	txt += ")";
 	return txt;
+}
+
+void RocksStorage::updateFrameMap(const Handle& hasp,
+                                  const std::string& sid)
+{
+	std::lock_guard<std::mutex> flck(_mtx_frame);
+	_frame_map.insert({hasp, sid});
+	_fid_map.insert({sid, hasp});
+
+	// Clobber. Better safe than sorry.
+	_path_cache.clear();
+
+	// Update the top-frame list, too. Returned by loadFrameDAG()
+	for (const Handle& hi : hasp->getIncomingSet())
+	{
+		if (_frame_map.end() != _frame_map.find(hi))
+			return;
+	}
+	_top_frames.insert(hasp);
 }
 
 /// Search for the indicated AtomSpace, returning it's sid (string ID).
@@ -94,9 +113,7 @@ std::string RocksStorage::writeFrame(const Handle& hasp)
 	_rfile->Get(rocksdb::ReadOptions(), "f@" + sframe, &sid);
 	if (0 < sid.size())
 	{
-		std::lock_guard<std::mutex> flck(_mtx_frame);
-		_frame_map.insert({hasp, sid});
-		_fid_map.insert({sid, hasp});
+		updateFrameMap(hasp, sid);
 		return sid;
 	}
 
@@ -107,11 +124,7 @@ std::string RocksStorage::writeFrame(const Handle& hasp)
 
 	// Issue a band-new aid for this frame.
 	sid = get_new_aid();
-	{
-		std::lock_guard<std::mutex> flck(_mtx_frame);
-		_frame_map.insert({hasp, sid});
-		_fid_map.insert({sid, hasp});
-	}
+	updateFrameMap(hasp, sid);
 
 	// The rest is safe to do in parallel.
 	lck.unlock();
@@ -126,10 +139,11 @@ std::string RocksStorage::writeFrame(const Handle& hasp)
 /// Decode the string encoding of the Frame
 Handle RocksStorage::decodeFrame(const std::string& senc)
 {
-	if (0 != senc.compare(0, 5, "(as \""))
+	if (0 != senc.compare(0, 12, "(AtomSpace \""))
 		throw IOException(TRACE_INFO, "Internal Error!");
 
-	size_t pos = 4;
+	static const size_t skip = strlen("(AtomSpace ");
+	size_t pos = skip;
 	size_t ros = -1;
 	std::string name = Sexpr::get_node_name(senc, pos, ros, FRAME);
 
@@ -167,10 +181,7 @@ Handle RocksStorage::getFrame(const std::string& fid)
 	// Handle asp = HandleCast(_atom_space);
 	// Handle fas = Sexpr::decode_frame(asp, sframe);
 	Handle fas = decodeFrame(sframe);
-	std::lock_guard<std::mutex> flck(_mtx_frame);
-	_frame_map.insert({fas, fid});
-	_fid_map.insert({fid, fas});
-
+	updateFrameMap(fas, fid);
 	return fas;
 }
 
@@ -178,10 +189,20 @@ Handle RocksStorage::getFrame(const std::string& fid)
 // DAG API
 
 /// Load the entire collection of AtomSpace frames.
-/// The load is done unconditionally, each time this is called.
+/// The full load is done only once.
+/// This returns a list of all of the frames that are not subrames.
+/// This list is not used anywhere in the code here, but it is mandated
+/// by the BackingStore API. That is, this list is handed back to users.
 HandleSeq RocksStorage::loadFrameDAG(void)
 {
 	CHECK_OPEN;
+
+	// If already loaded, just return the top frames.
+	if (_fid_map.size() > 0)
+	{
+		HandleSeq tops(_top_frames.begin(), _top_frames.end());
+		return tops;
+	}
 
 	// Load all frames.
 	auto it = _rfile->NewIterator(rocksdb::ReadOptions());
@@ -207,12 +228,25 @@ HandleSeq RocksStorage::loadFrameDAG(void)
 			subs.insert(ho);
 	}
 
-	// The tops of the DAG are all the spaces that are not subspaces.
-	HandleSeq tops;
+	// The tops (roots) of the DAG are all the spaces that are not
+	// subspaces.
+	HandleSeq roots;
 	std::set_difference(all.begin(), all.end(),
 	                    subs.begin(), subs.end(),
-	                    std::back_inserter(tops));
-	return tops;
+	                    std::back_inserter(roots));
+
+	// Sort by name for deterministic ordering; the default sort order
+	// is driven by the 64-bit hashes, which is randomized. The sort
+	// order is acscending alphabetic.
+	std::sort(roots.begin(), roots.end(),
+	          [](const Handle& a, const Handle& b) {
+	             return a->get_name() < b->get_name();
+             });
+
+	_top_frames.clear();
+	_top_frames.reserve(roots.size());
+	_top_frames.insert(roots.begin(), roots.end());
+	return roots;
 }
 
 /// Store the entire collection of AtomSpace frames.
@@ -231,28 +265,52 @@ void RocksStorage::storeFrameDAG(AtomSpace* top)
 // =========================================================
 // General utility
 
-/// Create a total order out of a partial order, such that earlier
-/// AtomSpaces *always* appear before later ones.
+/// Create a path from the given Atomspace to its root(s). The path is
+/// such that earlier AtomSpaces *always* appear before later ones.
+/// This is a partial order; it will sometimes (usually?) be a total
+/// order, unless there are diamonds in the path, or multiple roots.
+/// Most real-world use cases don't seem to do this. But we do test
+/// for it.
+///
 /// `hasp` is an AtomSpacePtr.
-/// `order` is the total order being created.
-void RocksStorage::makeOrder(Handle hasp,
-                             std::map<uint64_t, Handle>& order)
+const RocksStorage::FramePath& RocksStorage::getPath(const Handle& hasp)
 {
-// XXX TODO: we should probably cache the results, instead of
-// recomputing every time!?
+	// Try to find it in the cache, first.
+	const auto& pr = _path_cache.find(hasp);
+	if (_path_cache.end() != pr)
+		return pr->second;
+
+	// Make the path, save it.
+	FramePath path;
+	makeOrder(hasp, path);
+	_path_cache.emplace(hasp, std::move(path));
+
+	// Grab what we just made.
+	const auto& prc = _path_cache.find(hasp);
+	return prc->second;
+}
+
+void RocksStorage::makeOrder(Handle hasp, FramePath& order)
+{
+	// Get a map of what's held in storage.
+	if (_fid_map.size() == 0)
+		loadFrameDAG();
+
 	// As long as there's a stack of Frames, just loop.
 	while (true)
 	{
 		const auto& pr = _frame_map.find(hasp);
-		if (_frame_map.end() == pr)
 
-			// Maybe it's safe to auto-load here, i.e. to call
-			// loadFrameDAG() and merge the results. Maybe. But
-			// for now, we're going to throw, instead, until the
-			// general use-patterns clear up a bit more.
+		// This will happen when user is attempting to load Atoms
+		// into an AtomSpace that hasn't been stored to disk. The
+		// lookup is by name, so the user probably mmsityped the name.
+		// Anyway its a user error.
+		if (_frame_map.end() == pr)
 			throw IOException(TRACE_INFO,
-				"Cannot use an AtomSpace DAG inconsistent with stored DAG!\n"
-				"Did you forget to call `(load-frames)`?");
+				"The AtomSpace to be loaded is not stored on disk!\n"
+				"\tYou asked to load into %s\n"
+				"\tList all stored AtomSpaces with `(load-frames)`\n",
+				hasp->to_string("").c_str());
 
 		order.insert({strtoaid(pr->second), hasp});
 		size_t nas = hasp->get_arity();
@@ -267,7 +325,8 @@ void RocksStorage::makeOrder(Handle hasp,
 }
 
 // =========================================================
-// Debug utility
+// Debug utility. Should return exactly the same thing as
+// what's in _top_frames.
 
 HandleSeq RocksStorage::topFrames(void)
 {
