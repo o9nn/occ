@@ -15,11 +15,6 @@ SET(CMAKE_INSTALL_RPATH
    "${CMAKE_INSTALL_PREFIX}/lib/opencog"
    "${PYTHON_DEST}")
 
-# Search path for module load paths in load_scm_file_relative()
-ADD_DEFINITIONS(
-	-DCMAKE_INSTALL_PREFIX="\\"${CMAKE_INSTALL_PREFIX}\\""
-)
-
 INCLUDE_DIRECTORIES(
 	${Python3_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -27,6 +22,9 @@ INCLUDE_DIRECTORIES(
 )
 
 # SET(CYTHON_FLAGS "-3" "-f" "-Wextra" "-Werror")
+# Modern version of cython spew a warning about nogil vs except ordering,
+# but this warning is insane. If fixed, it breaks older versions of python!
+# We want to suppress this message; its stunningly annoying and useless.
 SET(CYTHON_FLAGS "-3" "-f" "-Wextra")
 
 ###################### logger ##########################################
@@ -50,10 +48,9 @@ SET_TARGET_PROPERTIES(logger_cython PROPERTIES
 ###################### atomspace ####################################
 
 CYTHON_ADD_MODULE_PYX(atomspace
-	"atom.pyx" "nameserver.pyx" "truth_value.pyx"
+	"atom.pyx" "nameserver.pyx"
 	"atomspace_details.pyx" "value.pyx" "float_value.pyx" "string_value.pyx"
 	"link_value.pyx" "queue_value.pyx" "uniset_value.pyx" "bool_value.pyx" opencog_atom_types
-	"../../atoms/truthvalue/TruthValue.h" "../../atoms/truthvalue/SimpleTruthValue.h"
 	"../../atoms/atom_types/NameServer.h" "../../atoms/base/Handle.h"
 	"../../atomspace/AtomSpace.h"
 )
@@ -79,6 +76,7 @@ ADD_DEPENDENCIES(atomspace_cython opencog_atom_types)
 TARGET_LINK_LIBRARIES(atomspace_cython
 	${NO_AS_NEEDED}
 	atomspace
+	executioncontext
 	${Python3_LIBRARIES}
 )
 
@@ -124,65 +122,45 @@ SET_TARGET_PROPERTIES(type_constructors PROPERTIES
 	OUTPUT_NAME type_constructors)
 
 
-############################## utilities #####################
+#################### type_ctors #####################
 
-CYTHON_ADD_MODULE_PYX(utilities
-	"atomspace.pxd" "utilities.pxd" opencog_atom_types
+CYTHON_ADD_MODULE_PYX(type_ctors
+	"atomspace.pxd" "type_ctors.pxd" opencog_atom_types
 )
 
-ADD_LIBRARY(utilities_cython
-	Utilities.cc
-	utilities.cpp
+ADD_LIBRARY(type_ctors_cython
+	TypeCtors.cc
+	type_ctors.cpp
 )
 
-TARGET_LINK_LIBRARIES(utilities_cython
+TARGET_LINK_LIBRARIES(type_ctors_cython
 	PythonEval
 	atomspace
 	executioncontext
 	${Python3_LIBRARIES}
 )
 
-SET_TARGET_PROPERTIES(utilities_cython PROPERTIES
+SET_TARGET_PROPERTIES(type_ctors_cython PROPERTIES
 	PREFIX ""
-	OUTPUT_NAME utilities)
+	OUTPUT_NAME type_ctors)
 
-INSTALL (TARGETS utilities_cython EXPORT AtomSpaceTargets
+INSTALL (TARGETS type_ctors_cython EXPORT AtomSpaceTargets
    DESTINATION "lib${LIB_DIR_SUFFIX}/opencog"
 )
 
 INSTALL (FILES
-	Utilities.h
+	TypeCtors.h
 	DESTINATION "include/opencog/cython/opencog"
 )
 
 ############################## execute module #####################
 
-CYTHON_ADD_MODULE_PYX(execute
-	"atomspace.pxd"
-	opencog_atom_types
-)
-
-ADD_LIBRARY(exec_cython
-	"execute.cpp"
-)
-
-TARGET_LINK_LIBRARIES(exec_cython
-	atomspace_cython
-	atomspace
-	${Python3_LIBRARIES}
-)
-
-SET_TARGET_PROPERTIES(exec_cython PROPERTIES
-	PREFIX ""
-	OUTPUT_NAME execute)
-
 ### Install the modules ###
 INSTALL(TARGETS
 	atomspace_cython
-	exec_cython
 	logger_cython
 	type_constructors
-	utilities_cython
+	type_ctors_cython
 	DESTINATION "${PYTHON_DEST}")
 
 # This custom target allows *only* the Python bindings to be installed;
@@ -193,23 +171,20 @@ INSTALL(TARGETS
 # $ENV{VIRTUAL_ENV}, which is what python wants. Argh. Its a mess.
 ADD_CUSTOM_TARGET(PythonBindings DEPENDS
 	atomspace_cython
-	exec_cython
 	logger_cython
 	type_constructors
-	utilities_cython)
+	type_ctors_cython)
 
 IF (HAVE_GUILE)
 	############################## scheme wrapper #####################
 
 	CYTHON_ADD_MODULE_PYX(scheme
-		"load-file.h"
 		"PyScheme.h"
 		"atomspace.pxd"
 		opencog_atom_types
 	)
 
 	ADD_LIBRARY(scheme
-		load-file.cc
 		PyScheme.cc
 		scheme.cpp
 	)
@@ -235,4 +210,5 @@ ENDIF (HAVE_GUILE)
 
 INSTALL (FILES
 	__init__.py
+	utilities.py
 	DESTINATION "${PYTHON_DEST}")

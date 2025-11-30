@@ -15,6 +15,7 @@ class SparseUTest :  public CxxTest::TestSuite
 {
 	private:
 		AtomSpacePtr as;
+		SchemeEval* eval;
 
 	public:
 
@@ -65,10 +66,9 @@ class SparseUTest :  public CxxTest::TestSuite
 void SparseUTest::setUp(void)
 {
 	as = createAtomSpace();
-	SchemeEval* eval = new SchemeEval(as);
+	eval = SchemeEval::get_scheme_evaluator(as);
 	eval->eval("(add-to-load-path \"" PROJECT_SOURCE_DIR "\")");
 	eval->eval("(add-to-load-path \"" PROJECT_BINARY_DIR "\")");
-	delete eval;
 }
 
 #define getarity(hand) hand->get_arity()
@@ -80,14 +80,13 @@ void SparseUTest::test_glob(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/sparse.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ 2 solutions
 	// In the buggy case, this hits an infinite loop.
-	result = eval->eval_h("(cog-execute! est)");
+	result = eval->eval_h("(cog-execute! (CollectionOf est))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 2, getarity(result));
@@ -95,7 +94,7 @@ void SparseUTest::test_glob(void)
 	// --------------------------------------------
 	// Result should be a SetLink w/ 1 solution
 	// In the buggy case, this hits an infinite loop.
-	result = eval->eval_h("(cog-execute! est-uni)");
+	result = eval->eval_h("(cog-execute! (CollectionOf est-uni))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 1, getarity(result));
@@ -110,13 +109,12 @@ void SparseUTest::test_palin(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/sparse.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ 4 solutions
-	result = eval->eval_h("(cog-execute! palin)");
+	result = eval->eval_h("(cog-execute! (CollectionOf palin))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 4, getarity(result));
@@ -131,13 +129,12 @@ void SparseUTest::test_palin_dab(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/sparse.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ 2 solutions
-	result = eval->eval_h("(cog-execute! palin-disambig)");
+	result = eval->eval_h("(cog-execute! (CollectionOf palin-disambig))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 2, getarity(result));
@@ -152,13 +149,12 @@ void SparseUTest::test_glob_ord(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/sparse-list.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ 1 solution
-	result = eval->eval_h("(cog-execute! est)");
+	result = eval->eval_h("(cog-execute! (CollectionOf est))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 1, getarity(result));
@@ -173,13 +169,12 @@ void SparseUTest::test_palin_ord(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/sparse-list.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ 2 solutions
-	result = eval->eval_h("(cog-execute! palin)");
+	result = eval->eval_h("(cog-execute! (CollectionOf palin))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 2, getarity(result));
@@ -194,14 +189,13 @@ void SparseUTest::test_chem_bad(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/chem_types.scm\")");
 	eval->eval("(load-from-path \"tests/query/sparse-react.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ 4 solutions
-	result = eval->eval_h("(cog-execute! bad-ester)");
+	result = eval->eval_h("(cog-execute! (CollectionOf bad-ester))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 4, getarity(result));
@@ -216,14 +210,13 @@ void SparseUTest::test_chem_good(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/chem_types.scm\")");
 	eval->eval("(load-from-path \"tests/query/sparse-react.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ 1 solutions
-	result = eval->eval_h("(cog-execute! esterification)");
+	result = eval->eval_h("(cog-execute! (CollectionOf esterification))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 1, getarity(result));
@@ -238,14 +231,13 @@ void SparseUTest::test_chem_inf(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/chem_types.scm\")");
 	eval->eval("(load-from-path \"tests/query/sparse-rinf.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ no solutions
-	result = eval->eval_h("(cog-execute! ester)");
+	result = eval->eval_h("(cog-execute! (CollectionOf ester))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 0, getarity(result));
@@ -260,14 +252,13 @@ void SparseUTest::test_chem_order(void)
 {
 	logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-	SchemeEval* eval = new SchemeEval(as);
 	eval->eval("(load-from-path \"tests/query/chem_types.scm\")");
 	eval->eval("(load-from-path \"tests/query/sparse-react-ordered.scm\")");
 	Handle result;
 
 	// --------------------------------------------
 	// Result should be a SetLink w/ 1 solutions
-	result = eval->eval_h("(cog-execute! estero)");
+	result = eval->eval_h("(cog-execute! (CollectionOf estero))");
 
 	logger().debug("glob arity is %d\n", getarity(result));
 	TSM_ASSERT_EQUALS("wrong number of solutions found", 1, getarity(result));
