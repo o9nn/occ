@@ -30,7 +30,6 @@
 ; as otherwise guile generates warnings about "possibly unbound variable"
 ; when these are touched in the various scm files.
 (export
-cog-add-atomspace
 cog-arity
 cog-atom
 cog-atom?
@@ -44,9 +43,6 @@ cog-atomspace-env
 cog-atomspace-readonly?
 cog-atomspace-ro!
 cog-atomspace-rw!
-cog-atomspace-uuid
-cog-confidence
-cog-count
 cog-count-atoms
 cog-equal?
 cog-extract!
@@ -54,7 +50,6 @@ cog-extract-recursive!
 cog-get-subtypes
 cog-get-types
 cog-handle
-cog-inc-count!
 cog-incoming-by-type
 cog-incoming-set
 cog-incoming-size
@@ -65,7 +60,6 @@ cog-keys->alist
 cog-link
 cog-link?
 cog-map-type
-cog-mean
 cog-name
 cog-new-ast
 cog-new-atom
@@ -81,15 +75,10 @@ cog-outgoing-by-type
 cog-outgoing-set
 cog-set-atomspace!
 cog-set-server-mode!
-cog-set-tv!
 cog-set-value!
 cog-set-value-ref!
 cog-set-values!
 cog-subtype?
-cog-tv
-cog-tv-confidence
-cog-tv-count
-cog-tv-mean
 cog-type
 cog-type->int
 cog-update-value!
@@ -158,11 +147,7 @@ cog-value-type
 (include-from-path "opencog/base/atom-docs.scm")
 (include-from-path "opencog/base/utilities.scm")
 (include-from-path "opencog/base/atom-cache.scm")
-(include-from-path "opencog/base/apply.scm")
-(include-from-path "opencog/base/tv.scm")
 (include-from-path "opencog/base/types.scm")
-(include-from-path "opencog/base/file-utils.scm")
-(include-from-path "opencog/base/debug-trace.scm")
 
 ; Obsolete functions
 (define-public (cog-undefined-handle) "obsolete function" '())

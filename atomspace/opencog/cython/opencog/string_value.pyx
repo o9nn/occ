@@ -2,16 +2,18 @@
 def createStringValue(arg):
     cdef shared_ptr[cStringValue] c_ptr
     if (isinstance(arg, list)):
-        c_ptr.reset(new cStringValue(StringValue.list_of_strings_to_vector(arg)))
+        c_ptr = c_createStringValue_vector(StringValue.list_of_strings_to_vector(arg))
     else:
-        c_ptr.reset(new cStringValue(<string>(arg.encode('UTF-8'))))
-    return StringValue(PtrHolder.create(<shared_ptr[cValue]&>(c_ptr, c_ptr.get())))
+        c_ptr = c_createStringValue_single(<string>(arg.encode('UTF-8')))
+    cdef StringValue instance = StringValue.__new__(StringValue)
+    instance.shared_ptr = <cValuePtr&>(c_ptr, c_ptr.get())
+    return instance
 
 cdef class StringValue(Value):
 
     def to_list(self):
         return StringValue.vector_of_strings_to_list(
-            &((<cStringValue*>self.get_c_value_ptr().get()).value()))
+            &((<cStringValue*>self.get_c_raw_ptr()).value()))
 
     @staticmethod
     cdef vector[string] list_of_strings_to_vector(list python_list):
