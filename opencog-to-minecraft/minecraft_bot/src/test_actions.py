@@ -20,7 +20,7 @@ def testRelativeLookClient(pitch, yaw):
         response = setRelativeLook(pitch, yaw)
         return response.state
     except rospy.ServiceException as e:
-        print("service call failed: %s" % e)
+        print "service call failed: %s" % e
 
 
 def testRelativeMoveClient(yaw, dist, jump):
@@ -32,7 +32,7 @@ def testRelativeMoveClient(yaw, dist, jump):
         response = setRelativeMove(yaw, dist, jump)
         return response.state
     except rospy.ServiceException as e:
-        print("service call failed: %s" % e)
+        print "service call failed: %s" % e
 
 
 def testLookClient(pitch, yaw):
@@ -44,7 +44,7 @@ def testLookClient(pitch, yaw):
         response = setLook(pitch, yaw)
         return response.state
     except rospy.ServiceException as e:
-        print("service call failed: %s" % e)
+        print "service call failed: %s" % e
 
 
 def testMoveClient(x, z, jump):
@@ -56,7 +56,7 @@ def testMoveClient(x, z, jump):
         response = setMove(x, z, jump)
         return response.state
     except rospy.ServiceException as e:
-        print("service call failed: %s" % e)
+        print "service call failed: %s" % e
 
 
 def testMove():
@@ -70,7 +70,7 @@ def testMove():
 
         for step in move_steps:
             response = testMoveClient(*step)
-            print("service move respond with %s" % response)
+            print "service move respond with %s" % response
             rospy.sleep(10.)
 
 
@@ -84,7 +84,7 @@ def testRelativeMove():
             (0, 3, False)]
         for step in move_steps:
             response = testRelativeMoveClient(*step)
-            print("service rel_move respond with %s" % response)
+            print "service rel_move respond with %s" % response
             rospy.sleep(3.)
 
 
@@ -100,7 +100,7 @@ def testRelativeLook():
 
         for pos in look_positions:
             response = testRelativeLookClient(pos[0], pos[1])
-            print("service responded with: %s" % response)
+            print "service responded with: %s" % response
             rospy.sleep(3.)
 
 
@@ -108,9 +108,9 @@ def resetLook():
 
     resp = testLookClient(0., 0.)
     if resp:
-        print("reset bot head pose")
+        print "reset bot head pose"
     else:
-        print("could not reset bot head pose")
+        print "could not reset bot head pose"
 
 
 if __name__ == "__main__":
