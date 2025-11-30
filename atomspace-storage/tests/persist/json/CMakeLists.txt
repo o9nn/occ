@@ -2,10 +2,10 @@
 
 LINK_LIBRARIES(
 	json
-	persist
 	atomspace
 	execution
 )
 
 ADD_CXXTEST(JSCommandsUTest)
 ADD_CXXTEST(MCPCommandsUTest)
+ADD_CXXTEST(SexTunnelUTest)
