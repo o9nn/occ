@@ -40,39 +40,39 @@ class SpockControlCore:
 class SpockControlPlugin(PluginBase):
 
     requires = ('Event','Messenger','Net','Movement','World','ClientInfo',
-                'Inventory','MineAndPlace','SendMapData','SendEntityData')
+		'Inventory','MineAndPlace','SendMapData','SendEntityData')
 
 
     events = {
-
-        'ros_chunk_data': 'sendChunkData',
-        'ros_chunk_bulk': 'sendChunkBulk',
-        'ros_block_update': 'sendBlockUpdate',
-        'ros_entity_data': 'sendEntityData',
-        'client_death': 'sendClientDeathUpdate',
+	
+	'ros_chunk_data': 'sendChunkData',
+	'ros_chunk_bulk': 'sendChunkBulk',
+	'ros_block_update': 'sendBlockUpdate',
+	'ros_entity_data': 'sendEntityData',
+	'client_death': 'sendClientDeathUpdate',
         'ros_position_update': 'sendClientPositionUpdate',
         'ros_client_inventory_update_window': 'sendInventoryData',
 
     } 
 
     def __init__(self, ploader, settings):
+        
+	# Init PluginBase
+	super(SpockControlPlugin, self).__init__(ploader, settings)
 
-        # Init PluginBase
-        super(SpockControlPlugin, self).__init__(ploader, settings)
-
-
+		
         self.event = ploader.requires('Event')
         self.msgr = ploader.requires('Messenger')
         self.net = ploader.requires('Net')
-
+        
 
         # the standard Spock plugin. necessary to track position updates
         # and any other state changes to the client from the Minecraft server
         self.clinfo = ploader.requires('ClientInfo')
-
+        
         self.inv=ploader.requires('Inventory') 
         self.test_field= False
-
+     
         """   
         # simply load all of the plugins
         ploader.requires('NewMovement')
@@ -99,13 +99,13 @@ class SpockControlPlugin(PluginBase):
         ploader.reg_event_handler('ros_position_update', self.sendClientPositionUpdate)
         ploader.reg_event_handler('ros_client_inventory_update_window', self.sendInventoryData)  
         """      
-
+        
         self.core = SpockControlCore()
         ploader.provides('SpockControl', self.core)
         #print "Inside init of spockctrlplugin" 
 
         self.initSpockControlNode()
-
+        
     def initSpockControlNode(self):
 
         rospy.init_node('spock_controller')
@@ -140,11 +140,11 @@ class SpockControlPlugin(PluginBase):
             'client_position_data', position_msg, queue_size=100)
         self.pub_clinfo_inventory = rospy.Publisher(
             'client_inventory_data', inventory_msg, queue_size=100)
-
+        
         #data = {'window_id':10 , 'title':'akhilesh'}# , 'slots': [{'window':10, 'slot_nr':2 , 'id':3 , 'damage':100 , 'amount':199},{'window':20, 'slot_nr':22 , 'id':23 , 'damage':200 , 'amount':299}] }
         #self.sendInventoryData("okapi",data)
         #while self.test_field == False:
-        #   rospy.sleep(1.)
+         #   rospy.sleep(1.)
 
     def lookTest(self, data):
 
@@ -162,8 +162,8 @@ class SpockControlPlugin(PluginBase):
         # everything is relative, for simplicity
         #packet['flags'] = 0b11111
 
-        print("sending test packet for look only!")
-        print(packet)
+        print "sending test packet for look only!"
+        print packet
 
         self.net.push_packet('PLAY>Player Position and Look', packet)
         #self.net.push_packet('PLAY>Player Position', packet)
@@ -248,33 +248,33 @@ class SpockControlPlugin(PluginBase):
 
     def sendClientLogin(self, name, data):
 
-        print("received client login")
-        print(data)
+        print "received client login"
+        print data
 
     def sendClientJoinGame(self, name, data):
 
-        print("received client join game")
-        print(data)
+        print "received client join game"
+        print data
 
     def sendClientSpawnUpdate(self, name, data):
 
-        print("received client spawn")
-        print(data)
+        print "received client spawn"
+        print data
 
-
+    
     def sendClientHealthUpdate(self, name, data):
 
-        print("received client health update")
+        print "received client health update"
         # Update this in Atomspace
         msg = health_msg()
         self.msgr.setMessage(msg, data)
 
         self.pub_clinfo_health.publish(msg)
-
+     
     def sendClientDeathUpdate(self, name, data):
 
-        print("received client Death update")
-        print(data)
+        print "received client Death update"
+        print data
 
     def sendClientPositionUpdate(self, name, data):
 
@@ -282,12 +282,12 @@ class SpockControlPlugin(PluginBase):
         # print data
 
         msg = position_msg()
-
+       
         self.msgr.setMessage(msg, data)
 
         self.pub_clinfo_pos.publish(msg)
-
-
+    
+    
     def sendInventoryData(self, name, data):
         #print "received client inventory data"
         #print data
@@ -306,7 +306,7 @@ class SpockControlPlugin(PluginBase):
             msg_slot.item_name=slot['item_name']
             msg_slot.item_id=slot['item_id']
             msg.slots.append(msg_slot)
-
+                 
         #print msg 
         self.pub_clinfo_inventory.publish(msg)
         #TODO:publish this to a subscriber which will add the inventory information to the bot's atomspace.

@@ -95,7 +95,7 @@ def get_look_frames(pos, pitch, yaw):
     frame['pitch'] = pitch
     frame['yaw'] = yaw
 
-    print(frame)
+    print frame
 
     frames.append(frame)
 

@@ -72,7 +72,7 @@ try:
     _ros_set_move = rospy.ServiceProxy('set_move', abs_move_srv)
     _ros_set_dig = rospy.ServiceProxy('set_dig', dig_srv)
 except rospy.ServiceException as e:
-    print("service call failed: %s" % e)
+    print "service call failed: %s" % e
 
 
 def is_attractive(atom, sti_std=1):
@@ -113,7 +113,7 @@ def move_toward_block(block_atom):
         Add distance argument: make caller control the judgement of "near"
     """
 
-    print('move toward atom', block_atom)
+    print 'move toward atom', block_atom
 
     # Get the block position info from the atomspace, to do this we query
     # spacemap.
@@ -127,7 +127,7 @@ def move_toward_block(block_atom):
     # If we did not find the block in the spacemap than return false, otherwise
     # continue the function.
     if block_pos is None:
-        print('block position not found.', block_atom)
+        print 'block position not found.', block_atom
         return TruthValue(0, 1)
 
     # Try to find an open block we can stand on near the target block.
@@ -135,9 +135,9 @@ def move_toward_block(block_atom):
         atomspace, cur_map, block_pos, 2, (1, 0, 0), True)
 
     if dest is None:
-        print('get_no_free_point')
+        print 'get_no_free_point'
 
-    print('block_pos, dest', block_pos, dest)
+    print 'block_pos, dest', block_pos, dest
 
     # Get the position of the bot.
     self_handle = cur_er.get_self_agent_entity()
@@ -148,7 +148,7 @@ def move_toward_block(block_atom):
     if (math.floor(self_pos[0]) == dest[0]
             and math.floor(self_pos[1]) == dest[1]
             and math.floor(self_pos[2]) == dest[2]):
-        print('has arrived there')
+        print 'has arrived there'
         return TruthValue(1, 1)
     else:
         # Pass the call to ROS and return its success value back to the caller of this function.
@@ -158,12 +158,12 @@ def move_toward_block(block_atom):
         # TODO: The AI is expected to finish a full step in less than 1 second,
         # so we should figure out a better value for this wait timer.
         rospy.sleep(1)
-        print('action_schemas: abs_move response', response)
+        print 'action_schemas: abs_move response', response
         if response.state:
-            print('move success')
+            print 'move success'
             return TruthValue(1, 1)
         else:
-            print('move fail')
+            print 'move fail'
             return TruthValue(0, 1)
 
 
@@ -179,14 +179,14 @@ def dig_block(block_atom):
     Returns: TruthValue(1,1) if block is mined and TruthValue(0,1) otherwise.
     """
 
-    print('Dig block:', block_atom)
+    print 'Dig block:', block_atom
 
     map_handle = (atomspace.get_atoms_by_name(
         types.SpaceMapNode, "MCmap")[0]).h
     cur_map = space_server.get_map(map_handle)
     block_pos = cur_map.get_block_location(block_atom.h)
     if block_pos is None:
-        print('block position not found.', block_atom)
+        print 'block position not found.', block_atom
         return TruthValue(0, 1)
     else:
         # TODO: Flipping y and z positions for ROS to Minecraft convention
@@ -255,7 +255,7 @@ def set_relative_move(yaw_atom, dist_atom, jump_atom):
     Returns: TruthValue(1,1) if move success else TruthValue(0,1)
     """
 
-    print('set_rel_move')
+    print 'set_rel_move'
     yaw = float(yaw_atom.name)
     dist = float(dist_atom.name)
 
@@ -264,7 +264,7 @@ def set_relative_move(yaw_atom, dist_atom, jump_atom):
     else:
         jump = False
     response = _ros_set_relative_move(yaw, dist, jump)
-    print('set_rel_move: yaw, dist, jump, res', yaw, dist, jump, response)
+    print 'set_rel_move: yaw, dist, jump, res', yaw, dist, jump, response
     if response is True:
         return TruthValue(1, 1)
     else:

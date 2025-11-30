@@ -51,7 +51,7 @@ class GroundedKnowledge:
         some for loops which loop over this dictionary.
         """
 
-        print("\nLoading grounded knowledge: blocks and mining")
+        print "\nLoading grounded knowledge: blocks and mining"
 
         # This root atom is the atom that all block types are a subtype of.
         block_type_root_atom = self._atomspace.add_node(
@@ -105,7 +105,7 @@ class GroundedKnowledge:
                     if hard_node != 0:
                         hard_node = add_predicate(
                             self._atomspace, "Block hardness", concept_node,
-                            NumberNode(str(block["hardness"])))
+                                NumberNode(str(block["hardness"])))
                         # print hard_node
 
     def load_item_knowledge(self, knowledge_level):
@@ -113,7 +113,7 @@ class GroundedKnowledge:
         various properties
         """
 
-        print("\nLoading grounded knowledge: items")
+        print "\nLoading grounded knowledge: items"
 
         # This root atom is the atom that all item types are a subtype of.
         item_type_root_atom = self._atomspace.add_node(
@@ -154,7 +154,7 @@ class GroundedKnowledge:
         mining, or other creatures like animals or enemies, etc.
         """
 
-        print("\nLoading grounded knowledge: entities")
+        print "\nLoading grounded knowledge: entities"
 
         # This root atom is the atom that all entity types are a subtype of.
         entity_type_root_atom = self._atomspace.add_node(
@@ -177,7 +177,7 @@ class GroundedKnowledge:
             if "type" in entity:
                 type_node = add_predicate(
                     self._atomspace, "Minecraft entity type", atom,
-                    ConceptNode(str(entity["type"])))
+                        ConceptNode(str(entity["type"])))
                 # print type_node
 
     def load_category_knowledge(self, knowledge_level):
@@ -191,7 +191,7 @@ class GroundedKnowledge:
         about the world a bit easier.
         """
 
-        print("\nLoading grounded knowledge: categories")
+        print "\nLoading grounded knowledge: categories"
 
         categories_dict = {
             "WOOD_BLOCK": (
@@ -270,7 +270,7 @@ class GroundedKnowledge:
         satisfaction of these goals leads to the overall happiness of the bot.
         """
 
-        print("\nLoading grounded knowledge: goals")
+        print "\nLoading grounded knowledge: goals"
 
         goal_root_node = self._atomspace.add_node(types.ConceptNode, "GOAL")
 
@@ -325,7 +325,7 @@ class GroundedKnowledge:
         """ Creates nodes in the atomspace for each of the windows and their
         various properties
         """
-        print("\nLoading grounded knowledge: windows")
+        print "\nLoading grounded knowledge: windows"
 
         # This root atom is the atom that all windows types are a subtype of.
         window_type_root_atom = self._atomspace.add_node(
@@ -388,7 +388,7 @@ class GroundedKnowledge:
         """ Creates nodes in the atomspace for each of the biomes and their
         various properties
         """
-        print("\nLoading grounded knowledge: biomes")
+        print "\nLoading grounded knowledge: biomes"
 
         # This root atom is the atom that all biome types are a subtype of.
         biome_type_root_atom = self._atomspace.add_node(
@@ -425,7 +425,7 @@ class GroundedKnowledge:
         """ Creates nodes in the atomspace for each of the instruments and their
         various properties
         """
-        print("\nLoading grounded knowledge: instruments")
+        print "\nLoading grounded knowledge: instruments"
 
         # This root atom is the atom that all instrument types are a subtype
         # of.
