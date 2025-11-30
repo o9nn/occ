@@ -1,4 +1,3 @@
-ENABLE_TESTING()
 INCLUDE(AddCxxtest)
 
 # Perform tests in component-dependency order, as much as possible.
@@ -10,6 +9,7 @@ IF (CXXTEST_FOUND)
 	IF (HAVE_MCP)
 		ADD_SUBDIRECTORY (mcp)
 	ENDIF (HAVE_MCP)
+	ADD_SUBDIRECTORY (http)
 	ADD_SUBDIRECTORY (proxy)
 	ADD_SUBDIRECTORY (shell)
 

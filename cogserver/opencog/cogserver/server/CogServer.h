@@ -53,6 +53,7 @@ class CogServer :
 {
 protected:
     AtomSpacePtr _atomSpace;
+    SocketManager _socket_manager;
     NetworkServer* _consoleServer;
     NetworkServer* _webServer;
     NetworkServer* _mcpServer;
@@ -107,6 +108,9 @@ public:
 
     bool running(void) { return _running; }
 
+    /** Get the web server port */
+    short getWebServerPort() const { return _webServer ? _webServer->getPort() : 0; }
+
     /*** Request API ***/
     Request* createRequest(const std::string& id) {
         return RequestManager::createRequest(id, *this);
@@ -126,6 +130,9 @@ public:
     std::string display_stats(int nlines = -1);
     std::string display_web_stats(void);
     static std::string stats_legend(void);
+
+    /** Get the shared socket manager */
+    SocketManager* getSocketManager() { return &_socket_manager; }
 
 }; // class
 
