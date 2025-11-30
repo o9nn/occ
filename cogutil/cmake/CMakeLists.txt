@@ -43,10 +43,24 @@ INSTALL(FILES
 	DESTINATION
 	${DATADIR}/cmake/)
 
-set(INCLUDE_INSTALL_DIR include/ )
-set(LIB_INSTALL_DIR lib/ )
+# Use GNUInstallDirs for proper multiarch support
+include(GNUInstallDirs)
 
-set(COGUTIL_CMAKE_DIR lib/cmake/CogUtil)
+# Set installation directories, respecting CMAKE_INSTALL_LIBDIR if provided
+set(INCLUDE_INSTALL_DIR include/ )
+# Use CMAKE_INSTALL_LIBDIR if provided (for Debian multiarch), otherwise default to lib/
+if(CMAKE_INSTALL_LIBDIR)
+	set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/ )
+else()
+	set(LIB_INSTALL_DIR lib/ )
+endif()
+
+# CMake config files should be in lib/cmake/CogUtil or lib/<multiarch>/cmake/CogUtil
+if(CMAKE_INSTALL_LIBDIR)
+	set(COGUTIL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/CogUtil)
+else()
+	set(COGUTIL_CMAKE_DIR lib/cmake/CogUtil)
+endif()
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(CogUtilConfig.cmake.in
