@@ -18,6 +18,22 @@ Description: OpenCog hypergraph database, query system and rule engine
  more generally, as hypergraphs; thus the AtomSpace is a kind of graph
  database, the query engine is a general graph re-writing system, and
  the rule-engine is a generalized rule-driven inferencing system.
+ .
  The vertices and edges of a graph, known as "Atoms", are used to represent
  not only "data", but also "procedures"; thus, many graphs are executable
  programs as well as data structures.
+ .
+ Key features include:
+  - Distributed hypergraph knowledge representation
+  - Pattern matching and graph rewriting
+  - Truth value system with probabilistic reasoning
+  - Attention allocation mechanisms
+  - Multi-language bindings (C++, Python, Scheme, Haskell)
+  - Persistent storage backends (RocksDB, PostgreSQL, CogServer)
+  - Type system with inheritance and composition
+  - Value system for efficient numeric and tensor operations
+ .
+ AtomSpace serves as Layer 2 in the OpenCog stack and is the foundation
+ for all cognitive algorithms including PLN, ECAN, pattern mining, and
+ language learning. It enables cognitive synergy through unified knowledge
+ representation across diverse AI paradigms.

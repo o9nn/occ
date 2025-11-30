@@ -12,5 +12,17 @@ Package: libcogutil-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Very low-level C++ programming utilities library for OpenCog
- The OpenCog utilities is a miscellaneous collection of C++ utilities use for
+ The OpenCog utilities is a miscellaneous collection of C++ utilities used for
  typical programming tasks in multiple OpenCog projects.
+ .
+ This library provides foundational utilities including:
+  - Logger: Thread-safe logging with multiple severity levels
+  - Config: Configuration file management
+  - Concurrent: Thread-safe data structures and utilities
+  - Exceptions: Exception handling framework
+  - Backtrace: Stack trace generation for debugging
+  - Platform: Cross-platform compatibility utilities
+ .
+ CogUtil serves as Layer 1 in the OpenCog stack and is required by all
+ other OpenCog components. It has no OpenCog-specific dependencies and
+ can be used as a standalone C++ utility library.
