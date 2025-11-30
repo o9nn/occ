@@ -794,7 +794,7 @@ class Tr1UnorderedMapPrinter:
         data = self.flatten (imap (self.format_one, StdHashtableIterator (self.hashtable())))
         # Zip the two iterators together.
         return izip (counter, data)
-
+        
 
     def display_hint (self):
         return 'map'
@@ -972,11 +972,11 @@ def register_type_printers(obj):
         add_one_type_printer(obj, 'basic_iostream', pfx + 'iostream')
         add_one_type_printer(obj, 'basic_stringbuf', pfx + 'stringbuf')
         add_one_type_printer(obj, 'basic_istringstream',
-                             pfx + 'istringstream')
+                                 pfx + 'istringstream')
         add_one_type_printer(obj, 'basic_ostringstream',
-                             pfx + 'ostringstream')
+                                 pfx + 'ostringstream')
         add_one_type_printer(obj, 'basic_stringstream',
-                             pfx + 'stringstream')
+                                 pfx + 'stringstream')
         add_one_type_printer(obj, 'basic_filebuf', pfx + 'filebuf')
         add_one_type_printer(obj, 'basic_ifstream', pfx + 'ifstream')
         add_one_type_printer(obj, 'basic_ofstream', pfx + 'ofstream')
@@ -989,9 +989,9 @@ def register_type_printers(obj):
         add_one_type_printer(obj, 'regex_iterator', pfx + 'cregex_iterator')
         add_one_type_printer(obj, 'regex_iterator', pfx + 'sregex_iterator')
         add_one_type_printer(obj, 'regex_token_iterator',
-                             pfx + 'cregex_token_iterator')
+                                 pfx + 'cregex_token_iterator')
         add_one_type_printer(obj, 'regex_token_iterator',
-                             pfx + 'sregex_token_iterator')
+                                 pfx + 'sregex_token_iterator')
 
     # Note that we can't have a printer for std::wstreampos, because
     # it shares the same underlying type as std::streampos.
