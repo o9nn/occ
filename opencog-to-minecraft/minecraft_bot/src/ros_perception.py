@@ -7,7 +7,7 @@ subscribed_msg_dict = {"client_position_data" : position_msg,
                        "camera_vis_data" : map_block_multi_msg}
 
 class ROSPerceptionInterface:
-    
+
     def __init__(self, _ros_handle_dict):
 
         for topic in subscribed_msg_dict:
@@ -17,5 +17,5 @@ class ROSPerceptionInterface:
             #print subscribed_msg_dict
             try:
                 rospy.Subscriber(topic, subscribed_msg_dict[topic], _ros_handle_dict[topic])
-            except KeyError, e:
-                print "ROSPerceptionProcessor.__init__: %s: topic %s is not in the handle_dict" %(e,topic)
+            except KeyError as e:
+                print("ROSPerceptionProcessor.__init__: %s: topic %s is not in the handle_dict" %(e,topic))

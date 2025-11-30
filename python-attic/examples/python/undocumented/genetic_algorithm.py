@@ -53,6 +53,6 @@ if __name__ == '__main__':
     ga = GeneticAlgorithm(population)
     for i in range(10):
         fittest = ga.step(0, 1)
-        print fittest, fittest.fitness
-    print 'Solution found:'
-    print ga.fittest_individual_found, ga.highest_fitness_found
+        print(fittest, fittest.fitness)
+    print('Solution found:')
+    print(ga.fittest_individual_found, ga.highest_fitness_found)

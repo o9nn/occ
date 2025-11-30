@@ -29,7 +29,7 @@ def compose(relation_a_b, relation_b_c):
                 # Adding the known (before, same, aster) relations (formula.compare) to our algorithm
                 search_tree.add_relation(temporal_event_1_key, portion_index_1, temporal_event_2_key, portion_index_2,
                                          formula.compare(dist_key_by_index[portion_index_1],
-                                                             dist_key_by_index[portion_index_2]))
+                                                         dist_key_by_index[portion_index_2]))
 
     # Initiating a RailwaySystem instance as the starting point of DFS
     rails = RailwaySystem()
@@ -70,9 +70,9 @@ def compose(relation_a_b, relation_b_c):
 
 if __name__ == '__main__':
     A, B, C = generate_random_events(3)
-    print 'actual', (A * C).to_list()
+    print('actual', (A * C).to_list())
     print
     solutions, strength_total = compose(A * B, B * C)
-    print 'Truth Value Total:', strength_total
+    print('Truth Value Total:', strength_total)
     for relation_a_c, strength in solutions:
-        print relation_a_c.to_list(), 'Truth Value:', strength
+        print(relation_a_c.to_list(), 'Truth Value:', strength)

@@ -9,7 +9,7 @@ from m_adaptors import FakeAtom
 log.add_level(Logger.INFO)
 log.use_stdout(True)
 
-    
+
 #from opencog.atomspace import Atom, types
 class Atomspace_Abserver(Graph_Abserver):
     ''' @bug: when link B have two same children ---- link A, then only one link A is given in the picture
@@ -47,7 +47,7 @@ class Atomspace_Abserver(Graph_Abserver):
         for type_name, nodes in nodes_info.iteritems():
             log.info(str(len(nodes)),type_name)
             #pprint(nodes)
-    
+
     def _get_edges(self,type):
         """docstring for __getEdges"""
         return  self.source.get_atoms_by_type(name_to_type(type))
@@ -60,7 +60,7 @@ class Atomspace_Abserver(Graph_Abserver):
 
     def _node_type(self,node):
         return node.type_name
-	
+
     def _edge_is_a(self, source, target):
         if self.inheritance:
             return is_a(source,target)
@@ -86,8 +86,8 @@ class Atomspace_Abserver(Graph_Abserver):
                         #print link_name
                         for i, node in enumerate(nodes):
                             if is_a(node.type_name, "Link"):
-                               node_name = node.type_name + "[%s]"% str(node.h.value())
-                               #print "***%s" % node_name
+                                node_name = node.type_name + "[%s]"% str(node.h.value())
+                                #print "***%s" % node_name
                             else:
                                 node_name = self.graph.unique_id(node.name)
                                 #print "^^%s" % node_name
@@ -114,4 +114,4 @@ if __name__ == '__main__':
     abserver.filter_graph()
     abserver.write("test_atomspace_abserver.dot")
 
-    
+

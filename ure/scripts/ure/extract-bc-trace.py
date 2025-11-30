@@ -37,7 +37,7 @@ handle_cre = re.compile(handle_re)
 ########
 
 if len(sys.argv) != 3:
-    print usage
+    print(usage)
     exit(1)
 
 fcs_handle = sys.argv[1]
@@ -106,4 +106,4 @@ for l in open(logfile):
         iteration = int(m.group(2))
 
     if iteration == 0 or iteration in i2ft_trace:
-        print ls
+        print(ls)

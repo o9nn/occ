@@ -16,14 +16,14 @@ import logging
 logger = logging.getLogger('spock')
 
 class MessengerCore:
-    
+
     def __init__(self):
-        
+
         self.age = 0
         self.time_of_day = 0
 
     def setMessage(self, msg, data):
-    
+
         for key in data:
             if hasattr(msg, key):
                 if isinstance(data[key], dict):
@@ -32,17 +32,17 @@ class MessengerCore:
                     pass
                 else:
                     setattr(msg, key, data[key])
-            
+
         if hasattr(msg, 'MCtimestamp'):
             msg.MCtimestamp = self.age
-                
+
         if hasattr(msg, 'ROStimestamp'):
             rostime = rospy.Time.now()
             msg.ROStimestamp = rostime.secs*10e9 + rostime.nsecs
 
 
     def updateTime(self, data):
-        
+
         self.age = data['world_age']
         self.time_of_day = data['time_of_day']
 
@@ -57,13 +57,13 @@ class MessengerCore:
 class MessengerPlugin:
 
     def __init__(self, ploader, settings):
-    
+
         self.core = MessengerCore()
         ploader.provides('Messenger', self.core)
 
         ploader.reg_event_handler((proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x03), self.handleTimeUpdate)
         ploader.reg_event_handler('disconnect', self.handleDisconnect)
-        
+
 
     def handleTimeUpdate(self, name, packet):
 

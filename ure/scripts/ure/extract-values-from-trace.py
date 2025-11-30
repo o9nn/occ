@@ -34,7 +34,7 @@ handle_cre = re.compile(handle_re)
 ########
 
 if len(sys.argv) != 2:
-    print usage
+    print(usage)
     exit(1)
 
 logtracefile = sys.argv[1]
@@ -56,5 +56,5 @@ for l in open(logtracefile):
     m = handle_cre.match(ls)
     if m:
         if src == 'from':
-            print m.group(1)
+            print(m.group(1))
             continue

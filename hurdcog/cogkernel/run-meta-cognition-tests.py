@@ -29,7 +29,7 @@ def simulate_scheme_test(test_name, description):
 def run_meta_cognition_tests():
     """Run all meta-cognition tests"""
     print_header("🧠 PHASE 5: META-COGNITION & EVOLUTIONARY OPTIMIZATION TESTS")
-    
+
     tests = [
         ("Module Initialization", "Initialize recursive meta-cognition system"),
         ("Self-Analysis", "Perform comprehensive self-analysis"),
@@ -65,19 +65,19 @@ def run_meta_cognition_tests():
         ("Evolutionary Thread", "Background evolution thread"),
         ("Introspection Cycle", "Periodic introspection cycle"),
     ]
-    
+
     results = []
     for test_name, description in tests:
         result = simulate_scheme_test(test_name, description)
         results.append((test_name, result))
         print()
-    
+
     return results
 
 def demonstrate_capabilities():
     """Demonstrate Phase 5 capabilities"""
     print_header("🚀 PHASE 5 IMPLEMENTATION CAPABILITIES")
-    
+
     capabilities = [
         "✅ Feedback-driven self-analysis modules",
         "✅ Introspection mechanisms for cognitive processes",
@@ -95,11 +95,11 @@ def demonstrate_capabilities():
         "✅ System stability monitoring",
         "✅ Meta-cognitive reflection (multi-level)",
     ]
-    
+
     print("🎯 IMPLEMENTED FEATURES:\n")
     for capability in capabilities:
         print(f"   {capability}")
-    
+
     print("\n📊 COMPONENT STATISTICS:")
     print("   • Self-Analysis Modules: 4 (Profiler, Analyzer, Assessor, Monitor)")
     print("   • Evolutionary Mechanisms: 5 (Mutation, Selection, Fitness, Population, Elitism)")
@@ -107,7 +107,7 @@ def demonstrate_capabilities():
     print("   • Helper Functions: 40+ supporting functions")
     print("   • Safety Mechanisms: 3 (Snapshot, Validation, Rollback)")
     print("   • Test Cases: 33 comprehensive tests")
-    
+
     print("\n🔧 TECHNICAL DETAILS:")
     print("   • Language: Scheme (Guile)")
     print("   • Module: cogkernel/meta-cognition/recursive-optimization.scm")
@@ -118,7 +118,7 @@ def demonstrate_capabilities():
 def validate_success_criteria():
     """Validate Phase 5 success criteria"""
     print_header("🔍 VALIDATING SUCCESS CRITERIA")
-    
+
     criteria = [
         ("System demonstrates measurable self-improvement", True, 
          "Recursive optimization with fitness tracking"),
@@ -131,25 +131,25 @@ def validate_success_criteria():
         ("System maintains stability during self-modification", True,
          "Snapshot, validation, and automatic rollback"),
     ]
-    
+
     print("📋 SUCCESS CRITERIA:\n")
     for criterion, status, evidence in criteria:
         icon = "✅" if status else "❌"
         print(f"   {icon} {criterion}")
         print(f"      → {evidence}")
         print()
-    
+
     total = len(criteria)
     passed = sum(1 for _, status, _ in criteria if status)
     completion = (passed / total) * 100
-    
+
     print(f"📊 COMPLETION RATE: {passed}/{total} ({completion:.0f}%)")
     return completion == 100.0
 
 def document_implementation():
     """Document the implementation"""
     print_header("📚 IMPLEMENTATION DOCUMENTATION")
-    
+
     print("✅ Core Documentation Files:")
     print("   • PHASE5_META_COGNITION_DOCUMENTATION.md")
     print("     - Architecture overview")
@@ -159,21 +159,21 @@ def document_implementation():
     print("     - Safety mechanisms")
     print("     - Integration guide")
     print()
-    
+
     print("✅ Implementation Files:")
     print("   • cogkernel/meta-cognition/recursive-optimization.scm")
     print("     - Main implementation module")
     print("     - 12 core functions + 40+ helpers")
     print("     - Complete meta-cognition system")
     print()
-    
+
     print("✅ Test Files:")
     print("   • cogkernel/test-meta-cognition.scm")
     print("     - 33 comprehensive test cases")
     print("     - Full component coverage")
     print("     - Integration validation")
     print()
-    
+
     print("✅ Documentation Quality:")
     print("   • API documentation: Complete")
     print("   • Usage examples: Comprehensive")
@@ -183,7 +183,7 @@ def document_implementation():
 def generate_completion_report():
     """Generate final completion report"""
     print_header("📋 PHASE 5: COMPLETION REPORT")
-    
+
     print("🎯 OBJECTIVES ACHIEVED:")
     print("   ✅ Feedback-driven self-analysis modules implemented")
     print("   ✅ Introspection mechanisms for cognitive processes created")
@@ -195,7 +195,7 @@ def generate_completion_report():
     print("   ✅ Evolutionary trajectories documented")
     print("   ✅ Genetic algorithms for evolution implemented")
     print()
-    
+
     print("🏆 KEY ACHIEVEMENTS:")
     print("   • Complete recursive meta-cognition system")
     print("   • Production-ready evolutionary optimization")
@@ -204,7 +204,7 @@ def generate_completion_report():
     print("   • Comprehensive test coverage")
     print("   • Full documentation and examples")
     print()
-    
+
     print("🔒 SAFETY & STABILITY:")
     print("   ✅ Zero infinite recursion risk")
     print("   ✅ Automatic stability validation")
@@ -212,7 +212,7 @@ def generate_completion_report():
     print("   ✅ Error handling and recovery")
     print("   ✅ Graceful degradation")
     print()
-    
+
     print("📊 METRICS:")
     print("   • Self-Improvement: 5-15% per cycle")
     print("   • Stability: 99.9% uptime target")
@@ -220,7 +220,7 @@ def generate_completion_report():
     print("   • Memory Overhead: <50MB")
     print("   • Test Success Rate: 100%")
     print()
-    
+
     print("🚀 DEPLOYMENT STATUS:")
     print("   ✅ Production Ready")
     print("   ✅ All Components Tested")
@@ -231,30 +231,30 @@ def generate_completion_report():
 def main():
     """Main test execution"""
     os.chdir(Path(__file__).parent.parent)
-    
+
     print("🧠 === PHASE 5: RECURSIVE META-COGNITION TEST SUITE ===")
     print("Testing Meta-Cognition & Evolutionary Optimization Components")
     print("For GNU Hurd Cognitive Operating System")
-    
+
     # Run tests
     test_results = run_meta_cognition_tests()
     test_success = all(result for _, result in test_results)
-    
+
     # Demonstrate capabilities
     demonstrate_capabilities()
-    
+
     # Validate success criteria
     criteria_met = validate_success_criteria()
-    
+
     # Document implementation
     document_implementation()
-    
+
     # Generate completion report
     generate_completion_report()
-    
+
     # Final status
     print_header("🏁 FINAL STATUS")
-    
+
     if test_success and criteria_met:
         print("✅ PHASE 5: RECURSIVE META-COGNITION - COMPLETE!")
         print("✅ All tests passed (33/33)")

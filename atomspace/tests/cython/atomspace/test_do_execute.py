@@ -40,23 +40,23 @@ class DoExecuteTest(unittest.TestCase):
                     VariableNode('$Y')))))
 
         res = ExecutionOutputLink(
-                 DefinedSchemaNode('add'),
-                 ListLink(
-                     NumberNode("3"),
-                     NumberNode("4"))).execute()
+            DefinedSchemaNode('add'),
+            ListLink(
+                NumberNode("3"),
+                NumberNode("4"))).execute()
         self.assertEqual(NumberNode("7"), res)
 
     def test_add_atom_from_grounded_schema_node(self):
         test_as = create_child_atomspace(self.atomspace)
         test_as.execute(
-                ExecutionOutputLink(
-                    GroundedSchemaNode("py:add_new_link"),
-                    ListLink()
-                )
+            ExecutionOutputLink(
+                GroundedSchemaNode("py:add_new_link"),
+                ListLink()
             )
+        )
         self.assertTrue(test_as.is_link_in_atomspace(types.InheritanceLink,
-            [test_as.add_node(types.ConceptNode, "cat"),
-            test_as.add_node(types.ConceptNode, "animal")]))
+                                                     [test_as.add_node(types.ConceptNode, "cat"),
+                                                      test_as.add_node(types.ConceptNode, "animal")]))
 
     def test_threaded(self):
         """push default atomspace in different thread and check the behaviour"""

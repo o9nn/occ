@@ -103,7 +103,7 @@ class CognitiveNetworkState:
             "data": data,
             "timestamp": datetime.now().isoformat()
         }
-        
+
         disconnected = []
         for connection in self.websocket_connections:
             try:
@@ -111,7 +111,7 @@ class CognitiveNetworkState:
             except Exception as e:
                 logger.error(f"Error broadcasting to connection: {e}")
                 disconnected.append(connection)
-        
+
         # Remove disconnected clients
         for conn in disconnected:
             self.websocket_connections.remove(conn)
@@ -164,7 +164,7 @@ async def process_cognitive_task(task: CognitiveTask):
     # Generate task ID if not provided
     if not task.task_id:
         task.task_id = network_state.generate_task_id()
-    
+
     # Simulate cognitive processing
     result = TaskResult(
         task_id=task.task_id,
@@ -173,20 +173,20 @@ async def process_cognitive_task(task: CognitiveTask):
         confidence=0.85,
         processing_time=0.042
     )
-    
+
     # Store result
     network_state.tasks[task.task_id] = result
-    
+
     # Update cognitive state
     network_state.cognitive_state.active_processes += 1
     network_state.cognitive_state.cognitive_load += 0.1
-    
+
     # Broadcast task completion event
     await network_state.broadcast_event(
         EventType.TASK_COMPLETION,
         result.model_dump()
     )
-    
+
     return result
 
 @app.get("/api/v1/cognitive/task/{task_id}", response_model=TaskResult)
@@ -207,28 +207,28 @@ async def set_attention_focus(target: str, weight: float = 1.0):
     # Update attention allocation
     network_state.attention_allocation.focus_target = target
     network_state.attention_allocation.allocations[target] = weight
-    
+
     # Normalize allocations
     total = sum(network_state.attention_allocation.allocations.values())
     for key in network_state.attention_allocation.allocations:
         network_state.attention_allocation.allocations[key] /= total
-    
+
     # Broadcast attention change event
     await network_state.broadcast_event(
         EventType.ATTENTION_ALLOCATION_CHANGE,
         network_state.attention_allocation.model_dump()
     )
-    
+
     return {"status": "success", "target": target, "weight": weight}
 
 @app.post("/api/v1/agents/register", response_model=AgentInfo)
 async def register_agent(registration: AgentRegistration):
     """Register new cognitive agent"""
     import uuid
-    
+
     # Generate agent ID
     agent_id = f"agent_{uuid.uuid4().hex[:8]}"
-    
+
     # Create agent info
     agent = AgentInfo(
         agent_id=agent_id,
@@ -236,16 +236,16 @@ async def register_agent(registration: AgentRegistration):
         capabilities=registration.capabilities,
         metadata=registration.metadata
     )
-    
+
     # Store agent
     network_state.agents[agent_id] = agent
-    
+
     # Broadcast agent registration event
     await network_state.broadcast_event(
         EventType.AGENT_REGISTRATION,
         agent.model_dump()
     )
-    
+
     return agent
 
 @app.get("/api/v1/agents/{agent_id}", response_model=AgentInfo)
@@ -265,7 +265,7 @@ async def unregister_agent(agent_id: str):
     """Unregister cognitive agent"""
     if agent_id not in network_state.agents:
         raise HTTPException(status_code=404, detail="Agent not found")
-    
+
     agent = network_state.agents.pop(agent_id)
     return {"status": "unregistered", "agent_id": agent_id}
 
@@ -286,9 +286,9 @@ async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time bidirectional communication"""
     await websocket.accept()
     network_state.websocket_connections.append(websocket)
-    
+
     logger.info(f"WebSocket connection established. Total connections: {len(network_state.websocket_connections)}")
-    
+
     try:
         # Send initial state
         await websocket.send_json({
@@ -299,16 +299,16 @@ async def websocket_endpoint(websocket: WebSocket):
             },
             "timestamp": datetime.now().isoformat()
         })
-        
+
         # Listen for messages from client
         while True:
             data = await websocket.receive_text()
             message = json.loads(data)
-            
+
             # Handle different message types
             if message.get("type") == "ping":
                 await websocket.send_json({"type": "pong", "timestamp": datetime.now().isoformat()})
-            
+
             elif message.get("type") == "subscribe":
                 # Handle event subscription
                 events = message.get("events", [])
@@ -317,7 +317,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "events": events,
                     "timestamp": datetime.now().isoformat()
                 })
-            
+
             elif message.get("type") == "task":
                 # Handle task submission via WebSocket
                 task_data = message.get("data", {})
@@ -328,7 +328,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "data": result.model_dump(),
                     "timestamp": datetime.now().isoformat()
                 })
-    
+
     except WebSocketDisconnect:
         logger.info("WebSocket connection closed")
     except Exception as e:
@@ -348,11 +348,11 @@ async def simulate_cognitive_activity():
     """Simulate periodic cognitive state updates"""
     while True:
         await asyncio.sleep(5)  # Update every 5 seconds
-        
+
         # Update cognitive state
         network_state.cognitive_state.timestamp = datetime.now()
         network_state.cognitive_state.cognitive_load = max(0, network_state.cognitive_state.cognitive_load - 0.05)
-        
+
         # Broadcast state update
         await network_state.broadcast_event(
             EventType.COGNITIVE_STATE_UPDATE,

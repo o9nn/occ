@@ -70,16 +70,16 @@ def check_scheme_file_validity(file_path: Path) -> Tuple[bool, str]:
     try:
         with open(file_path, 'r') as f:
             content = f.read()
-            
+
         # Check for basic Scheme keywords
         scheme_keywords = ['define', 'lambda', 'let', 'begin', 'if', 'cond']
         has_scheme_syntax = any(keyword in content for keyword in scheme_keywords)
-        
+
         # Check for balanced parentheses
         open_parens = content.count('(')
         close_parens = content.count(')')
         parens_balanced = open_parens == close_parens
-        
+
         if has_scheme_syntax and parens_balanced:
             return True, "Valid Scheme structure"
         elif not has_scheme_syntax:
@@ -91,7 +91,7 @@ def check_scheme_file_validity(file_path: Path) -> Tuple[bool, str]:
 
 class Phase6TestRunner:
     """Main test runner for Phase 6"""
-    
+
     def __init__(self, base_dir: Path):
         self.base_dir = base_dir
         self.cogkernel_dir = base_dir / "cogkernel"
@@ -103,11 +103,11 @@ class Phase6TestRunner:
             'documentation_tests': [],
             'coverage_metrics': {}
         }
-    
+
     def run_unit_tests(self) -> bool:
         """Run comprehensive unit tests for all modules"""
         print_header("🧪 PHASE 6: UNIT TESTING - Individual Function Verification")
-        
+
         test_files = [
             "test-atomspace.scm",
             "test-agents.scm",
@@ -117,18 +117,18 @@ class Phase6TestRunner:
             "test-security-framework.scm",
             "test-patterns.scm"
         ]
-        
+
         all_passed = True
         for test_file in test_files:
             test_path = self.cogkernel_dir / test_file
             if not test_path.exists():
                 # Try in tests subdirectory
                 test_path = self.cogkernel_dir / "tests" / test_file
-            
+
             if test_path.exists():
                 print_info(f"Running {test_file}...")
                 is_valid, message = check_scheme_file_validity(test_path)
-                
+
                 if is_valid:
                     print_success(f"{test_file}: {message}")
                     self.results['unit_tests'].append({
@@ -151,13 +151,13 @@ class Phase6TestRunner:
                     'message': 'File not found'
                 })
                 all_passed = False
-        
+
         return all_passed
-    
+
     def run_integration_tests(self) -> bool:
         """Run integration tests for module interactions"""
         print_header("🔗 PHASE 6: INTEGRATION TESTING - Module Interaction Verification")
-        
+
         integration_tests = [
             ("phase1-integration.scm", "Phase 1: Foundation Setup Integration"),
             ("phase2-integration.scm", "Phase 2: Microkernel Integration"),
@@ -167,15 +167,15 @@ class Phase6TestRunner:
             ("test-distributed-agent-framework.scm", "Distributed Agent Framework"),
             ("test-realtime-learning.scm", "Real-time Learning Systems")
         ]
-        
+
         all_passed = True
         for test_file, description in integration_tests:
             test_path = self.cogkernel_dir / test_file
-            
+
             if test_path.exists():
                 print_info(f"Running {description}...")
                 is_valid, message = check_scheme_file_validity(test_path)
-                
+
                 if is_valid:
                     print_success(f"{test_file}: Integration test structure valid")
                     self.results['integration_tests'].append({
@@ -201,26 +201,26 @@ class Phase6TestRunner:
                     'message': 'File not found'
                 })
                 all_passed = False
-        
+
         return all_passed
-    
+
     def run_performance_tests(self) -> bool:
         """Run performance regression tests"""
         print_header("⚡ PHASE 6: PERFORMANCE TESTING - Regression and Optimization")
-        
+
         performance_test = self.cogkernel_dir / "phase5-performance-optimization.scm"
-        
+
         if performance_test.exists():
             print_info("Running performance optimization tests...")
             is_valid, message = check_scheme_file_validity(performance_test)
-            
+
             if is_valid:
                 print_success("Performance test framework validated")
                 print_info("   • IPC optimization checks")
                 print_info("   • Memory allocation efficiency")
                 print_info("   • Context switching overhead")
                 print_info("   • Cognitive processing latency")
-                
+
                 self.results['performance_tests'].append({
                     'test': 'performance-optimization',
                     'status': 'PASSED',
@@ -248,13 +248,13 @@ class Phase6TestRunner:
                 'message': 'File not found'
             })
             return False
-    
+
     def run_stress_tests(self) -> bool:
         """Run stress tests for cognitive limits"""
         print_header("🔥 PHASE 6: STRESS TESTING - Cognitive Limit Validation")
-        
+
         print_info("Validating cognitive stress test framework...")
-        
+
         stress_test_areas = [
             ("High concurrency", "Multiple concurrent cognitive operations"),
             ("Large knowledge base", "AtomSpace with extensive knowledge graph"),
@@ -262,7 +262,7 @@ class Phase6TestRunner:
             ("Network latency", "Distributed agent communication delays"),
             ("Extended runtime", "Long-running cognitive processes")
         ]
-        
+
         all_valid = True
         for area, description in stress_test_areas:
             print_info(f"   • {area}: {description}")
@@ -272,14 +272,14 @@ class Phase6TestRunner:
                 'status': 'VALIDATED',
                 'framework': 'ready'
             })
-        
+
         print_success("Stress testing framework validated")
         return all_valid
-    
+
     def validate_documentation(self) -> bool:
         """Validate documentation completeness and quality"""
         print_header("📚 PHASE 6: DOCUMENTATION VALIDATION - Completeness Check")
-        
+
         required_docs = [
             ("README.md", "Main project documentation"),
             ("docs/AGI_OS_OVERVIEW.md", "AGI-OS architecture overview"),
@@ -290,11 +290,11 @@ class Phase6TestRunner:
             ("cogkernel/README.md", "Cognitive kernel documentation"),
             ("cogkernel/tests/README.md", "Testing framework documentation")
         ]
-        
+
         all_present = True
         for doc_path, description in required_docs:
             full_path = self.base_dir / doc_path
-            
+
             if full_path.exists():
                 size = full_path.stat().st_size
                 if size > 1000:  # At least 1KB of content
@@ -322,33 +322,33 @@ class Phase6TestRunner:
                     'status': 'MISSING'
                 })
                 all_present = False
-        
+
         return all_present
-    
+
     def calculate_coverage_metrics(self) -> Dict[str, Any]:
         """Calculate test coverage metrics"""
         print_header("📊 PHASE 6: COVERAGE METRICS - Test Coverage Analysis")
-        
+
         # Count Scheme test files
         scheme_tests = list(self.cogkernel_dir.glob("test-*.scm"))
         scheme_tests.extend(list(self.cogkernel_dir.glob("*-test.scm")))
         scheme_tests.extend(list((self.cogkernel_dir / "tests").glob("*.scm")))
-        
+
         # Count implementation files
         impl_files = list(self.cogkernel_dir.glob("*.scm"))
         impl_files = [f for f in impl_files if not f.name.startswith("test-")]
-        
+
         # Count C implementation files
         c_files = list(self.cogkernel_dir.glob("*.c"))
         h_files = list(self.cogkernel_dir.glob("*.h"))
-        
+
         # Calculate metrics
         test_count = len(set(scheme_tests))
         impl_count = len(impl_files)
         c_impl_count = len(c_files) + len(h_files)
-        
+
         coverage_ratio = test_count / impl_count if impl_count > 0 else 0
-        
+
         metrics = {
             'total_tests': test_count,
             'implementation_files': impl_count,
@@ -364,21 +364,21 @@ class Phase6TestRunner:
                 'cognitive': self._check_module_coverage('cognitive')
             }
         }
-        
+
         print_info(f"Total test files: {test_count}")
         print_info(f"Implementation files (Scheme): {impl_count}")
         print_info(f"Implementation files (C/C++): {c_impl_count}")
         print_info(f"Coverage ratio: {coverage_ratio:.2f}")
         print_success(f"Coverage percentage: {metrics['coverage_percentage']:.1f}%")
-        
+
         print_info("\nModule Coverage:")
         for module, covered in metrics['module_coverage'].items():
             status = "✅" if covered else "⚠️ "
             print(f"   {status} {module}: {'Covered' if covered else 'Partial'}")
-        
+
         self.results['coverage_metrics'] = metrics
         return metrics
-    
+
     def _check_module_coverage(self, module_name: str) -> bool:
         """Check if a module has test coverage"""
         test_patterns = [
@@ -386,19 +386,19 @@ class Phase6TestRunner:
             f"*-{module_name}-*.scm",
             f"test-*{module_name}*.scm"
         ]
-        
+
         for pattern in test_patterns:
             if list(self.cogkernel_dir.glob(pattern)):
                 return True
             if list((self.cogkernel_dir / "tests").glob(pattern)):
                 return True
-        
+
         return False
-    
+
     def validate_gnu_hurd_integration(self) -> bool:
         """Validate GNU Hurd integration and issue resolution"""
         print_header("🐃 PHASE 6: GNU HURD VALIDATION - Integration Readiness")
-        
+
         hurd_integration_checks = [
             ("Microkernel bridge", self.cogkernel_dir / "hurd-atomspace-bridge.c"),
             ("Microkernel header", self.cogkernel_dir / "hurd-atomspace-bridge.h"),
@@ -406,7 +406,7 @@ class Phase6TestRunner:
             ("Namespace integration", self.cogkernel_dir / "plan9-namespace.scm"),
             ("IPC optimization", self.cogkernel_dir / "microkernel-integration.scm")
         ]
-        
+
         all_present = True
         for component, file_path in hurd_integration_checks:
             if file_path.exists():
@@ -414,16 +414,16 @@ class Phase6TestRunner:
             else:
                 print_error(f"{component}: Missing")
                 all_present = False
-        
+
         if all_present:
             print_success("GNU Hurd integration complete and validated")
-        
+
         return all_present
-    
+
     def generate_phase6_report(self) -> bool:
         """Generate comprehensive Phase 6 completion report"""
         print_header("📋 PHASE 6: COMPLETION REPORT")
-        
+
         # Calculate overall statistics
         total_tests = (
             len(self.results['unit_tests']) +
@@ -431,7 +431,7 @@ class Phase6TestRunner:
             len(self.results['performance_tests']) +
             len(self.results['stress_tests'])
         )
-        
+
         passed_tests = sum(
             1 for test in (
                 self.results['unit_tests'] +
@@ -441,9 +441,9 @@ class Phase6TestRunner:
             )
             if test.get('status') in ['PASSED', 'VALIDATED']
         )
-        
+
         success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
-        
+
         print_info("🎯 OBJECTIVES ACHIEVED:")
         print("   ✅ Comprehensive unit testing framework implemented")
         print("   ✅ Integration testing across all phases validated")
@@ -451,29 +451,29 @@ class Phase6TestRunner:
         print("   ✅ Stress testing framework for cognitive limits")
         print("   ✅ Documentation completeness validated")
         print("   ✅ GNU Hurd integration verified")
-        
+
         print(f"\n📊 TEST STATISTICS:")
         print(f"   • Total Tests: {total_tests}")
         print(f"   • Passed: {passed_tests}")
         print(f"   • Success Rate: {success_rate:.1f}%")
         print(f"   • Coverage: {self.results['coverage_metrics'].get('coverage_percentage', 0):.1f}%")
-        
+
         print(f"\n🧪 TEST BREAKDOWN:")
         print(f"   • Unit Tests: {len(self.results['unit_tests'])}")
         print(f"   • Integration Tests: {len(self.results['integration_tests'])}")
         print(f"   • Performance Tests: {len(self.results['performance_tests'])}")
         print(f"   • Stress Tests: {len(self.results['stress_tests'])}")
         print(f"   • Documentation Tests: {len(self.results['documentation_tests'])}")
-        
+
         # Save results to JSON
         results_file = self.base_dir / "phase6-test-results.json"
         with open(results_file, 'w') as f:
             json.dump(self.results, f, indent=2)
-        
+
         print_success(f"\nResults saved to: {results_file}")
-        
+
         return success_rate >= 80  # 80% success threshold
-    
+
     def run_all_tests(self) -> bool:
         """Run all Phase 6 tests"""
         print(f"{Colors.BOLD}{Colors.HEADER}")
@@ -482,26 +482,26 @@ class Phase6TestRunner:
         print("║              Comprehensive Test Suite Execution                   ║")
         print("╚═══════════════════════════════════════════════════════════════════╝")
         print(f"{Colors.ENDC}")
-        
+
         # Run all test categories
         unit_passed = self.run_unit_tests()
         integration_passed = self.run_integration_tests()
         performance_passed = self.run_performance_tests()
         stress_passed = self.run_stress_tests()
         docs_validated = self.validate_documentation()
-        
+
         # Calculate coverage
         self.calculate_coverage_metrics()
-        
+
         # Validate GNU Hurd integration
         hurd_validated = self.validate_gnu_hurd_integration()
-        
+
         # Generate final report
         report_success = self.generate_phase6_report()
-        
+
         # Final status
         print_header("🏁 PHASE 6: FINAL STATUS")
-        
+
         all_passed = all([
             unit_passed,
             integration_passed,
@@ -511,7 +511,7 @@ class Phase6TestRunner:
             hurd_validated,
             report_success
         ])
-        
+
         if all_passed:
             print_success("PHASE 6: RIGOROUS TESTING, DOCUMENTATION, AND UNIFICATION - COMPLETE!")
             print_success("✅ All test categories passed")
@@ -529,10 +529,10 @@ class Phase6TestRunner:
 def main():
     """Main entry point"""
     base_dir = Path(__file__).parent.absolute()
-    
+
     runner = Phase6TestRunner(base_dir)
     success = runner.run_all_tests()
-    
+
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":

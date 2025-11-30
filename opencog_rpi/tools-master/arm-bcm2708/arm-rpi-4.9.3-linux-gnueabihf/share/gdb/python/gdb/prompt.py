@@ -76,8 +76,8 @@ def _prompt_noprint_begin(attr):
     return '\001'
 
 def _prompt_noprint_end(attr):
-     "Ends a sequence of non-printing characters."
-     return '\002'
+    "Ends a sequence of non-printing characters."
+    return '\002'
 
 prompt_substitutions = {
     'e': _prompt_esc,

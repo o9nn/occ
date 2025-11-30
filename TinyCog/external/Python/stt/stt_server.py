@@ -28,10 +28,10 @@ def callback(recognizer, audio):
         msg = recognizer.recognize_sphinx(audio, grammar='counting.gram')
         print("<stt>"+msg)
         if len(msg)>0:
-          try:
-            sock.sendto("<stt>"+msg, (UDP_IP, UDP_PORT))
-          except:
-            print("socket send error")
+            try:
+                sock.sendto("<stt>"+msg, (UDP_IP, UDP_PORT))
+            except:
+                print("socket send error")
     except sr.UnknownValueError:
         print("Could not understand audio")
     except sr.RequestError as e:

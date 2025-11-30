@@ -42,10 +42,10 @@ class AtomSpaceTest(TestCase):
 
         # Test with not a proper truthvalue
         self.assertRaises(TypeError, self.space.add_node, types.Node, "test",
-                0, True)
+                          0, True)
         # Test with bad type
         self.assertRaises(TypeError, self.space.add_node, "ConceptNode", "test",
-                TruthValue(0.5, 0.8))
+                          TruthValue(0.5, 0.8))
 
         # From here on out we'll use the more compact type constructors
         a1 = Node("test")
@@ -211,10 +211,10 @@ class AtomSpaceTest(TestCase):
     def test_context_mgr_tmp(self):
         a = ConceptNode('a')
         with tmp_atomspace() as tmp_as:
-             b = ConceptNode('b')
-             self.assertTrue(a in self.space)
-             # verify that current default atomspace is tmp_as
-             self.assertFalse(b in self.space)
+            b = ConceptNode('b')
+            self.assertTrue(a in self.space)
+            # verify that current default atomspace is tmp_as
+            self.assertFalse(b in self.space)
         c = ConceptNode('c')
         # verify that current default atomspace is self.space
         self.assertTrue(c in self.space)

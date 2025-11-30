@@ -25,12 +25,12 @@ for bid in range(198):
     if len(namelist) > 1:
         for partial in namelist[1:]:
             name = name + '_' + partial.strip()
-    
+
     #name = get_correct_name(name)
 
 def get_block_name(namestring):
     namelist = list(reversed(namestring.split()))
-    
+
     name = namelist[0]
     if len(namelist) > 1:
         for item in namelist[1:]:
@@ -51,7 +51,7 @@ concepts = set()
 
 for value in blocksmap.values():
     namelist = value.split()
-    
+
     for concept in namelist:
         concepts.add(concept.strip())
 
@@ -67,7 +67,7 @@ for key in sorted(blocksmap):
 
 
 matfile.write("{:>32s},{:>8s},{:>12s},{:>12s}\n"
-        .format('name', 'type','hardness', 'stacksize'))
+              .format('name', 'type','hardness', 'stacksize'))
 """
 for item in mats:
     matfile.write("{:>32s},{:>8s},{:>12.2f},{:>12d}\n"
@@ -77,7 +77,7 @@ for item in mats:
                 mats[item]['hardness'],
                 mats[item]['stacksize']))
 """   
-   
+
 
 matfile.close()
 idfile.close()

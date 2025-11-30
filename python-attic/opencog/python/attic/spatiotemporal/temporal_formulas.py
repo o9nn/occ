@@ -30,7 +30,7 @@ from temporal_interval_handling import getBeginning, getEnding, getSize, calcula
 
 
 def beforeFormula(dist1, dist2):
-#a+ < b-
+    #a+ < b-
     end_1 = getEnding(dist1)
     beg_2 = getBeginning(dist2)
 
@@ -45,7 +45,7 @@ def beforeFormula(dist1, dist2):
 
 
 def overlapsFormula(dist1, dist2):
-#a- < b- and b- < a+ and a+ < b+
+    #a- < b- and b- < a+ and a+ < b+
     beg_1 = getBeginning(dist1)
     end_1 = getEnding(dist1)
     beg_2 = getBeginning(dist2)
@@ -67,7 +67,7 @@ def overlapsFormula(dist1, dist2):
 
 
 def duringFormula(dist1, dist2):
-#b- < a- and a+ < b+
+    #b- < a- and a+ < b+
     beg_1 = getBeginning(dist1)
     end_1 = getEnding(dist1)
     beg_2 = getBeginning(dist2)
@@ -88,7 +88,7 @@ def duringFormula(dist1, dist2):
 
 
 def meetsFormula(dist1, dist2):
-#a+ = b-
+    #a+ = b-
     end_1 = getEnding(dist1)
     beg_2 = getBeginning(dist2)
 
@@ -103,7 +103,7 @@ def meetsFormula(dist1, dist2):
 
 
 def startsFormula(dist1, dist2):
-#a- = b- and a+ < b+
+    #a- = b- and a+ < b+
     beg_1 = getBeginning(dist1)
     end_1 = getEnding(dist1)
     beg_2 = getBeginning(dist2)
@@ -131,7 +131,7 @@ def startsFormula(dist1, dist2):
 
 
 def finishesFormula(dist1, dist2):
-#a+ = b+ and b- < a-
+    #a+ = b+ and b- < a-
     beg_1 = getBeginning(dist1)
     end_1 = getEnding(dist1)
     beg_2 = getBeginning(dist2)
@@ -147,10 +147,10 @@ def finishesFormula(dist1, dist2):
     size_beg_2 = getSize(beg_2)
     size_end_2 = getSize(end_2)
 
-    print size_beg_1
-    print size_beg_2
-    print size_end_1
-    print size_end_2
+    print(size_beg_1)
+    print(size_beg_2)
+    print(size_end_1)
+    print(size_end_2)
 
     return normalize(min(((size_end_1 + size_end_2) - abs(com_end_1[0] - com_end_2[0]))
                          / (size_end_1 + size_end_2),
@@ -158,7 +158,7 @@ def finishesFormula(dist1, dist2):
 
 
 def equalsFormula(dist1, dist2):
-#a- = b- and a+ = b+
+    #a- = b- and a+ = b+
     beg_1 = getBeginning(dist1)
     end_1 = getEnding(dist1)
     beg_2 = getBeginning(dist2)
@@ -180,30 +180,30 @@ def equalsFormula(dist1, dist2):
 
 
 def afterFormula(dist1, dist2):
-#before(Y,X)
+    #before(Y,X)
     return beforeFormula(dist2, dist1)
 
 
 def overlapped_byFormula(dist1, dist2):
-#overlaps(Y,X)
+    #overlaps(Y,X)
     return overlapsFormula(dist2, dist1)
 
 
 def containsFormula(dist1, dist2):
-#during(Y,X)
+    #during(Y,X)
     return duringFormula(dist2, dist1)
 
 
 def met_byFormula(dist1, dist2):
-#meets(Y,X)
+    #meets(Y,X)
     return meetsFormula(dist2, dist1)
 
 
 def started_byFormula(dist1, dist2):
-#starts(Y,X)
+    #starts(Y,X)
     return startsFormula(dist2, dist1)
 
 
 def finished_byFormula(dist1, dist2):
-#finishes(Y,X)
+    #finishes(Y,X)
     return finishesFormula(dist2, dist1)

@@ -123,7 +123,7 @@ class QueueValueMultithreadTest(unittest.TestCase):
         # Verify values match (order should be preserved in FIFO queue)
         for i, (produced, consumed) in enumerate(zip(produced_values, consumed_values)):
             self.assertEqual(produced, consumed,
-                           f"Mismatch at index {i}: produced {produced}, consumed {consumed}")
+                             f"Mismatch at index {i}: produced {produced}, consumed {consumed}")
 
         # Verify queue is empty
         self.assertEqual(0, len(queue))
@@ -229,7 +229,7 @@ class QueueValueMultithreadTest(unittest.TestCase):
         # Each producer should have contributed exactly items_per_producer values
         for i in range(num_producers):
             self.assertEqual(producer_counts.get(i, 0), items_per_producer,
-                           f"Producer {i} contributed wrong number of items")
+                             f"Producer {i} contributed wrong number of items")
 
     def test_concurrent_burst_pattern(self):
         """Test burst write/read pattern to stress the queue."""

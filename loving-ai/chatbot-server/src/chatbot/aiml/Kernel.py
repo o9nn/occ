@@ -341,7 +341,7 @@ class Kernel:
             handler.setEncoding(self._textEncoding)
             try:
                 parser.parse(f)
-            except xml.sax.SAXParseException, msg:
+            except xml.sax.SAXParseException as msg:
                 err = "\nFATAL PARSE ERROR in file %s:\n%s\n" % (f, msg)
                 errors.append(err)
                 logger.error(err)
@@ -1007,7 +1007,7 @@ class Kernel:
         response = ""
         try:
             out = os.popen(command)
-        except RuntimeError, msg:
+        except RuntimeError as msg:
             if self._verboseMode:
                 err = "WARNING: RuntimeError while processing \"system\" element:\n%s\n" % msg.encode(
                     self._textEncoding, 'replace')

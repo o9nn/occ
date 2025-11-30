@@ -41,16 +41,16 @@ class BCTest(TestCase):
     def test_bc_deduction(self):
         """port of crisp.scm from examples/ure/simple"""
 
-        print ("Enter test_bc_deduction")
+        print(("Enter test_bc_deduction"))
         self.init()
 
-        print ("test_bc_deduction: pre scheme eval")
+        print(("test_bc_deduction: pre scheme eval"))
         scheme_eval(self.atomspace, '(use-modules (opencog))')
         scheme_eval(self.atomspace, '(use-modules (opencog exec))')
         scheme_eval(self.atomspace, '(use-modules (opencog ure))')
-        print ("test_bc_deduction: pre scheme load")
+        print(("test_bc_deduction: pre scheme load"))
         scheme_eval(self.atomspace, '(load-from-path "bc-deduction-config.scm")')
-        print ("test_bc_deduction: post scheme load")
+        print(("test_bc_deduction: post scheme load"))
 
         A = ConceptNode("A", TruthValue(1, 1))
         B = ConceptNode("B")
@@ -61,19 +61,19 @@ class BCTest(TestCase):
         BC.tv = TruthValue(1, 1)
         crisprbs = ConceptNode("crisp-rule-base")
         # InheritanceLink(crisprbs, ConceptNode("URE"))
-        print ("test_bc_deduction: pre backchain ctor")
+        print(("test_bc_deduction: pre backchain ctor"))
         chainer = BackwardChainer(self.atomspace,
                                   ConceptNode("URE"),
                                   InheritanceLink(VariableNode("$who"), C),
                                   TypedVariableLink(VariableNode("$who"), TypeNode("ConceptNode")))
 
         scheme_eval(self.atomspace, '(gc)')
-        print ("test_bc_deduction: post backchain ctor")
+        print(("test_bc_deduction: post backchain ctor"))
         chainer.do_chain()
-        print ("test_bc_deduction: post chaining")
+        print(("test_bc_deduction: post chaining"))
         scheme_eval(self.atomspace, '(gc)')
         results = chainer.get_results()
-        print ("test_bc_deduction: post results")
+        print(("test_bc_deduction: post results"))
         scheme_eval(self.atomspace, '(gc)')
         resultAC = None
         for result in results.get_out():

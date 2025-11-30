@@ -57,7 +57,7 @@ def get_predicate(atomspace, predicate_name, target_node, num_of_val):
         else:
             return result_set_out
     except IndexError as e:
-        print "get predicate err: get no result %s" % e
+        print("get predicate err: get no result %s" % e)
         return None
 # TODO
 

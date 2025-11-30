@@ -84,17 +84,17 @@ for item in timeline_data:
     ax.barh(y_pos, item["duration"], left=item["start_week"], 
             height=0.6, color=item["color"], alpha=0.8, 
             edgecolor='white', linewidth=1.5)
-    
+
     # Add milestone label
     y_labels.append(item["milestone"])
     y_ticks.append(y_pos)
-    
+
     # Add duration text
     mid_point = item["start_week"] + item["duration"] / 2
     ax.text(mid_point, y_pos, f'{item["duration"]}w', 
             ha='center', va='center', color='white', 
             fontweight='bold', fontsize=8)
-    
+
     y_pos += 1
 
 # Add phase separators and labels
@@ -105,13 +105,13 @@ for i, item in enumerate(timeline_data):
         if current_phase is not None:
             # Draw separator line
             ax.axhline(y=i-0.5, color='#cccccc', linewidth=2, linestyle='--')
-            
+
             # Add phase label on the right
             phase_mid = (phase_start + i - 1) / 2
             ax.text(current_week + 2, phase_mid, current_phase, 
                     va='center', ha='left', fontsize=11, 
                     fontweight='bold', color=phases[current_phase]["color"])
-        
+
         current_phase = item["phase"]
         phase_start = i
 

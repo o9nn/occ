@@ -29,7 +29,7 @@ class Wagon(object):
     @property
     def a(self):
         return self._a
-    
+
     @property
     def b(self):
         return self._a + self.length
@@ -45,7 +45,7 @@ class Wagon(object):
     @property
     def bounds(self):
         return self.a, self.b
-    
+
     def bind(self, other):
         root = self.root
         root_other = other.root

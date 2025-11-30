@@ -115,8 +115,8 @@ class HRSlackBot(object):
                     client = session.sdata.client
                 else:
                     client = Client(HR_CHATBOT_AUTHKEY, username=name,
-                        botname=self.botname, host=self.host, port=self.port,
-                        response_listener=self)
+                                    botname=self.botname, host=self.host, port=self.port,
+                                    response_listener=self)
                     client.set_marker('Slack')
                     if self.weights:
                         client.set_weights(self.weights)

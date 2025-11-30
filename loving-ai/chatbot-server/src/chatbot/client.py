@@ -24,10 +24,10 @@ def get_default_username():
     return '{}@{}'.format(user, host)
 
 ERRORS = {
-1: 'Wrong Character Name',
-2: 'No Answer',
-3: 'Invalid Session',
-4: 'Invalid Question'
+    1: 'Wrong Character Name',
+    2: 'No Answer',
+    3: 'Invalid Session',
+    4: 'Invalid Question'
 }
 
 class Client(cmd.Cmd, object):
@@ -35,8 +35,8 @@ class Client(cmd.Cmd, object):
     VERSION = 'v1.1'
 
     def __init__(self, key, response_listener=None, username=None, botname='sophia',
-            host='localhost', port='8002', test=False,
-            *args, **kwargs):
+                 host='localhost', port='8002', test=False,
+                 *args, **kwargs):
         """
         key: The authentication key for chatbot server.
         response_listener: The object that has implemented on_response.

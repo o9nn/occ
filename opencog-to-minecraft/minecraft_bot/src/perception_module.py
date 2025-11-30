@@ -44,7 +44,7 @@ class PerceptionManager:
     def _get_map(self, map_name=default_map_name):
         try:
             map_handle = (self._atomspace.get_atoms_by_type(
-                    types.SpaceMapNode)[0])
+                types.SpaceMapNode)[0])
         except IndexError:
             return None, None
         return map_handle, self._space_server.get_map(map_handle)
@@ -55,7 +55,7 @@ class PerceptionManager:
         # But here we still call it er_handle
         try:
             er_handle = (self._atomspace.get_atoms_by_type(
-                    types.SpaceMapNode)[0])
+                types.SpaceMapNode)[0])
         except IndexError:
             return None, None
         return er_handle, self._space_server.get_entity_recorder(er_handle)
@@ -77,7 +77,7 @@ class PerceptionManager:
             # TODO: Use this dict for something or it can be removed, currently
             # it is created and filled up but not used by anything else.
             block_material = blocks.get_block(
-                    block.blockid, block.metadata).display_name
+                block.blockid, block.metadata).display_name
 
             if block_material in material_dict:
                 material_dict[block_material] += 1
@@ -89,7 +89,7 @@ class PerceptionManager:
                 # Create the block in atomspace and set its initial attention
                 # value.
                 blocknode, updated_eval_links = self._build_block_nodes(
-                        block, map_handle)
+                    block, map_handle)
                 # TODO: Make the 200 a constant, this occurs one other place.
 
                 blocknode.av['sti'] = 200
@@ -116,18 +116,18 @@ class PerceptionManager:
 
                     blocknode, updated_eval_links = Atom(-1), []
                     disappeared_link = add_predicate(
-                            self._atomspace, "disappeared", old_block_handle)
+                        self._atomspace, "disappeared", old_block_handle)
                     updated_eval_links.append(disappeared_link)
                 else:
                     # NOTE: There is a bit of a bug here since the attention
                     # value does not increase here, but that is ok because this
                     # is rare anyway so skipping an increase is no big deal.
                     blocknode, updated_eval_links = self._build_block_nodes(
-                            block,
-                            map_handle)
+                        block,
+                        map_handle)
 
                 disappeared_link = add_predicate(
-                        self._atomspace, "disappeared", old_block_handle)
+                    self._atomspace, "disappeared", old_block_handle)
                 updated_eval_links.append(disappeared_link)
 
             # Add the block to the spaceserver and the timeserver.
@@ -137,14 +137,14 @@ class PerceptionManager:
                                             block.x, block.y, block.z)
             if old_block_handle == None:
                 self._time_server.add_time_info(
-                        blocknode, block.ROStimestamp, "ROS")
+                    blocknode, block.ROStimestamp, "ROS")
                 self._time_server.add_time_info(
-                        blocknode, block.MCtimestamp, "MC")
+                    blocknode, block.MCtimestamp, "MC")
             for link in updated_eval_links:
                 self._time_server.add_time_info(
-                        link, block.ROStimestamp, "ROS")
+                    link, block.ROStimestamp, "ROS")
                 self._time_server.add_time_info(
-                        link, block.MCtimestamp, "MC")
+                    link, block.MCtimestamp, "MC")
                 # print blocknode
                 # print updated_eval_links
 
@@ -174,7 +174,7 @@ class PerceptionManager:
         _, cur_er = self._get_er()
         old_self_handle = cur_er.get_self_agent_entity()
         self_node, updated_eval_links = self._build_self_pos_node(
-                data, map_handle)
+            data, map_handle)
 
         # TODO: pass timestamp in message
         timestamp = 0
@@ -209,7 +209,7 @@ class PerceptionManager:
 
         yaw_node = self._atomspace.add_node(types.NumberNode, str(client.yaw))
         pitch_node = self._atomspace.add_node(
-                types.NumberNode, str(client.pitch))
+            types.NumberNode, str(client.pitch))
         look_link = add_predicate(self._atomspace, "look",
                                   client_node, yaw_node, pitch_node)
         updated_eval_links.append(look_link)
@@ -234,8 +234,8 @@ class PerceptionManager:
         updated_eval_links.append(at_location_link)
 
         type_node = self._atomspace.add_node(
-                types.ConceptNode, blocks.get_block(
-                        block.blockid, block.metadata).display_name)
+            types.ConceptNode, blocks.get_block(
+                block.blockid, block.metadata).display_name)
         material_link = add_predicate(self._atomspace, "material",
                                       obj_node, type_node)
         updated_eval_links.append(material_link)
@@ -248,7 +248,7 @@ class PerceptionManager:
 
     def _build_entity_node(self, entity, map_handle):
         entity_node = self._atomspace.add_node(
-                types.EntityNode, str(entity.eid))
+            types.EntityNode, str(entity.eid))
         updated_eval_links = []
 
         at_location_link = add_location(self._atomspace, entity_node,
@@ -257,36 +257,36 @@ class PerceptionManager:
         updated_eval_links.append(at_location_link)
 
         type_node = self._atomspace.add_node(
-                types.ConceptNode, str(entity.mob_type))
+            types.ConceptNode, str(entity.mob_type))
         type_link = add_predicate(self._atomspace, "entitytype",
                                   entity_node, type_node)
         updated_eval_links.append(type_link)
 
         yaw_node = self._atomspace.add_node(
-                types.NumberNode, str(entity.head_yaw))
+            types.NumberNode, str(entity.head_yaw))
         pitch_node = self._atomspace.add_node(
-                types.NumberNode, str(entity.head_pitch))
+            types.NumberNode, str(entity.head_pitch))
         look_link = add_predicate(self._atomspace, "look",
                                   entity_node, yaw_node, pitch_node)
         updated_eval_links.append(look_link)
 
         length_node = self._atomspace.add_node(
-                types.NumberNode, str(entity.length))
+            types.NumberNode, str(entity.length))
         width_node = self._atomspace.add_node(
-                types.NumberNode, str(entity.width))
+            types.NumberNode, str(entity.width))
         height_node = self._atomspace.add_node(
-                types.NumberNode, str(entity.height))
+            types.NumberNode, str(entity.height))
         sizelink = add_predicate(self._atomspace, "size",
                                  entity_node, length_node, width_node,
                                  height_node)
         updated_eval_links.append(sizelink)
 
         v_x_node = self._atomspace.add_node(
-                types.NumberNode, str(entity.velocity_x))
+            types.NumberNode, str(entity.velocity_x))
         v_y_node = self._atomspace.add_node(
-                types.NumberNode, str(entity.velocity_y))
+            types.NumberNode, str(entity.velocity_y))
         v_z_node = self._atomspace.add_node(
-                types.NumberNode, str(entity.velocity_z))
+            types.NumberNode, str(entity.velocity_z))
         velocitylink = add_predicate(self._atomspace, "velocity",
                                      entity_node, v_x_node, v_y_node, v_z_node)
         updated_eval_links.append(velocitylink)

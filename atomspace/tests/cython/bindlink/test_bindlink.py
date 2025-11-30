@@ -20,7 +20,7 @@ class BindlinkTest(unittest.TestCase):
     starting_size = 0
 
     def setUp(self):
-        print ("setUp - atomspace = ", self.atomspace)
+        print(("setUp - atomspace = ", self.atomspace))
 
         # Clear atoms from previous test
         self.atomspace.clear()
@@ -36,20 +36,20 @@ class BindlinkTest(unittest.TestCase):
 
         # Define a graph search query
         self.bindlink_atom =  \
-                BindLink(
-                    # The variable node to be grounded.
+            BindLink(
+                # The variable node to be grounded.
+                VariableNode("$var"),
+
+                # The pattern to be grounded.
+                InheritanceLink(
                     VariableNode("$var"),
+                    ConceptNode("animal")
+                ),
 
-                    # The pattern to be grounded.
-                    InheritanceLink(
-                        VariableNode("$var"),
-                        ConceptNode("animal")
-                    ),
-
-                    # The grounding to be returned.
-                    VariableNode("$var")
+                # The grounding to be returned.
+                VariableNode("$var")
                 # bindlink needs a handle
-                )
+            )
 
         # Define a pattern to be grounded
         self.getlink_atom =  \
@@ -65,7 +65,7 @@ class BindlinkTest(unittest.TestCase):
 
 
     def tearDown(self):
-        print ("tearDown - atomspace = ", self.atomspace)
+        print(("tearDown - atomspace = ", self.atomspace))
 
         # Can't do this; finalize can be called only once, ever, and
         # then never again.  The second call will never follow through.
@@ -134,33 +134,33 @@ class BindlinkTest(unittest.TestCase):
 
     def test_execute_atom(self):
         result = ExecutionOutputLink(
-                    GroundedSchemaNode("py: test_functions.add_link"),
-                    ListLink(
-                        ConceptNode("one"),
-                        ConceptNode("two")
-                    )
-                ).execute()
-        list_link = ListLink(
+            GroundedSchemaNode("py: test_functions.add_link"),
+            ListLink(
                 ConceptNode("one"),
                 ConceptNode("two")
             )
+        ).execute()
+        list_link = ListLink(
+            ConceptNode("one"),
+            ConceptNode("two")
+        )
         self.assertEqual(result, list_link)
 
     def test_evaluate_atom(self):
         result = evaluate_atom(self.atomspace,
-                EvaluationLink(
-                    GroundedPredicateNode("py: test_functions.bogus_tv"),
-                    ListLink(
-                        ConceptNode("one"),
-                        ConceptNode("two")
-                    )
-                )
-            )
+                               EvaluationLink(
+                                   GroundedPredicateNode("py: test_functions.bogus_tv"),
+                                   ListLink(
+                                       ConceptNode("one"),
+                                       ConceptNode("two")
+                                   )
+                               )
+                               )
         self.assertEqual(result, TruthValue(0.6, 0.234))
 
     def test_execute_atom_no_return_value(self):
         result = PutLink(DeleteLink(VariableNode("X")),
-                        ConceptNode("deleteme")).execute()
+                         ConceptNode("deleteme")).execute()
         self.assertEqual(result, None)
 
 
@@ -168,13 +168,13 @@ class BindlinkTest(unittest.TestCase):
         ListLink(ConceptNode("foo"), ConceptNode("bar"))
 
         get = GetLink(VariableNode("x"),
-                AndLink(
-                    PresentLink(ListLink (ConceptNode("foo"),
-                                          (VariableNode("x")))),
-                    EvaluationLink(GroundedPredicateNode("py: test_functions.func_one"),
-                        ListLink(VariableNode("x"))),
-                   EvaluationLink(GroundedPredicateNode( "py: test_functions.func_two"),
-                   ListLink (VariableNode ("x")))))
+                      AndLink(
+            PresentLink(ListLink (ConceptNode("foo"),
+                                  (VariableNode("x")))),
+            EvaluationLink(GroundedPredicateNode("py: test_functions.func_one"),
+                           ListLink(VariableNode("x"))),
+            EvaluationLink(GroundedPredicateNode( "py: test_functions.func_two"),
+                           ListLink (VariableNode ("x")))))
         result = get.execute()
         self.assertFalse(result.out)
         self.assertFalse(self.atomspace.is_node_in_atomspace(types.ConceptNode, 'barleycorn'))

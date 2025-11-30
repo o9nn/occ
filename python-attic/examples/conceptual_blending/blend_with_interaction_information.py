@@ -95,7 +95,7 @@ Links in new blended node:
 ]
 
 """
-print "--------Start fourth example--------"
+print("--------Start fourth example--------")
 
 # Interaction Information algorithm takes very long time - about O(n*(2^n)) -
 # if we not give any limit. If you want to check what is going now then you can
@@ -287,8 +287,8 @@ result = ConceptualBlending(a).run(
     ConceptNode("my-config")
 )
 
-print "Newly blended node:"
-print str(result[0]) + "\n"
+print("Newly blended node:")
+print(str(result[0]) + "\n")
 
-print "Links in new blended node:"
-print result[0].incoming
+print("Links in new blended node:")
+print(result[0].incoming)

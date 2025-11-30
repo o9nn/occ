@@ -249,20 +249,20 @@ class ClientMover():
 
 def handle_absolute_look(req):
 
-    print 'handleabslook'
+    print('handleabslook')
     result = client_pos.handle_look(req.pitch, req.yaw)
     return result
 
 
 def handle_absolute_move(req):
-    print 'handleabsmove'
+    print('handleabsmove')
     result = client_pos.handle_move(req.x, req.z, req.jump)
-    print 'absmove result'
+    print('absmove result')
     return result
 
 
 def handle_dig(req):
-    print 'handle_dig'
+    print('handle_dig')
     result = client_pos.handle_dig(req.x, req.y, req.z)
     return result
 

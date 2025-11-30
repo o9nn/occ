@@ -55,9 +55,9 @@ def check_pep8_errors(filename):
     Returns:
         None.
     """
-    print "***** PEP8 errors in " + filename + " *****"
+    print("***** PEP8 errors in " + filename + " *****")
     os.system("pep8 " + filename)
-    print "DONE !\n\n"
+    print("DONE !\n\n")
 
 
 def preview_autopep8(filename):
@@ -70,9 +70,9 @@ def preview_autopep8(filename):
     Returns:
         None.
     """
-    print "***** After refactoring " + filename + " *****"
+    print("***** After refactoring " + filename + " *****")
     os.system("autopep8 -a " + filename)
-    print "DONE !\n\n"
+    print("DONE !\n\n")
 
 
 def refactor_autopep8(filename):
@@ -86,9 +86,9 @@ def refactor_autopep8(filename):
     Returns:
         None.
     """
-    print "***** Refactoring " + filename + " *****"
+    print("***** Refactoring " + filename + " *****")
     os.system("autopep8 -i -a " + filename)
-    print "DONE !\n\n"
+    print("DONE !\n\n")
 
 
 def check_pep8_errors_all():
@@ -152,7 +152,7 @@ def start_interactive_mode():
     Returns:
         None.
     """
-    print "***** INTERACTIVE MODE *****"
+    print("***** INTERACTIVE MODE *****")
     arg_parser.print_help()
     new_task = "y"
 
@@ -173,7 +173,7 @@ def start_interactive_mode():
         elif action == "r":
             refactor_autopep8(filename)
         else:
-            print "Not a valid option! "
+            print("Not a valid option! ")
 
         new_task = raw_input("Proceed with new task? [y/n]: ")
 
@@ -201,7 +201,7 @@ if __name__ == '__main__':
                     python_filename = a_file
                     break
         except Exception as e:
-            print "Encountered " + type(e).__name__
+            print("Encountered " + type(e).__name__)
             # Print help message and exit in case of exceptions.
             arg_parser.print_help()
 

@@ -31,19 +31,19 @@ if __name__ == '__main__':
     v = 'ten'
     for case in switch(v):
         if case('one'):
-            print 1
+            print(1)
             break
         if case('two'):
-            print 2
+            print(2)
             break
         if case('ten'):
-            print 10
+            print(10)
             break
         if case('eleven'):
-            print 11
+            print(11)
             break
         if case(): # default, could also just omit condition or 'if True'
-            print "something else!"
+            print("something else!")
             # No need to break here, it'll stop anyway
 
     # break is used here to look as much like the real thing as possible, but
@@ -58,15 +58,15 @@ if __name__ == '__main__':
         # ...
         if case('y'): pass
         if case('z'):
-            print "c is lowercase!"
+            print("c is lowercase!")
             break
         if case('A'): pass
         # ...
         if case('Z'):
-            print "c is uppercase!"
+            print("c is uppercase!")
             break
         if case(): # default
-            print "I dunno what c was!"
+            print("I dunno what c was!")
 
     # As suggested by Pierre Quentel, you can even expand upon the
     # functionality of the classic 'case' statement by matching multiple
@@ -76,16 +76,16 @@ if __name__ == '__main__':
     c = 'A'
     for case in switch(c):
         if case(*string.lowercase): # note the * for unpacking as arguments
-            print "c is lowercase!"
+            print("c is lowercase!")
             break
         if case(*string.uppercase):
-            print "c is uppercase!"
+            print("c is uppercase!")
             break
         if case('!', '?', '.'): # normal argument passing style also applies
-            print "c is a sentence terminator!"
+            print("c is a sentence terminator!")
             break
         if case(): # default
-            print "I dunno what c was!"
+            print("I dunno what c was!")
 
     # Since Pierre's suggestion is backward-compatible with the original recipe,
     # I have made the necessary modification to allow for the above usage.

@@ -14,7 +14,7 @@ class Request(object):
         self.send("This is the default python request.")
 
     def send(self, msg):
-        print str(msg)
+        print(str(msg))
 
 
 class MindAgent:
@@ -34,7 +34,7 @@ class MindAgent:
 #        pass
 
     def run(self, atomspace):
-        print "Implement me in your MindAgent subclass: " + atomspace
+        print("Implement me in your MindAgent subclass: " + atomspace)
 
 
 class Server(object):

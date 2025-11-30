@@ -26,7 +26,7 @@ def extract_quads(quad_file_path):
         splitted_string = (line.strip("\t\n")).split("\t")
         if len(splitted_string) > 3:
             quads.append(Quad(splitted_string[0],splitted_string[1],
-                None if splitted_string[2] == '' else splitted_string[2],splitted_string[3]))
+                              None if splitted_string[2] == '' else splitted_string[2],splitted_string[3]))
         else:
             quads.append(Quad(splitted_string[0],splitted_string[1],splitted_string[2],None))
 
@@ -35,4 +35,4 @@ def extract_quads(quad_file_path):
 
 if __name__ == "__main__":
     for quad in extract_quads('http://wiki.freebase.com/images/e/eb/Steve-martin-quad-sample.txt'):
-        print quad
+        print(quad)

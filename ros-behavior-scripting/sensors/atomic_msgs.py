@@ -63,7 +63,7 @@ class AtomicMsgs:
 		face = "(EvaluationLink (PredicateNode \"visible face\") " + \
 		       "(ListLink (NumberNode \"" + str(faceid) + "\")))\n"
 		netcat(self.hostname, self.port, face)
-		print "New visible face in atomspace: ", faceid
+		print("New visible face in atomspace: ", faceid)
 
 	# Focus attention on specific face.
 	# Build string to force attention to focus on the requested face.
@@ -73,7 +73,7 @@ class AtomicMsgs:
 		face = '(StateLink request-eye-contact-state (NumberNode "' + \
 		       str(faceid) + '"))\n'
 		netcat(self.hostname, self.port, face)
-		print "Force focus of attention on face: ", faceid
+		print("Force focus of attention on face: ", faceid)
 
 	# Remove a face (make it no longer visible).
 	def remove_face_from_atomspace(self, faceid):
@@ -81,7 +81,7 @@ class AtomicMsgs:
 		# AtomSpace cog-delete takes handle as an argument.
 		msg = self.delete_face(faceid)
 		netcat(self.hostname, self.port, msg)
-		print "Removed face from atomspace: ", faceid
+		print("Removed face from atomspace: ", faceid)
 
 	# Build string to delete the face, and also to garbage-collect
 	# the ListLink and NumberNode.  In the long run, explicit deletes

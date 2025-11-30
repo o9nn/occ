@@ -63,5 +63,5 @@ if __name__ == "__main__":
         "Enter corpus type TOTAL=0,SPOKEN=1,FICTION=2,MAGAZINE=3," +
         "NEWSPAPER=4,ACADEMIC=5: "))
     reader = ConceptNetReader(cn_path, cp_path)
-    print reader.read_concept_net_file()
-    print dict(reader.read_corpus_file(corpus_type))
+    print(reader.read_concept_net_file())
+    print(dict(reader.read_corpus_file(corpus_type)))

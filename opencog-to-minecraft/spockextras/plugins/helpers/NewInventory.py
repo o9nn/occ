@@ -216,7 +216,7 @@ class InventoryPlugin(PluginBase):
         self.inventory.window = windows.PlayerWindow(
             persistent_slots=closed_window.slots)
         current_player_window= self.inventory.window
-                
+
     def handle_set_slot(self, event, packet):
         data = packet.data
         self.set_slot(data['window_id'], data['slot'], data['slot_data'])
@@ -262,7 +262,7 @@ class InventoryPlugin(PluginBase):
         for slot in window.slots:
             to_be_emitted['slots'].append({'slot_nr': slot.slot_nr, 'amount':slot.amount, 'item_stack_size':slot.item.stack_size, 'window':slot.window.window_id, 'item_name': slot.item.display_name, 'item_id':slot.item.id})            
         self.event.emit('ros_client_inventory_update_window', to_be_emitted) #added   
-        
+
     def handle_window_prop(self, event, packet):
         window = self.inventory.window
         prop_id = packet.data['property']

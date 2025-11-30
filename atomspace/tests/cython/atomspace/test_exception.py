@@ -23,7 +23,7 @@ class TestExceptions(unittest.TestCase):
             Get(atom1, atom1, atom1)
             self.assertFalse("call should fail")
         except RuntimeError as e:
-                   # Use `nosetests3 --nocapture` to see this print...
+            # Use `nosetests3 --nocapture` to see this print...
             print(f"The exception message is {str(e)}")
             self.assertTrue("Expecting" in str(e))
 
@@ -32,7 +32,7 @@ class TestExceptions(unittest.TestCase):
     def test_good_evaluation(self):
         atom1 = Concept("atom1")
         eval_link = Evaluation(GroundedPredicate("py:good_tv"),
-                                        atom1, atom1, atom1)
+                               atom1, atom1, atom1)
         okay = evaluate_atom(self.space, eval_link)
 
         # Use `nosetests3 --nocapture` to see this print...
@@ -45,12 +45,12 @@ class TestExceptions(unittest.TestCase):
     def test_bogus_evaluation(self):
         atom1 = Concept("atom1")
         eval_link = Evaluation(GroundedPredicate("py:foobar"),
-                                        atom1, atom1, atom1)
+                               atom1, atom1, atom1)
         try:
             evaluate_atom(self.space, eval_link)
             self.assertFalse("call should fail")
         except RuntimeError as e:
-                   # Use `nosetests3 --nocapture` to see this print...
+            # Use `nosetests3 --nocapture` to see this print...
             print(f"The exception message is {str(e)}")
             self.assertTrue("not found in module" in str(e))
 
@@ -58,7 +58,7 @@ class TestExceptions(unittest.TestCase):
     def test_pass_evaluation(self):
         atom1 = Concept("atom1")
         eval_link = Evaluation(GroundedPredicate("py:no_ret"),
-                                        atom1, atom1, atom1)
+                               atom1, atom1, atom1)
         try:
             evaluate_atom(self.space, eval_link)
             self.assertFalse("call should fail")
@@ -70,7 +70,7 @@ class TestExceptions(unittest.TestCase):
     def test_num_evaluation(self):
         atom1 = Concept("atom1")
         eval_link = Evaluation(GroundedPredicate("py:ret_num"),
-                                        atom1, atom1, atom1)
+                               atom1, atom1, atom1)
         try:
             evaluate_atom(self.space, eval_link)
             self.assertFalse("call should fail")
@@ -82,7 +82,7 @@ class TestExceptions(unittest.TestCase):
     def test_str_evaluation(self):
         atom1 = Concept("atom1")
         eval_link = Evaluation(GroundedPredicate("py:ret_str"),
-                                        atom1, atom1, atom1)
+                               atom1, atom1, atom1)
         try:
             evaluate_atom(self.space, eval_link)
             self.assertFalse("call should fail")
@@ -94,7 +94,7 @@ class TestExceptions(unittest.TestCase):
     def test_nil_evaluation(self):
         atom1 = Concept("atom1")
         eval_link = Evaluation(GroundedPredicate("py:ret_nil"),
-                                        atom1, atom1, atom1)
+                               atom1, atom1, atom1)
         try:
             evaluate_atom(self.space, eval_link)
             self.assertFalse("call should fail")
@@ -106,7 +106,7 @@ class TestExceptions(unittest.TestCase):
     def test_lst_evaluation(self):
         atom1 = Concept("atom1")
         eval_link = Evaluation(GroundedPredicate("py:ret_lst"),
-                                        atom1, atom1, atom1)
+                               atom1, atom1, atom1)
         try:
             evaluate_atom(self.space, eval_link)
             self.assertFalse("call should fail")
@@ -120,7 +120,7 @@ class TestExceptions(unittest.TestCase):
     def test_good_execution(self):
         atom1 = Concept("atom1")
         exec_link = ExecutionOutput(GroundedSchema("py:good_tv"),
-                                        ListLink(atom1, atom1, atom1))
+                                    ListLink(atom1, atom1, atom1))
         okay = self.space.execute(exec_link)
 
         # Use `nosetests3 --nocapture` to see this print...
@@ -133,7 +133,7 @@ class TestExceptions(unittest.TestCase):
     def test_bogus_execution(self):
         atom1 = Concept("atom1")
         exec_link = ExecutionOutput(GroundedSchema("py:foobar"),
-                                        ListLink(atom1, atom1, atom1))
+                                    ListLink(atom1, atom1, atom1))
         try:
             self.space.execute(exec_link)
             self.assertFalse("call should fail")
@@ -146,7 +146,7 @@ class TestExceptions(unittest.TestCase):
     def test_pass_execution(self):
         atom1 = Concept("atom1")
         exec_link = ExecutionOutput(GroundedSchema("py:no_ret"),
-                                        ListLink(atom1, atom1, atom1))
+                                    ListLink(atom1, atom1, atom1))
         try:
             # exec_link.execute()
             self.space.execute(exec_link)
@@ -159,7 +159,7 @@ class TestExceptions(unittest.TestCase):
     def test_num_execution(self):
         atom1 = Concept("atom1")
         exec_link = ExecutionOutput(GroundedSchema("py:ret_num"),
-                                        ListLink(atom1, atom1, atom1))
+                                    ListLink(atom1, atom1, atom1))
         try:
             # exec_link.execute()
             self.space.execute(exec_link)
@@ -172,7 +172,7 @@ class TestExceptions(unittest.TestCase):
     def test_str_execution(self):
         atom1 = Concept("atom1")
         exec_link = ExecutionOutput(GroundedSchema("py:ret_str"),
-                                        ListLink(atom1, atom1, atom1))
+                                    ListLink(atom1, atom1, atom1))
         try:
             # exec_link.execute()
             self.space.execute(exec_link)
@@ -185,7 +185,7 @@ class TestExceptions(unittest.TestCase):
     def test_nil_execution(self):
         atom1 = Concept("atom1")
         exec_link = ExecutionOutput(GroundedSchema("py:ret_nil"),
-                                        ListLink(atom1, atom1, atom1))
+                                    ListLink(atom1, atom1, atom1))
         try:
             # exec_link.execute()
             self.space.execute(exec_link)
@@ -198,7 +198,7 @@ class TestExceptions(unittest.TestCase):
     def test_lst_execution(self):
         atom1 = Concept("atom1")
         exec_link = ExecutionOutput(GroundedSchema("py:ret_lst"),
-                                        ListLink(atom1, atom1, atom1))
+                                    ListLink(atom1, atom1, atom1))
         try:
             # exec_link.execute()
             self.space.execute(exec_link)

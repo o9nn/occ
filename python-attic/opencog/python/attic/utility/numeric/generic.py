@@ -17,8 +17,8 @@ class Discretiser(object):
             self.thresholds.insert(1, value)
             self.quantity_per_class.append(1)
             return
-        print 'kir'
+        print('kir')
 
 do = Discretiser(0,10)
 do.new_data(2)
-print do.thresholds
+print(do.thresholds)

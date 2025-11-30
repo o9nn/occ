@@ -11,7 +11,7 @@ def mutual_information(seq, first_variable, second_variable, epsilon=0.0001):
                           (False,True):0, (False,False):0}
     for record in seq:
         value_of_first, value_of_second = first_variable in record,\
-                                          second_variable in record
+            second_variable in record
         n_first[value_of_first] += 1
         n_second[value_of_second] += 1
         n_first_and_second[(value_of_first, value_of_second)] += 1

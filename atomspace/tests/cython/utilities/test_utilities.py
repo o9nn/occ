@@ -23,7 +23,7 @@ class UtilitiesTest(TestCase):
 
     def setUp(self):
         self.atomspace = AtomSpace()
- 
+
     def tearDown(self):
         del self.atomspace
 

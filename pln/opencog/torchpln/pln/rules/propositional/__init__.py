@@ -24,7 +24,7 @@ def modus_ponens_formula(B, AB, A):
     snotAB = 0.2 # Huge hack
     cnotAB = 1
     new_tv = TTruthValue((precise_modus_ponens_strength_formula(sA, sAB, snotAB),
-                min(cAB, cnotAB, cA)))
+                          min(cAB, cnotAB, cA)))
     cog_merge_hi_conf_tv(B, new_tv)
     return B
 
@@ -38,8 +38,8 @@ def consequent_disjunction_elimination_formula(conclusion, *premises):
         sAC = get_ttv(AC).mean
         cAC = get_ttv(AC).confidence
         alpha = 0.9 # Confidence-loss
-                    # coefficient. TODO replace by
-                    # something more meaningful
+        # coefficient. TODO replace by
+        # something more meaningful
         AB = conclusion
         precondition = (sAC <= sABC) and (sAC < 1)
         sAB = ((sABC - sAC) / (1 - sAC)) if precondition else 1

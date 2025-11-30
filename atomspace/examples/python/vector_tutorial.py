@@ -87,7 +87,7 @@ EdgeLink(tag, ListLink(ItemNode("HEAD"), ItemNode("chased")))
 #
 # A pattern that will find tagged word-pairs
 pair_pattern = EdgeLink(tag,
-    ListLink(VariableNode("$left-word"), VariableNode("$right-word")))
+                        ListLink(VariableNode("$left-word"), VariableNode("$right-word")))
 
 # A variable declaration for the pattern above. This is not strictly
 # required, but is convenient to limit the scope of a query to variables
@@ -133,7 +133,7 @@ basic_query.execute()
 # on `atom` located at `key`. Below, the basic_query is used as it's
 # own key: it's the "well-known location" that can always be found.
 print("Basic query returned:",
-    ValueOfLink(basic_query, basic_query).execute())
+      ValueOfLink(basic_query, basic_query).execute())
 print("")
 
 # ------------------------------------------------------------------
@@ -171,9 +171,9 @@ counting_query = QueryLink(
 
     # When the above pattern is matched, the counts are incremented.
     IncrementValueLink(VariableNode("$left-word"),
-       count_key, NumberNode([1,0])),
+                       count_key, NumberNode([1,0])),
     IncrementValueLink(VariableNode("$right-word"),
-       count_key, NumberNode([0,1])))
+                       count_key, NumberNode([0,1])))
 
 # Perform the counting.
 counting_query.execute()

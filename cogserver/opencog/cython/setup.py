@@ -34,34 +34,34 @@ ext = Extension(
     language="c++",              # this causes Cython to create C++ source
 
     include_dirs=[".", # needed to find local pyx/pxd files
-        "../..",       # to support building in source directory
-        "/usr/local/include", # For local includes
-        "/opt/local/include"  # For MacPorts
-        ],
+                  "../..",       # to support building in source directory
+                  "/usr/local/include", # For local includes
+                  "/opt/local/include"  # For MacPorts
+                  ],
     libraries=["stdc++",
-        # opencog libraries
-        "atomspace",
-        "util"
-        ],
+               # opencog libraries
+               "atomspace",
+               "util"
+               ],
     library_dirs=[
         "/opt/local/lib", # For MacPorts
         opencog_library_dir],
     runtime_library_dirs=[opencog_library_dir]
-    )
+)
 
 # This extension stuff should use info from CMake somehow...
 setup(name = 'pyopencog',
-    description = 'Python Cogserver',
-    author = 'Joel Pitt',
-    author_email = 'joel@opencog.org',
-    url = 'http://wiki.opencog.org/w/Python',
-    long_description = read('README'),
-    version = '0.1',
-    classifiers=[
-        "Development Status :: 5 - Release",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
-    ],
-    cmdclass = {'build_ext': build_ext},
-    ext_modules = [ext]
-    )
+      description = 'Python Cogserver',
+      author = 'Joel Pitt',
+      author_email = 'joel@opencog.org',
+      url = 'http://wiki.opencog.org/w/Python',
+      long_description = read('README'),
+      version = '0.1',
+      classifiers=[
+          "Development Status :: 5 - Release",
+          "Topic :: Scientific/Engineering :: Artificial Intelligence",
+          "License :: OSI Approved :: GNU Affero General Public License v3",
+      ],
+      cmdclass = {'build_ext': build_ext},
+      ext_modules = [ext]
+      )

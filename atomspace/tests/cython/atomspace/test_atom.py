@@ -88,14 +88,14 @@ class AtomTest(TestCase):
 
     def test_grounded_cond(self):
         grounded_cond = CondLink(
-                    Evaluation (
-                        GroundedPredicate ("py:grounded_cond1"),
-                        ListLink ()),
-                    Number('1'),
-                        Evaluation(
-                            GroundedPredicate("py:grounded_cond2"),
-                            ListLink()),
-                    Number('2'))
+            Evaluation (
+                GroundedPredicate ("py:grounded_cond1"),
+                ListLink ()),
+            Number('1'),
+            Evaluation(
+                GroundedPredicate("py:grounded_cond2"),
+                ListLink()),
+            Number('2'))
         result = self.space.execute(grounded_cond)
         baz = Number("2")
         print("got %s", result)

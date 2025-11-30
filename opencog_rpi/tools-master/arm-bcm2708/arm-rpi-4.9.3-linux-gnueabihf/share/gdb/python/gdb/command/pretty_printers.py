@@ -97,7 +97,7 @@ class InfoPrettyPrinter(gdb.Command):
 
     def __init__ (self):
         super(InfoPrettyPrinter, self).__init__("info pretty-printer",
-                                                 gdb.COMMAND_DATA)
+                                                gdb.COMMAND_DATA)
 
     @staticmethod
     def enabled_string(printer):
@@ -130,23 +130,23 @@ class InfoPrettyPrinter(gdb.Command):
             name = self.printer_name(printer)
             enabled = self.enabled_string(printer)
             if name_re.match(name):
-                print ("  %s%s" % (name, enabled))
+                print(("  %s%s" % (name, enabled)))
                 if (hasattr(printer, "subprinters") and
-                    printer.subprinters is not None):
+                        printer.subprinters is not None):
                     sorted_subprinters = sorted (copy.copy(printer.subprinters),
                                                  key = self.printer_name)
                     for subprinter in sorted_subprinters:
                         if (not subname_re or
-                            subname_re.match(subprinter.name)):
-                            print ("    %s%s" %
-                                   (subprinter.name,
-                                    self.enabled_string(subprinter)))
+                                subname_re.match(subprinter.name)):
+                            print(("    %s%s" %)
+                                  (subprinter.name,
+                                   self.enabled_string(subprinter)))
 
     def invoke1(self, title, printer_list,
                 obj_name_to_match, object_re, name_re, subname_re):
         """Subroutine of invoke to simplify it."""
         if printer_list and object_re.match(obj_name_to_match):
-            print (title)
+            print((title))
             self.list_pretty_printers(printer_list, name_re, subname_re)
 
     def invoke(self, arg, from_tty):
@@ -170,7 +170,7 @@ def count_enabled_printers(pretty_printers):
     total = 0
     for printer in pretty_printers:
         if (hasattr(printer, "subprinters")
-            and printer.subprinters is not None):
+                and printer.subprinters is not None):
             if printer_enabled_p(printer):
                 for subprinter in printer.subprinters:
                     if printer_enabled_p(subprinter):
@@ -215,7 +215,7 @@ def show_pretty_printer_enabled_summary():
     We count subprinters individually.
     """
     (enabled_count, total_count) = count_all_enabled_printers()
-    print ("%d of %d printers enabled" % (enabled_count, total_count))
+    print(("%d of %d printers enabled" % (enabled_count, total_count)))
 
 
 def do_enable_pretty_printer_1 (pretty_printers, name_re, subname_re, flag):
@@ -235,9 +235,9 @@ def do_enable_pretty_printer_1 (pretty_printers, name_re, subname_re, flag):
     total = 0
     for printer in pretty_printers:
         if (hasattr(printer, "name") and name_re.match(printer.name) or
-            hasattr(printer, "__name__") and name_re.match(printer.__name__)):
+                hasattr(printer, "__name__") and name_re.match(printer.__name__)):
             if (hasattr(printer, "subprinters") and
-                printer.subprinters is not None):
+                    printer.subprinters is not None):
                 if not subname_re:
                     # Only record printers that change state.
                     if printer_enabled_p(printer) != flag:
@@ -253,10 +253,10 @@ def do_enable_pretty_printer_1 (pretty_printers, name_re, subname_re, flag):
                     for subprinter in printer.subprinters:
                         if subname_re.match(subprinter.name):
                             # Only record printers that change state.
-                           if (printer_enabled_p(printer) and
-                               printer_enabled_p(subprinter) != flag):
-                               total += 1
-                           subprinter.enabled = flag
+                            if (printer_enabled_p(printer) and
+                                    printer_enabled_p(subprinter) != flag):
+                                total += 1
+                            subprinter.enabled = flag
             else:
                 # This printer has no subprinters.
                 # If the user does "disable pretty-printer .* .* foo"
@@ -297,7 +297,7 @@ def do_enable_pretty_printer (arg, flag):
         state = "enabled"
     else:
         state = "disabled"
-    print ("%d %s %s" % (total, pluralize("printer", total), state))
+    print(("%d %s %s" % (total, pluralize("printer", total), state)))
 
     # Print the total list of printers currently enabled/disabled.
     # This is to further assist the user in determining whether the result
@@ -329,7 +329,7 @@ class EnablePrettyPrinter (gdb.Command):
 
     def __init__(self):
         super(EnablePrettyPrinter, self).__init__("enable pretty-printer",
-                                                   gdb.COMMAND_DATA)
+                                                  gdb.COMMAND_DATA)
 
     def invoke(self, arg, from_tty):
         """GDB calls this to perform the command."""

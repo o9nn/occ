@@ -68,7 +68,7 @@ class FrameDecorator(object):
 
         if (not sal.symtab or not sal.symtab.filename
             or frame.type() == gdb.DUMMY_FRAME
-            or frame.type() == gdb.SIGTRAMP_FRAME):
+                or frame.type() == gdb.SIGTRAMP_FRAME):
 
             return True
 
@@ -232,9 +232,9 @@ class FrameVars(object):
             gdb.SYMBOL_LOC_ARG: True,
             gdb.SYMBOL_LOC_REF_ARG: True,
             gdb.SYMBOL_LOC_LOCAL: True,
-	    gdb.SYMBOL_LOC_REGPARM_ADDR: True,
-	    gdb.SYMBOL_LOC_COMPUTED: True
-            }
+            gdb.SYMBOL_LOC_REGPARM_ADDR: True,
+            gdb.SYMBOL_LOC_COMPUTED: True
+        }
 
     def fetch_b(self, sym):
         """ Local utility method to determine if according to Symbol

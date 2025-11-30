@@ -78,7 +78,7 @@ class SchemeTest(TestCase):
     # Run some basic evaluation tests
     def test_d_eval(self):
         basic = scheme_eval_h(self.space,
-            "(ConceptNode \"whatever\" (stv 0.5 0.5))")
+                              "(ConceptNode \"whatever\" (stv 0.5 0.5))")
 
         a1 = self.space.add_node(types.ConceptNode, "whatever")
         self.assertTrue(a1)
@@ -103,10 +103,10 @@ class SchemeTest(TestCase):
         scheme_eval(self.space, "(use-modules (opencog exec))")
         question = scheme_eval_h(self.space, "find-animals")
         self.assertTrue(question)
-        print ("\nThe question is:", question)
+        print(("\nThe question is:", question))
 
         answer = scheme_eval_h(self.space, "(cog-execute! find-animals)")
         self.assertTrue(answer)
-        print ("\nThe answer is:", answer)
+        print(("\nThe answer is:", answer))
         self.assertEqual(answer.type, types.SetLink)
         self.assertEqual(answer.arity, 3)

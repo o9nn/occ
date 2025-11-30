@@ -68,10 +68,10 @@ logger = logging.getLogger('spock')
 
 class NewPhysicsCore:
     def __init__(self, vec, pos):
-    
+
         self.vec = vec
         self.pos = pos
-    
+
     def move(self, direction, motion, jump):
 
         acc = motions[motion]
@@ -86,7 +86,7 @@ class NewPhysicsCore:
             if self.pos.on_ground:
                 self.pos.on_ground = False
                 y = PLAYER_JMP_ACC
-        
+
         #self.vec.add_vector(x=x, y=y, z=z)
         self.vec += Vector3(x,y,z)
 
@@ -94,78 +94,78 @@ class NewPhysicsCore:
 
 @pl_announce('NewPhysics')
 class NewPhysicsPlugin:
-	def __init__(self, ploader, settings):
-		self.vec = Vector3(0.0, 0.0, 0.0)
-		self.playerbb = BoundingBox(0.8, 1.8)
-		self.world = ploader.requires('World')
-		self.event = ploader.requires('Event')
-		clinfo = ploader.requires('ClientInfo')
-		self.pos = clinfo.position
-		ploader.reg_event_handler('physics_tick', self.tick)
-		self.pycore = NewPhysicsCore(self.vec, self.pos)
-		ploader.provides('NewPhysics', self.pycore)
-        
-	def tick(self, _, __):
-		self.check_collision()
-		self.apply_horizontal_drag()
-		self.apply_vector()
+    def __init__(self, ploader, settings):
+        self.vec = Vector3(0.0, 0.0, 0.0)
+        self.playerbb = BoundingBox(0.8, 1.8)
+        self.world = ploader.requires('World')
+        self.event = ploader.requires('Event')
+        clinfo = ploader.requires('ClientInfo')
+        self.pos = clinfo.position
+        ploader.reg_event_handler('physics_tick', self.tick)
+        self.pycore = NewPhysicsCore(self.vec, self.pos)
+        ploader.provides('NewPhysics', self.pycore)
 
-	
-        def check_collision(self):
-		cb = Vector3(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z))
-		if self.block_collision(cb, y=2): #we check +2 because above my head
-			self.vec.y = 0
-		if self.block_collision(cb, y=-1): #we check below feet
-			self.pos.on_ground = True
-			self.vec.y = 0
-			self.pos.y = cb.y
-		else:
-			self.pos.on_ground = False
-			#self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
-                        self.vec += Vector3(0, -PLAYER_ENTITY_GAV, 0)
-			self.apply_vertical_drag()
-		#feet or head collide with x
-		if self.block_collision(cb, x=1) or self.block_collision(cb, x=-1) or self.block_collision(cb, y=1, x=1) or self.block_collision(cb, y=1, x=-1):
-			self.vec.x = 0
-			#replace with real info in event
-			self.event.emit("phy_collision", "x")
-		#feet or head collide with z
-		if self.block_collision(cb, z=1) or self.block_collision(cb, z=-1) or self.block_collision(cb, y=1, z=1) or self.block_collision(cb, y=1, z=-1):
-			self.vec.z = 0
-			#replace with real info in event
-			self.event.emit("phy_collision", "z")
-
-	def block_collision(self, cb, x = 0, y = 0, z = 0):
-		block_id, meta = self.world.get_block(cb.x+x, cb.y+y, cb.z+z)
-		block = mapdata.get_block(block_id, meta)
-		if block == None:
-			return False
-		#possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
-		#this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
-		#uncenter the player position and bump it up a little down to prevent colliding in the floor
-		pos1 = Vector3(self.pos.x-self.playerbb.w/2, self.pos.y-0.2, self.pos.z-self.playerbb.d/2)
-		bb1 = self.playerbb
-		bb2 = block.bounding_box
-		if bb2 != None:
-			pos2 = Vector3(cb.x+x+bb2.x, cb.y+y+bb2.y, cb.z+z+bb2.z)
-			if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (pos2.x + bb2.w)) and \
-				((pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (pos2.y + bb2.h)) and \
-				((pos1.z + bb1.d) >= (pos2.z) and (pos1.z) <= (pos2.z + bb2.d)):
-				return True
-		return False
+    def tick(self, _, __):
+        self.check_collision()
+        self.apply_horizontal_drag()
+        self.apply_vector()
 
 
-	def apply_vertical_drag(self):
-		self.vec.y = self.vec.y - self.vec.y*PLAYER_ENTITY_DRG
+    def check_collision(self):
+        cb = Vector3(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z))
+        if self.block_collision(cb, y=2): #we check +2 because above my head
+            self.vec.y = 0
+        if self.block_collision(cb, y=-1): #we check below feet
+            self.pos.on_ground = True
+            self.vec.y = 0
+            self.pos.y = cb.y
+        else:
+            self.pos.on_ground = False
+            #self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
+            self.vec += Vector3(0, -PLAYER_ENTITY_GAV, 0)
+            self.apply_vertical_drag()
+        #feet or head collide with x
+        if self.block_collision(cb, x=1) or self.block_collision(cb, x=-1) or self.block_collision(cb, y=1, x=1) or self.block_collision(cb, y=1, x=-1):
+            self.vec.x = 0
+            #replace with real info in event
+            self.event.emit("phy_collision", "x")
+        #feet or head collide with z
+        if self.block_collision(cb, z=1) or self.block_collision(cb, z=-1) or self.block_collision(cb, y=1, z=1) or self.block_collision(cb, y=1, z=-1):
+            self.vec.z = 0
+            #replace with real info in event
+            self.event.emit("phy_collision", "z")
 
-	def apply_horizontal_drag(self):
-		self.vec.x -= self.vec.x * PLAYER_GND_DRG
-		self.vec.z -= self.vec.z * PLAYER_GND_DRG
-        
+    def block_collision(self, cb, x = 0, y = 0, z = 0):
+        block_id, meta = self.world.get_block(cb.x+x, cb.y+y, cb.z+z)
+        block = mapdata.get_block(block_id, meta)
+        if block == None:
+            return False
+        #possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
+        #this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
+        #uncenter the player position and bump it up a little down to prevent colliding in the floor
+        pos1 = Vector3(self.pos.x-self.playerbb.w/2, self.pos.y-0.2, self.pos.z-self.playerbb.d/2)
+        bb1 = self.playerbb
+        bb2 = block.bounding_box
+        if bb2 != None:
+            pos2 = Vector3(cb.x+x+bb2.x, cb.y+y+bb2.y, cb.z+z+bb2.z)
+            if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (pos2.x + bb2.w)) and \
+                    ((pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (pos2.y + bb2.h)) and \
+                    ((pos1.z + bb1.d) >= (pos2.z) and (pos1.z) <= (pos2.z + bb2.d)):
+                return True
+        return False
 
-	def apply_vector(self):
-		p = self.pos
-		p.x = p.x + self.vec.x
-		p.y = p.y + self.vec.y
-		p.z = p.z + self.vec.z
-        
+
+    def apply_vertical_drag(self):
+        self.vec.y = self.vec.y - self.vec.y*PLAYER_ENTITY_DRG
+
+    def apply_horizontal_drag(self):
+        self.vec.x -= self.vec.x * PLAYER_GND_DRG
+        self.vec.z -= self.vec.z * PLAYER_GND_DRG
+
+
+    def apply_vector(self):
+        p = self.pos
+        p.x = p.x + self.vec.x
+        p.y = p.y + self.vec.y
+        p.z = p.z + self.vec.z
+

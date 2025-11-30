@@ -60,9 +60,9 @@ def run_filter(a):
     #f = open(filename, 'w')
     #atoms = a.get_atoms_by_type(types.Atom)
     #for atom in atoms:
-        #print >> f, atom
-        #if use_stdout:
-           #print atom 
+    #print >> f, atom
+    #if use_stdout:
+    #print atom 
     #f.close()
 def output_atomspace(a):
     m_adaptors.output_atomspace(a, "server_atomspace.log")

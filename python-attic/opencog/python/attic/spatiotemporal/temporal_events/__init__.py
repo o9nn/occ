@@ -209,14 +209,14 @@ if __name__ == '__main__':
         TemporalEventPiecewiseLinear({1: 0, 2: 0.1, 3: 0.3, 4: 0.7, 5: 1}, {3.5: 1, 4.5: 0.9, 8: 0.6, 9: 0.1, 10: 0})
     ]
 
-    print type(events[0])
+    print(type(events[0]))
 
-    print events[0] * events[1]
+    print(events[0] * events[1])
 
     for event in events:
         plt = event.plot()
-        print integral(event.distribution_beginning.pdf, event.a, event.beginning)
-        print event.distribution_beginning.rvs(10)
+        print(integral(event.distribution_beginning.pdf, event.a, event.beginning))
+        print(event.distribution_beginning.rvs(10))
         plt.ylim(ymax=1.1)
         #plt.figure()
     plt.show()

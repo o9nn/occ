@@ -21,7 +21,7 @@ ConceptNode("this is a test")
 # Print the AtomSpace contents, using scheme:
 scheme_eval(asp, '(cog-prt-atomspace)')
 scheme_eval(asp,
-     '(format #t "Yes this is really scheme: ~A\n" (+ 2 2))')
+            '(format #t "Yes this is really scheme: ~A\n" (+ 2 2))')
 
 # Add an Atom, using scheme. The scheme_eval_h() function returns
 # a handle to that Atom, and python can use that handle, just as if

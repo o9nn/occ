@@ -52,16 +52,16 @@ while cont:
     for line in lines:
         #if line[1].startswith("group0"): #and line[2].startswith("group1"):
         #if line[1][:6] != line[2][:6]:
-            try:
-                if line[0] in hebtv:
-                    hebtv[line[0]][0].append(float(line[3]))
-                    hebtv[line[0]][1].append(float(line[5]))
-                else:
-                    hebtv[line[0]] = [[],[]]
-                    hebtv[line[0]][0].append(float(line[3]))
-                    hebtv[line[0]][1].append(float(line[5]))
-            except:
-                print(line)
+        try:
+            if line[0] in hebtv:
+                hebtv[line[0]][0].append(float(line[3]))
+                hebtv[line[0]][1].append(float(line[5]))
+            else:
+                hebtv[line[0]] = [[],[]]
+                hebtv[line[0]][0].append(float(line[3]))
+                hebtv[line[0]][1].append(float(line[5]))
+        except:
+            print(line)
 
 
     fig = plt.figure()

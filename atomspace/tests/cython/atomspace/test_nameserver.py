@@ -1,7 +1,7 @@
 import unittest
 
 from opencog.atomspace import (types, decl_type, type_decl_context, AtomSpace,
-        get_type_name)
+                               get_type_name)
 from opencog.utilities import add_node, add_link, push_default_atomspace, pop_default_atomspace
 from opencog.type_constructors import *
 

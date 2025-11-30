@@ -246,9 +246,9 @@ if __name__ == '__main__':
                                                                [atomspace.add_node('PredicateNode',
                                                                                    'contains-block-of-color'),
                                                                 atomspace.add_link('ListLink', [ENTITY, COLOR])
-                                                               ])
-                                           ])
-                       ], _default_tv)
+                                                                ])
+                                            ])
+                        ], _default_tv)
 
     ENTITY1 = atomspace.add_node('VariableNode', '$ENTITY1')
     ENTITY2 = atomspace.add_node('VariableNode', '$ENTITY2')
@@ -269,8 +269,8 @@ if __name__ == '__main__':
                                                                [atomspace.add_node('PredicateNode',
                                                                                    'near-object-of-type'),
                                                                 atomspace.add_link('ListLink', [ENTITY1, CATEGORY])
-                                                               ])
-                                           ])
-                       ], _default_tv)
+                                                                ])
+                                            ])
+                        ], _default_tv)
 
     #test(atomspace)

@@ -87,11 +87,11 @@ def parse_aiml_text(text):
     return ' '.join(tokens)
 
 if __name__ == '__main__':
-    print solr3col('do you have animal friends?')
-    print solr3col('hi')
-    print solr3col('what is your favior color')
-    print solr3col('tell me a story')
-    print solr3col('would you like to star in movies')
-    print parse_aiml_text('hi')
-    print parse_aiml_text('<think>hi</think>how are you')
-    print solr_aiml('what are your name')  # correct grammar
+    print(solr3col('do you have animal friends?'))
+    print(solr3col('hi'))
+    print(solr3col('what is your favior color'))
+    print(solr3col('tell me a story'))
+    print(solr3col('would you like to star in movies'))
+    print(parse_aiml_text('hi'))
+    print(parse_aiml_text('<think>hi</think>how are you'))
+    print(solr_aiml('what are your name'))  # correct grammar

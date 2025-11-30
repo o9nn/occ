@@ -184,43 +184,43 @@ class FormulaCreator(object):
         result = TemporalRelation()
 
         result['p'] = before[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      before[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
+            before[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
 
         result['m'] = before[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      same[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
+            same[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
 
         result['o'] = before[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
 
         result['F'] = before[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * same[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * same[dist_1_ending, dist_2_ending]
 
         result['D'] = before[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
 
         result['s'] = same[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
 
         result['e'] = same[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * same[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * same[dist_1_ending, dist_2_ending]
 
         result['S'] = same[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
 
         result['d'] = after[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * before[dist_1_ending, dist_2_ending]
 
         result['f'] = after[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * same[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * same[dist_1_ending, dist_2_ending]
 
         result['O'] = after[dist_1_beginning, dist_2_beginning] * before[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
 
         result['M'] = after[dist_1_beginning, dist_2_beginning] * same[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
 
         result['P'] = after[dist_1_beginning, dist_2_beginning] * after[dist_1_beginning, dist_2_ending] * \
-                      after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
+            after[dist_1_ending, dist_2_beginning] * after[dist_1_ending, dist_2_ending]
 
         return result
 
@@ -446,11 +446,11 @@ if __name__ == '__main__':
 
         temporal_relations = event_1 * event_2
 
-        print '\nFigure' + str(figure_number)
-        print '----------------------'
-        print sum(temporal_relations.values())
+        print('\nFigure' + str(figure_number))
+        print('----------------------')
+        print(sum(temporal_relations.values()))
         for p in 'pmoFDseSdfOMP':
-            print p, temporal_relations[p]
+            print(p, temporal_relations[p])
 
         figure_number += 1
 

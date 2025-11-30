@@ -62,7 +62,7 @@ world = [
     'WATER',
     'WEB'
     'RAILS'
-    ]
+]
 
 """
 woods = [
@@ -191,7 +191,7 @@ rocks = [
     'BREWING_STAND',
     'END_STONE',
 
-    ]
+]
 
 
 # tools: determines best tool for harvesting. some blocks can still be harvested with other tools

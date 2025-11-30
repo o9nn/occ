@@ -50,14 +50,14 @@ set_default_atomspace(space)
 # The relationship between the URL location and the file name can
 # be indicated with an arrow. (This is one of many ways.)
 e = EdgeLink(
-	# Here, "URL" is just some string. Any string will do.
-	PredicateNode("URL"),
-	ListLink(
-		# The name of the directory with photos in it.
-		ItemNode("file:///Home Computer/folders/My photo album"),
+    # Here, "URL" is just some string. Any string will do.
+    PredicateNode("URL"),
+    ListLink(
+        # The name of the directory with photos in it.
+        ItemNode("file:///Home Computer/folders/My photo album"),
 
-		# The photo itself.
-		ItemNode("Fantastic Sunset on Sunday.jpg")))
+        # The photo itself.
+        ItemNode("Fantastic Sunset on Sunday.jpg")))
 
 print("Here's your data:", e)
 
@@ -86,13 +86,13 @@ print("Closed the connection to storage")
 
 # Define a utility printer
 def prt_atomspace_contents(asp) :
-	print("AtomSpace contains a total of " + str(len(space)) + " Atoms")
-	if 0 < len(asp) :
-		print("These are:")
-	count = 0
-	for atom in asp:
-		count += 1
-		print("Atom " + str(count) + ".... " + str(atom))
+    print("AtomSpace contains a total of " + str(len(space)) + " Atoms")
+    if 0 < len(asp) :
+        print("These are:")
+    count = 0
+    for atom in asp:
+        count += 1
+        print("Atom " + str(count) + ".... " + str(atom))
 
 print("The AtomSpace before clearing:")
 prt_atomspace_contents(space)

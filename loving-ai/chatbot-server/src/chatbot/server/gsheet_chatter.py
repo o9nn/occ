@@ -236,4 +236,4 @@ if __name__ == '__main__':
     # line and printing responses.
     while True:
         userin = raw_input("> ")
-        print "raw response:" + k.respond(userin)
+        print("raw response:" + k.respond(userin))

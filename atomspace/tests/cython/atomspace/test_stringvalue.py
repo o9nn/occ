@@ -4,7 +4,7 @@ from opencog.type_constructors import *
 from opencog.utilities import set_default_atomspace, finalize_opencog
 
 class StringValueTest(unittest.TestCase):
-    
+
     def setUp(self):
         self.space = AtomSpace()
         set_default_atomspace(self.space)
@@ -20,7 +20,7 @@ class StringValueTest(unittest.TestCase):
     def test_create_list_value(self):
         value = StringValue(['foo', 'bar'])
         self.assertTrue(value is not None)
-    
+
     def test_value_equals(self):
         self.assertEqual(StringValue('foo'), StringValue(['foo']))
         self.assertEqual(StringValue(['foo', 'bar']),

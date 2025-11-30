@@ -49,33 +49,33 @@ class AttentionController:
 
 
         new_atom = bindlink(self._atomspace,
-                              BindLink(
-                                  VariableNode("$x"),
-                                  EvaluationLink(
-                                      PredicateNode("new_block"),
-                                      VariableNode("$x")
-                                  ),
-                                  EvaluationLink(
-                                      PredicateNode("new_block"),
-                                      VariableNode("$x")
-                                  )
-                              ))
+                            BindLink(
+                                VariableNode("$x"),
+                                EvaluationLink(
+                                    PredicateNode("new_block"),
+                                    VariableNode("$x")
+                                ),
+                                EvaluationLink(
+                                    PredicateNode("new_block"),
+                                    VariableNode("$x")
+                                )
+                            ))
 
         disappeared_atom = bindlink(self._atomspace,
-                                      BindLink(
-                                          VariableNode("$x"),
-                                          EvaluationLink(
-                                              PredicateNode("disappeared"),
-                                              VariableNode("$x")
-                                          ),
-                                          EvaluationLink(
-                                              PredicateNode("disappeared"),
-                                              VariableNode("$x")
-                                          )
-                                      ))
+                                    BindLink(
+                                        VariableNode("$x"),
+                                        EvaluationLink(
+                                            PredicateNode("disappeared"),
+                                            VariableNode("$x")
+                                        ),
+                                        EvaluationLink(
+                                            PredicateNode("disappeared"),
+                                            VariableNode("$x")
+                                        )
+                                    ))
         all_eval_links = new_atom.out + disappeared_atom.out
-        print "Found %s new blocks." % len(new_atom.out)
-        print "Found %s disappeared blocks." % len(disappeared_atom.out)
+        print("Found %s new blocks." % len(new_atom.out))
+        print("Found %s disappeared blocks." % len(disappeared_atom.out))
         for eval_link in all_eval_links:
             # TODO: This next line needs to be more specific rather than just
             # selecting the first link.
@@ -85,7 +85,7 @@ class AttentionController:
             # TODO: Make the 200 a constant, this occurs one other place.
             atom.av['sti'] = cur_sti + 200
             self._atomspace.remove(eval_link)
-        print len(self._atomspace.get_atoms_by_type(types.StructureNode)), " Structure Nodes in AtomSpace."
+        print(len(self._atomspace.get_atoms_by_type(types.StructureNode)), " Structure Nodes in AtomSpace.")
         for block in self._atomspace.get_atoms_by_type(types.StructureNode):
             cur_sti = block.av['sti']
             block.av['sti'] = max(cur_sti - 10, cur_sti / 1.36471)

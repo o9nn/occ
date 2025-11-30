@@ -4,7 +4,7 @@ from opencog.type_constructors import *
 from opencog.utilities import set_default_atomspace, finalize_opencog
 
 class LinkValueTest(unittest.TestCase):
-    
+
     def setUp(self):
         self.space = AtomSpace()
         set_default_atomspace(self.space)
@@ -20,7 +20,7 @@ class LinkValueTest(unittest.TestCase):
     def test_create_list_value(self):
         value = LinkValue([FloatValue(42), StringValue('foo')])
         self.assertTrue(value is not None)
-    
+
     def test_value_equals(self):
         self.assertEqual(LinkValue(StringValue('foo')),
                          LinkValue([StringValue('foo')]))

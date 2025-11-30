@@ -7,7 +7,7 @@ from time import sleep
 def monitor_changes(atomspace):    
     tv_delta = 0.1 
     interval = 5 + 5*random.random() # seconds
- 
+
     t = types
 
     # Get latest and previous time nodes with large enough interval
@@ -80,9 +80,9 @@ def monitor_changes(atomspace):
     if changes_with_tv or changes_with_arg:  
         atomspace.set_tv(eval_has_dramatic_changes.h, TruthValue(1, 1))
 
-    print "Found " + str(len(changes_with_tv)) + " changes_with_tv"
-    print "Found " + str(len(changes_with_arg)) + " changes_with_arg"
-    print eval_has_dramatic_changes
+    print("Found " + str(len(changes_with_tv)) + " changes_with_tv")
+    print("Found " + str(len(changes_with_arg)) + " changes_with_arg")
+    print(eval_has_dramatic_changes)
 
 def monitor_loop(atomspace):
     while True: 
@@ -96,14 +96,14 @@ class MonitorChangesMindAgent(opencog.cogserver.MindAgent):
         self.is_running = False
 
     def run(self,atomspace):
-#        print "step MonitorChangesMindAgent"
+        #        print "step MonitorChangesMindAgent"
 
-#        Python thread is awkward. The code below blocks everything!
-#        if not self.is_running: 
-#            self.monitor_thread = Thread(target = monitor_loop, args=(atomspace,))
-#            self.monitor_thread.start()
-#            self.is_running = True
-            
+        #        Python thread is awkward. The code below blocks everything!
+        #        if not self.is_running: 
+        #            self.monitor_thread = Thread(target = monitor_loop, args=(atomspace,))
+        #            self.monitor_thread.start()
+        #            self.is_running = True
+
         monitor_changes(atomspace)
 
         self.cycles += 1

@@ -16,11 +16,11 @@ class TestQueueValueExceptions(unittest.TestCase):
         """Test that pushing to a closed queue raises a Python exception."""
         q = QueueValue()
         q.close()
-        
+
         # This should raise a Python exception, not crash with C++ exception
         with self.assertRaises(RuntimeError) as context:
             q.push(FloatValue(3.14))
-        
+
         # The C++ exception is converted to RuntimeError with message "std::exception"
         self.assertEqual(str(context.exception), "std::exception")
 
@@ -28,11 +28,11 @@ class TestQueueValueExceptions(unittest.TestCase):
         """Test that appending to a closed queue raises a Python exception."""
         q = QueueValue()
         q.close()
-        
+
         # append() calls push() internally, so should also raise
         with self.assertRaises(RuntimeError) as context:
             q.append(StringValue("test"))
-        
+
         # The C++ exception is converted to RuntimeError with message "std::exception"
         self.assertEqual(str(context.exception), "std::exception")
 
@@ -40,7 +40,7 @@ class TestQueueValueExceptions(unittest.TestCase):
         """Test that pushing to an open queue works correctly."""
         q = QueueValue()
         q.open()
-        
+
         # These should succeed without exceptions
         try:
             q.push(FloatValue(1.0))
@@ -48,7 +48,7 @@ class TestQueueValueExceptions(unittest.TestCase):
             q.push(FloatValue(2.0))
         except Exception as e:
             self.fail(f"Pushing to open queue raised unexpected exception: {e}")
-        
+
         q.close()
         self.assertEqual(len(q), 3)
 
@@ -56,18 +56,18 @@ class TestQueueValueExceptions(unittest.TestCase):
         """Test pushing to a queue created with initial values."""
         # Queue created with initial values is automatically closed
         q = QueueValue([FloatValue(1.0), StringValue("initial")])
-        
+
         # Should raise exception when trying to push
         with self.assertRaises(RuntimeError) as context:
             q.push(FloatValue(2.0))
-        
+
         self.assertEqual(str(context.exception), "std::exception")
-        
+
         # But we can reopen it
         q.open()
         q.push(FloatValue(3.0))
         q.close()
-        
+
         self.assertEqual(len(q), 3)
 
     def test_pop_from_closed_empty_queue(self):
@@ -75,11 +75,11 @@ class TestQueueValueExceptions(unittest.TestCase):
         q = QueueValue()
         q.open()
         q.close()
-        
+
         # This should raise RuntimeError as documented
         with self.assertRaises(RuntimeError) as context:
             q.pop()
-        
+
         self.assertIn("Cannot pop from closed empty queue", str(context.exception))
 
 

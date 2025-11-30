@@ -18,11 +18,11 @@ class DecompositionFitter(object):
 
     def __init__(self, relations):
         self.data = relations.to_vector()
-	# parameters are used by lmfit.minimizer.minimize which is based on
+        # parameters are used by lmfit.minimizer.minimize which is based on
         # scipy.optimize; each one is a tuple consisting of
         # name, value, vary, min, max, expr
         self.params = Parameters()
-	# sets initial values for parameters
+        # sets initial values for parameters
         self.params.add_many(
             ('before_dist_1_beginning_dist_2_beginning', 0.5, True, 0.0, 1.0, None),
             ('similarity_dist_1_beginning_dist_2_beginning', 0.5, True, 0.0, 1.0, None),
@@ -41,8 +41,8 @@ class DecompositionFitter(object):
             ('after_dist_1_ending_dist_2_ending', None, False, None, None,
              '1 - before_dist_1_ending_dist_2_ending')
         )
-	
-	# minimizes the value of the paramters using the fitness function
+
+        # minimizes the value of the paramters using the fitness function
         minimize(self.fitness, self.params)
 
         for param_key in self.params:
@@ -155,8 +155,8 @@ class DecompositionFitter(object):
 
     def check(self):
         from spatiotemporal.temporal_events import FormulaCreator
-        print self.data
-        print FormulaCreator(self).calculate_relations().to_vector()
+        print(self.data)
+        print(FormulaCreator(self).calculate_relations().to_vector())
         print
 
 if __name__ == '__main__':
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     for i in xrange(50):
         A, B = generate_random_events(2)
         relations = A * B
-        print relations.to_list()
+        print(relations.to_list())
 
         # from the 13 relations, learns parameters for all combinations of the
         # before, same, and after relationships between the beginning and
@@ -173,6 +173,6 @@ if __name__ == '__main__':
         formula = FormulaCreator(DecompositionFitter(relations))
         # from these relationships, computes the 13 relations again
         relations_estimate = formula.calculate_relations()
-        print relations_estimate.to_list()
-        print relations.to_vector() - relations_estimate.to_vector()
+        print(relations_estimate.to_list())
+        print(relations.to_vector() - relations_estimate.to_vector())
         print

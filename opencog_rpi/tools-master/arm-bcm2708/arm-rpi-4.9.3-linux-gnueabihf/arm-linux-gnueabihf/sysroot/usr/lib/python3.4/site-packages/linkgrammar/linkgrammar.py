@@ -362,7 +362,7 @@ class Link(object):
 
     def __eq__(self, other):
         return self.left_word == other.left_word and self.left_label == other.left_label and \
-               self.right_word == other.right_word and self.right_label == other.right_label
+            self.right_word == other.right_word and self.right_label == other.right_label
 
     def __str__(self):
         if self.left_label == self.right_label:
@@ -473,12 +473,12 @@ class Sentence(object):
     # split() has ParseOptions as an optional argument
     # (defaults to that of Sentence)
     if sent.split(ParseOptions(verbosity=2)) < 0:
-        print "Cannot split sentence"
+        print("Cannot split sentence")
     else
         linkages = sent.parse()
-        print "English: found ", sent.num_valid_linkages(), "linkages"
+        print("English: found ", sent.num_valid_linkages(), "linkages")
         for linkage in linkages:
-            print linkage.diagram()
+            print(linkage.diagram())
     """
     def __init__(self, text, lgdict, parse_options):
         # Keep all args passed into clg.* functions.

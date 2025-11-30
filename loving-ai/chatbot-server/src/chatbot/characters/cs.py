@@ -17,7 +17,7 @@ LOVING_AI_WORKSPACE = os.environ.get('LOVING_AI_WORKSPACE', os.path.expanduser('
 CS_DIR = os.path.join(LOVING_AI_WORKSPACE, 'ChatScript-engine')
 CS_USERS_DIR = os.environ.get('CS_USERS_DIR', os.path.join(CS_DIR, 'USERS'))
 CS_STATE_DIR = os.environ.get('CS_STATE_DIR',
-            os.path.expanduser('~/.loving_ai/chatbot/cs_states'))
+                              os.path.expanduser('~/.loving_ai/chatbot/cs_states'))
 variable_pattern = re.compile(""".* variable: .*\$(?P<name>\S+) = (?P<value>.*)""")
 
 class CSCharacter(Character):
@@ -236,4 +236,4 @@ if __name__ == '__main__':
     s = Session('id')
     c = CSCharacter('id', 'name', 1, 1, 'localhost', '2048', 'Sarah')
     answer = c.respond('make sense', 'en', s, False, '1')
-    print answer
+    print(answer)

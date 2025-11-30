@@ -79,7 +79,7 @@ class priorityDictionary(dict):
             while 1:
                 smallChild = 2 * insertionPoint + 1
                 if smallChild + 1 < len(heap) and \
-                                heap[smallChild] > heap[smallChild + 1]:
+                        heap[smallChild] > heap[smallChild + 1]:
                     smallChild += 1
                 if smallChild >= len(heap) or lastItem <= heap[smallChild]:
                     heap[insertionPoint] = lastItem
@@ -113,7 +113,7 @@ class priorityDictionary(dict):
             insertionPoint = len(heap)
             heap.append(None)
             while insertionPoint > 0 and \
-                            newPair < heap[(insertionPoint - 1) // 2]:
+                    newPair < heap[(insertionPoint - 1) // 2]:
                 heap[insertionPoint] = heap[(insertionPoint - 1) // 2]
                 insertionPoint = (insertionPoint - 1) // 2
             heap[insertionPoint] = newPair

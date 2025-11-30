@@ -33,10 +33,10 @@ print(f'The CH bond is {str(ch)}')
 
 # A demo methane molecule.
 methane = Molecule( \
-  SB(C('1'), H('1')), \
-  SB(C('1'), H('2')), \
-  SB(C('1'), H('3')), \
-  SB(C('1'), H('4')))
+    SB(C('1'), H('1')), \
+    SB(C('1'), H('2')), \
+    SB(C('1'), H('3')), \
+    SB(C('1'), H('4')))
 
 print(f'Methane is a molecule: {str(methane)}')
 

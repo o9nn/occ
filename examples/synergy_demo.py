@@ -52,53 +52,53 @@ def print_metrics(metrics, indent=0):
 def demo_basic_cycle():
     """Demonstrate a basic cognitive cycle."""
     print_header("Demo 1: Basic Cognitive Cycle")
-    
+
     # Initialize with default configuration
     cs = CognitiveSynergy()
     print(f"Initialized: {cs}")
-    
+
     # Create a random perception
     perception = np.random.randn(64)
     print(f"\nPerception shape: {perception.shape}")
-    
+
     # Execute cognitive cycle
     print("\nExecuting cognitive cycle...")
     results = cs.cognitive_cycle(perception)
-    
+
     print("\nCycle Results:")
     print(f"  Cycle number: {results['cycle']}")
     print(f"  Action shape: {len(results['action'])}")
     print(f"  Emergence score: {results['metrics']['aar']['emergence_score']:.4f}")
     print(f"  Coherence: {results['metrics']['aar']['coherence']:.4f}")
-    
+
     print(f"\nFinal state: {cs}")
 
 
 def demo_multiple_cycles():
     """Demonstrate learning over multiple cycles."""
     print_header("Demo 2: Learning Over Multiple Cycles")
-    
+
     cs = CognitiveSynergy()
-    
+
     print("Running 10 cognitive cycles...\n")
-    
+
     emergence_scores = []
     coherence_scores = []
-    
+
     for i in range(10):
         # Generate perception with some structure
         perception = np.random.randn(64) + np.sin(i * 0.5)
-        
+
         results = cs.cognitive_cycle(perception)
-        
+
         emergence = results['metrics']['aar']['emergence_score']
         coherence = results['metrics']['aar']['coherence']
-        
+
         emergence_scores.append(emergence)
         coherence_scores.append(coherence)
-        
+
         print(f"Cycle {i+1:2d}: Emergence={emergence:.4f}, Coherence={coherence:.4f}")
-    
+
     print(f"\nAverage Emergence: {np.mean(emergence_scores):.4f}")
     print(f"Average Coherence: {np.mean(coherence_scores):.4f}")
     print(f"Synergy Score: {cs.get_synergy_score():.4f}")
@@ -107,22 +107,22 @@ def demo_multiple_cycles():
 def demo_hypergraph_identity():
     """Demonstrate hypergraph identity refinement."""
     print_header("Demo 3: Hypergraph Identity Refinement")
-    
+
     config = SynergyConfig(
         enable_hypergraph=True,
         hypergraph_auto_refine=True,
         collect_metrics=True
     )
     cs = CognitiveSynergy(config=config)
-    
+
     print("Running cycles with identity refinement...\n")
-    
+
     for i in range(5):
         perception = np.random.randn(64)
         cs.cognitive_cycle(perception)
-    
+
     metrics = cs.get_all_metrics()
-    
+
     print("Hypergraph Identity State:")
     print(f"  Total nodes: {metrics['hypergraph']['total_nodes']}")
     print(f"  Total edges: {metrics['hypergraph']['total_edges']}")
@@ -133,7 +133,7 @@ def demo_hypergraph_identity():
 def demo_custom_configuration():
     """Demonstrate custom configuration."""
     print_header("Demo 4: Custom Configuration")
-    
+
     # Create custom configuration
     config = SynergyConfig(
         aar_dimension=32,  # Smaller dimension for faster processing
@@ -143,38 +143,38 @@ def demo_custom_configuration():
         collect_metrics=True,
         metrics_history_size=20
     )
-    
+
     print("Configuration:")
     print(f"  AAR Dimension: {config.aar_dimension}")
     print(f"  Learning Rate: {config.aar_learning_rate}")
     print(f"  Hypergraph: {config.enable_hypergraph}")
     print(f"  Membranes: {config.enable_membranes}")
     print(f"  Metrics History: {config.metrics_history_size}")
-    
+
     cs = CognitiveSynergy(config=config)
-    
+
     print("\nRunning 3 cycles with custom config...")
     for _ in range(3):
         perception = np.random.randn(32)  # Match custom dimension
         cs.cognitive_cycle(perception)
-    
+
     print(f"\nFinal synergy score: {cs.get_synergy_score():.4f}")
 
 
 def demo_comprehensive_metrics():
     """Demonstrate comprehensive metrics collection."""
     print_header("Demo 5: Comprehensive Metrics")
-    
+
     cs = CognitiveSynergy()
-    
+
     # Run several cycles
     for _ in range(3):
         perception = np.random.randn(64)
         cs.cognitive_cycle(perception)
-    
+
     # Get all metrics
     all_metrics = cs.get_all_metrics()
-    
+
     print("Complete System Metrics:")
     print_metrics(all_metrics)
 
@@ -182,19 +182,19 @@ def demo_comprehensive_metrics():
 def demo_performance_benchmark():
     """Benchmark cognitive cycle performance."""
     print_header("Demo 6: Performance Benchmark")
-    
+
     cs = CognitiveSynergy()
-    
+
     print("Benchmarking 100 cognitive cycles...\n")
-    
+
     start_time = time.time()
-    
+
     for _ in range(100):
         perception = np.random.randn(64)
         cs.cognitive_cycle(perception)
-    
+
     elapsed = time.time() - start_time
-    
+
     print(f"Total time: {elapsed:.3f}s")
     print(f"Average cycle time: {elapsed/100*1000:.2f}ms")
     print(f"Cycles per second: {100/elapsed:.2f}")
@@ -203,21 +203,21 @@ def demo_performance_benchmark():
 def demo_synergy_evolution():
     """Demonstrate synergy score evolution over time."""
     print_header("Demo 7: Synergy Score Evolution")
-    
+
     cs = CognitiveSynergy()
-    
+
     print("Tracking synergy score over 20 cycles...\n")
-    
+
     scores = []
     for i in range(20):
         perception = np.random.randn(64)
         cs.cognitive_cycle(perception)
         score = cs.get_synergy_score()
         scores.append(score)
-        
+
         if (i + 1) % 5 == 0:
             print(f"Cycle {i+1:2d}: Synergy Score = {score:.4f}")
-    
+
     print(f"\nInitial score: {scores[0]:.4f}")
     print(f"Final score: {scores[-1]:.4f}")
     print(f"Average score: {np.mean(scores):.4f}")
@@ -230,7 +230,7 @@ def main():
     print("COGNITIVE SYNERGY DEMONSTRATION")
     print("OpenCog Collection - Unified Synergy API")
     print("=" * 60)
-    
+
     demos = [
         demo_basic_cycle,
         demo_multiple_cycles,
@@ -240,7 +240,7 @@ def main():
         demo_performance_benchmark,
         demo_synergy_evolution
     ]
-    
+
     for demo in demos:
         try:
             demo()
@@ -249,7 +249,7 @@ def main():
             print(f"\n❌ Error in {demo.__name__}: {e}")
             import traceback
             traceback.print_exc()
-    
+
     print("\n" + "=" * 60)
     print("DEMONSTRATION COMPLETE")
     print("=" * 60)

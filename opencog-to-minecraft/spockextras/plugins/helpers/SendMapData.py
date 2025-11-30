@@ -12,7 +12,7 @@ from spockbot.plugins.tools import smpmap
 from spockbot.mcp import proto
 
 class SendMapDataCore():
-    
+
     def __init__(self):
         pass
 
@@ -23,88 +23,88 @@ class SendMapDataCore():
 
 @pl_announce('SendMapData')
 class SendMapDataPlugin:
-    
+
     def __init__(self, ploader, settings):
-        
+
         self.event = ploader.requires('Event')
         self.core = SendMapDataCore()
         ploader.provides('SendMapData', self.core)
-        
+
         packets = (0x01, 0x07, 0x03, 0x21, 0x22, 0x23, 0x26)
         packet_handlers = (
-                self.handleNewDimension,
-                self.handleNewDimension,
-                self.handleTimeUpdate,
-                self.handleChunkData,
-                self.handleBlockChangeMulti,
-                self.handleBlockChange,
-                self.handleChunkBulk
-                )
-        
+            self.handleNewDimension,
+            self.handleNewDimension,
+            self.handleTimeUpdate,
+            self.handleChunkData,
+            self.handleBlockChangeMulti,
+            self.handleBlockChange,
+            self.handleChunkBulk
+        )
+
         for i in range(len(packets)):
             ploader.reg_event_handler(
-                    (proto.PLAY_STATE, proto.SERVER_TO_CLIENT, packets[i]),
-                    packet_handlers[i]
-                    )
+                (proto.PLAY_STATE, proto.SERVER_TO_CLIENT, packets[i]),
+                packet_handlers[i]
+            )
             ploader.reg_event_handler('disconnect', self.handleDisconnect)
 
-    
+
     #Time Update - Update World Time
     def handleTimeUpdate(self, name, packet):
-        
+
         #print "received time update:"
         #print packet
         self.event.emit('ros_time_update', packet.data)
 
-    
+
     #Join Game/Respawn - New Dimension
     def handleNewDimension(self, name, packet):
-        
+
         #print packet
         self.event.emit('ros_new_dimension', packet.data['dimension'])
 
-    
+
     #Chunk Data - Update World state
     def handleChunkData(self, name, packet):
-        
+
         self.event.emit('ros_chunk_data', packet.data)
 
-    
+
     #Multi Block Change - Update multiple blocks
     def handleBlockChangeMulti(self, name, packet):
-        
+
         chunk_x = packet.data['chunk_x']*16
         chunk_z = packet.data['chunk_z']*16
-        
+
         for block in packet.data['blocks']:
             self.event.emit('ros_block_update', {
                 'x': block['x'] + chunk_x,
                 'y': block['y'],
                 'z': block['z'] + chunk_z,
                 'data': block['block_data']
-                })
+            })
 
-	
+
     #Block Change - Update a single block
     def handleBlockChange(self, name, packet):
-        
+
         data = packet.data
-        print packet.data['block_data']
+        print(packet.data['block_data'])
         self.event.emit('ros_block_update', {
             'x': data['location']['x'],
             'y': data['location']['y'],
             'z': data['location']['z'],
             'data': data['block_data']
 
-            })
+        })
 
 
     #Map Chunk Bulk - Update World state
     def handleChunkBulk(self, name, packet):
-        
+
         self.event.emit('ros_chunk_bulk', packet.data)
-    
-    
+
+
     def handleDisconnect(self, name, data):
-        
+
         self.event.emit('ros_world_reset')

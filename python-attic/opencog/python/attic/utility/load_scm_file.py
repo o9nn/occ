@@ -29,7 +29,7 @@ def add_tree_to_atomspace(a, tree, root):
     out = []
     fakeatom = tree.get_node_attr(root)['atom']
     if not tree.neighbors(root):
-    ## a leaf in the tree
+        ## a leaf in the tree
         try:
             if is_a(fakeatom.type, types.Node):
                 # a node
@@ -37,7 +37,7 @@ def add_tree_to_atomspace(a, tree, root):
             else:
                 # empty link
                 return a.add_link(fakeatom.type, [], fakeatom.tv)
-        except Exception, e:
+        except Exception as e:
             log.error(" **** error occurs when adding to atomspace ****" )
             log.error(str(e))
 
@@ -77,7 +77,7 @@ def load_scm_file(a, filename):
                 ##
             if line.startswith('('):
                 if tree.number_of_nodes() > 0:
-                # deal with previous segment
+                    # deal with previous segment
                     add_tree_to_atomspace(a, tree, root)
                     tree.clear()
                     #

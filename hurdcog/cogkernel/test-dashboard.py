@@ -35,21 +35,21 @@ def test_reactor_status():
         spec = importlib.util.spec_from_file_location("fusion_reactor_server", "fusion-reactor-server.py")
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        
+
         # Create a ReactorStatus instance
         reactor = module.ReactorStatus()
-        
+
         # Test basic attributes
         assert reactor.status == "ONLINE", "Status should be ONLINE"
         assert reactor.fusion_mode == "meta-evolution", "Fusion mode should be meta-evolution"
         assert reactor.version == "1.0.0", "Version should be 1.0.0"
-        
+
         # Test phases
         assert len(reactor.phases) == 6, "Should have 6 phases"
         for phase_id, phase in reactor.phases.items():
             assert phase["status"] == "COMPLETE", f"Phase {phase_id} should be COMPLETE"
             assert phase["progress"] == 100, f"Phase {phase_id} should have 100% progress"
-        
+
         # Test metrics
         assert "atomspace" in reactor.metrics, "Should have atomspace metrics"
         assert "ecan" in reactor.metrics, "Should have ECAN metrics"
@@ -57,26 +57,26 @@ def test_reactor_status():
         assert "distributed_mesh" in reactor.metrics, "Should have distributed mesh metrics"
         assert "meta_cognition" in reactor.metrics, "Should have meta-cognition metrics"
         assert "system_health" in reactor.metrics, "Should have system health metrics"
-        
+
         # Test get_status
         status = reactor.get_status()
         assert status["status"] == "ONLINE", "Status in get_status should be ONLINE"
         assert "phases" in status, "get_status should include phases"
         assert "metrics" in status, "get_status should include metrics"
         assert "logs" in status, "get_status should include logs"
-        
+
         # Test update_metrics
         initial_nodes = reactor.metrics["atomspace"]["nodes"]
         reactor.update_metrics()
         # Nodes should have changed (but within bounds)
         assert 10000 <= reactor.metrics["atomspace"]["nodes"] <= 15000, "Atomspace nodes should be within bounds"
-        
+
         # Test add_log
         initial_log_count = len(reactor.logs)
         reactor.add_log("Test log entry")
         assert len(reactor.logs) == initial_log_count + 1, "Log should be added"
         assert reactor.logs[-1]["message"] == "Test log entry", "Log message should match"
-        
+
         print("✅ ReactorStatus tests passed")
         return True
     except Exception as e:
@@ -93,10 +93,10 @@ def test_html_file():
         if not os.path.exists(html_path):
             print(f"❌ HTML file not found: {html_path}")
             return False
-        
+
         with open(html_path, 'r') as f:
             content = f.read()
-        
+
         # Check for key components
         required_elements = [
             "Cognitive Fusion Reactor",
@@ -108,12 +108,12 @@ def test_html_file():
             "5D Cognitive Tensor Architecture",
             "System Event Log"
         ]
-        
+
         for element in required_elements:
             if element not in content:
                 print(f"❌ Missing required element: {element}")
                 return False
-        
+
         print(f"✅ Dashboard HTML file valid ({len(content)} bytes)")
         return True
     except Exception as e:
@@ -128,13 +128,13 @@ def test_server_script():
         if not os.path.exists(script_path):
             print(f"❌ Server script not found: {script_path}")
             return False
-        
+
         # Try to compile the script
         with open(script_path, 'r') as f:
             code = f.read()
-        
+
         compile(code, script_path, 'exec')
-        
+
         print(f"✅ Server script valid ({len(code)} bytes)")
         return True
     except SyntaxError as e:
@@ -152,17 +152,17 @@ def test_documentation():
             "MASTER_CONTROL_DASHBOARD.md",
             "../FUSION_REACTOR_QUICK_START.md"
         ]
-        
+
         for doc in docs:
             if not os.path.exists(doc):
                 print(f"❌ Documentation not found: {doc}")
                 return False
-            
+
             with open(doc, 'r') as f:
                 content = f.read()
-            
+
             print(f"✅ Found {doc} ({len(content)} bytes)")
-        
+
         print("✅ All documentation files present")
         return True
     except Exception as e:
@@ -177,16 +177,16 @@ def test_startup_script():
         if not os.path.exists(script_path):
             print(f"❌ Startup script not found: {script_path}")
             return False
-        
+
         # Check if executable
         is_executable = os.access(script_path, os.X_OK)
         if not is_executable:
             print(f"❌ Startup script is not executable")
             return False
-        
+
         with open(script_path, 'r') as f:
             content = f.read()
-        
+
         print(f"✅ Startup script valid and executable ({len(content)} bytes)")
         return True
     except Exception as e:
@@ -198,7 +198,7 @@ def main():
     print("=" * 80)
     print("🧬 Cognitive Fusion Reactor Dashboard - Test Suite")
     print("=" * 80)
-    
+
     tests = [
         ("Imports", test_imports),
         ("ReactorStatus", test_reactor_status),
@@ -207,7 +207,7 @@ def main():
         ("Documentation", test_documentation),
         ("Startup Script", test_startup_script)
     ]
-    
+
     results = []
     for name, test_func in tests:
         try:
@@ -216,22 +216,22 @@ def main():
         except Exception as e:
             print(f"❌ Test {name} crashed: {e}")
             results.append((name, False))
-    
+
     # Summary
     print("\n" + "=" * 80)
     print("Test Summary")
     print("=" * 80)
-    
+
     passed = sum(1 for _, result in results if result)
     total = len(results)
-    
+
     for name, result in results:
         status = "✅ PASSED" if result else "❌ FAILED"
         print(f"{status} - {name}")
-    
+
     print("=" * 80)
     print(f"Results: {passed}/{total} tests passed")
-    
+
     if passed == total:
         print("🎉 All tests passed!")
         return 0

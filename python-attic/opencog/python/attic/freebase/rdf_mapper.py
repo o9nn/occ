@@ -11,8 +11,8 @@ def map_from_path(rdf_path, atomspace):
 
     for s, p, o in graph:
         subject, predicate, object = unicode(s).encode('ascii','replace'),\
-                                     unicode(p).encode('ascii','replace'),\
-                                     unicode(o).encode('ascii','replace')
+            unicode(p).encode('ascii','replace'),\
+            unicode(o).encode('ascii','replace')
         try:
             object_value = int(object)
             object_type = 'NumberNode'
@@ -20,12 +20,12 @@ def map_from_path(rdf_path, atomspace):
             object_type = 'ConceptNode'
 
         atomspace.add_link('EvaluationLink',
-            [atomspace.add_node('PredicateLink', predicate, DEFAULT_TV),
-             atomspace.add_link('ListLink',
-                [atomspace.add_node('ObjectEntityNode', subject, DEFAULT_TV),
-                atomspace.add_node(object_type, object, DEFAULT_TV)
-                ])
-             ])
+                           [atomspace.add_node('PredicateLink', predicate, DEFAULT_TV),
+                            atomspace.add_link('ListLink',
+                                               [atomspace.add_node('ObjectEntityNode', subject, DEFAULT_TV),
+                                                atomspace.add_node(object_type, object, DEFAULT_TV)
+                                                ])
+                            ])
 
 if __name__ == '__main__':
     atomspace = AtomSpace()

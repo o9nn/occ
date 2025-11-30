@@ -82,6 +82,6 @@ ValueOfLink(is_red, key).execute()
 # the entire contents of the AtomSpace. Queries are demoed in later
 # files. This is the simplest demo.
 print("The atomspace contains:\n\n",
-   MeetLink(VariableNode("x")).execute())
+      MeetLink(VariableNode("x")).execute())
 
 # THE END. That's All, Folks!

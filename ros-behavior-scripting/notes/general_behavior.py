@@ -273,7 +273,7 @@ class Tree():
 		# (or reply with) angry words, polite words, etc?
 		# currently supplying string rather than specific EmotionState with timing,
 		# allowing that to be handled here where timings have been tuned
-		print ' setting up chatbot_affect link'
+		print(' setting up chatbot_affect link')
 		rospy.Subscriber("/eva/chatbot_affect_perceive", String,
 			self.chatbot_affect_perceive_callback)
 
@@ -323,7 +323,7 @@ class Tree():
 			self.show_emotion(emo.name, intensity, duration, trigger)
 		elif force==True:
 			# force said show something but nothing picked, so choose first
-			print 'force branch chosen'
+			print('force branch chosen')
 			emo=emos[0]
 			intensity = 0.6 * emo.max_intensity
 			duration = emo.max_duration
@@ -370,7 +370,7 @@ class Tree():
 			tense = random.uniform(emo.min_intensity, emo.max_intensity)
 			durat = random.uniform(emo.min_duration, emo.max_duration)
 			self.show_emotion(emo_name, tense, durat, trigger)
-			print "----- Instant expression: " + emo_name + " (" + \
+			print("----- Instant expression: " + emo_name + " (" + \)
 			     str(tense) + ") for " + str(durat) + " seconds"
 		return emo_name
 
@@ -576,7 +576,7 @@ class Tree():
 	# Print a single status message
 	@owyl.taskmethod
 	def print_status(self, **kwargs):
-		print kwargs["str"]
+		print(kwargs["str"])
 		yield True
 
 	# Print emotional state
@@ -698,7 +698,7 @@ class Tree():
 		if self.blackboard["interact_with_face_target_since"] > 0 and \
 				(time.time() - self.blackboard["interact_with_face_target_since"]) >= \
 						random.uniform(self.blackboard["time_to_change_face_target_min"], self.blackboard["time_to_change_face_target_max"]):
-			print "----- Time to start a new interaction!"
+			print("----- Time to start a new interaction!")
 			yield True
 		else:
 			yield False
@@ -777,7 +777,7 @@ class Tree():
 
 		interval = 0.01
 		duration = random.uniform(self.blackboard["min_duration_for_interaction"], self.blackboard["max_duration_for_interaction"])
-		print "----- Interacting w/face id:" + str(face_id) + " for " + str(duration)[:5] + " seconds"
+		print("----- Interacting w/face id:" + str(face_id) + " for " + str(duration)[:5] + " seconds")
 		self.break_if_interruptions(interval, duration)
 		yield True
 
@@ -790,16 +790,16 @@ class Tree():
 		which_part = random.randint(1, 4)
 		if which_part == 1:
 			self.blackboard["face_study_nose"] = True
-			print "----- Studying face:" + str(face_id) + " (nose)"
+			print("----- Studying face:" + str(face_id) + " (nose)")
 		elif which_part == 2:
 			self.blackboard["face_study_mouth"] = True
-			print "----- Studying face:" + str(face_id) + " (mouth)"
+			print("----- Studying face:" + str(face_id) + " (mouth)")
 		elif which_part == 3:
 			self.blackboard["face_study_left_ear"] = True
-			print "----- Studying face:" + str(face_id) + " (left ear)"
+			print("----- Studying face:" + str(face_id) + " (left ear)")
 		elif which_part == 4:
 			self.blackboard["face_study_right_ear"] = True
-			print "----- Studying face:" + str(face_id) + " (right ear)"
+			print("----- Studying face:" + str(face_id) + " (right ear)")
 
 		self.facetrack.study_face(face_id, duration)
 		self.write_log("face_study", time.time(), kwargs["trigger"])
@@ -808,7 +808,7 @@ class Tree():
 	@owyl.taskmethod
 	def glance_at(self, **kwargs):
 		face_id = self.blackboard[kwargs["id"]]
-		print "----- Glancing at face:" + str(face_id)
+		print("----- Glancing at face:" + str(face_id))
 		glance_seconds = 1
 		self.facetrack.glance_at_face(face_id, glance_seconds)
 		self.write_log("glance_at_" + str(face_id), time.time(), kwargs["trigger"])
@@ -817,7 +817,7 @@ class Tree():
 	@owyl.taskmethod
 	def glance_at_new_face(self, **kwargs):
 		face_id = self.blackboard["new_face"]
-		print "----- Glancing at new face:" + str(face_id)
+		print("----- Glancing at new face:" + str(face_id))
 		glance_seconds = 1
 		self.facetrack.glance_at_face(face_id, glance_seconds)
 		self.write_log("glance_at_" + str(face_id), time.time(), kwargs["trigger"])
@@ -825,7 +825,7 @@ class Tree():
 
 	@owyl.taskmethod
 	def glance_at_lost_face(self, **kwargs):
-		print "----- Glancing at lost face:" + str(self.blackboard["lost_face"])
+		print("----- Glancing at lost face:" + str(self.blackboard["lost_face"]))
 		face_id = self.blackboard["lost_face"]
 		self.facetrack.glance_at_face(face_id, 1)
 		self.write_log("glance_at_" + str(face_id), time.time(), kwargs["trigger"])
@@ -877,7 +877,7 @@ class Tree():
 			self.emotion_pub.publish(exp)
 			self.write_log(exp.name, time.time(), trigger)
 
-		print "----- Show expression: " + expression + " (" + str(intensity)[:5] + ") for " + str(duration)[:4] + " seconds"
+		print("----- Show expression: " + expression + " (" + str(intensity)[:5] + ") for " + str(duration)[:4] + " seconds")
 		self.blackboard["show_expression_since"] = time.time()
 
 	# Accept an gesture name, intensity, repeat (perform how many times)
@@ -892,7 +892,7 @@ class Tree():
 			self.gesture_pub.publish(ges)
 			self.write_log(ges.name, time.time(), trigger)
 
-		print "----- Show gesture: " + gesture + " (" + str(intensity)[:5] + ")"
+		print("----- Show gesture: " + gesture + " (" + str(intensity)[:5] + ")")
 
 	@owyl.taskmethod
 	def search_for_attention(self, **kwargs):
@@ -955,7 +955,7 @@ class Tree():
 
 	@owyl.taskmethod
 	def wake_up(self, **kwargs):
-		print "----- Wake up!"
+		print("----- Wake up!")
 		trigger = kwargs["trigger"]
 		self.blackboard["is_sleeping"] = False
 		self.blackboard["sleep_since"] = 0.0
@@ -972,13 +972,13 @@ class Tree():
 	@owyl.taskmethod
 	def clear_new_face_target(self, **kwargs):
 		#if not self.blackboard["is_interruption"]:
-		print "----- Cleared new face: " + str(self.blackboard["new_face"])
+		print("----- Cleared new face: " + str(self.blackboard["new_face"]))
 		self.blackboard["new_face"] = 0
 		yield True
 
 	@owyl.taskmethod
 	def clear_lost_face_target(self, **kwargs):
-		print "----- Cleared lost face: " + str(self.blackboard["lost_face"])
+		print("----- Cleared lost face: " + str(self.blackboard["lost_face"]))
 		self.blackboard["lost_face"] = 0
 		yield True
 

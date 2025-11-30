@@ -43,7 +43,7 @@ class Affect:
 	#
 	# emo is of type std_msgs/String
 	def language_affect_perceive_cb(self, emo):
-		print 'chatbot perceived affect class =' + emo.data
+		print('chatbot perceived affect class =' + emo.data)
 		rospy.loginfo('chatbot perceived affect class =' + emo.data)
 		if emo.data == "happy":
 			# behavior tree will use these predicates

@@ -110,7 +110,7 @@ class ActionGenerator:
                         )
 
         goal_name = goal.out[0].name
-        print "goal_name: ", goal_name
+        print("goal_name: ", goal_name)
 
         #######################################################################
         #                           Main Action Tree
@@ -123,7 +123,7 @@ class ActionGenerator:
         # blocks which are wood/ore/etc and then travels to one of them and
         # mines it out.
         if goal_name == "Gather resources":
-            print "action_gen: gather resources."
+            print("action_gen: gather resources.")
             # Find resources:
             # This bindlink looks through all of the blocks currently in the bot's
             # memory about the world and returns a list of all the ones that are
@@ -175,7 +175,7 @@ class ActionGenerator:
                                   VariableNode("$block")
                               )
                               )
-            print "action_gen: result", result
+            print("action_gen: result", result)
 
             # If we sucessfully mined out a block of wood we have been very
             # successful in fulfilling this goal and should continue to try to
@@ -187,7 +187,7 @@ class ActionGenerator:
                 goal_success_rate = -5.0
 
         elif goal_name == "Explore":
-            print "action_gen: random walk."
+            print("action_gen: random walk.")
 
             # Random walk:
             # Choose a random direction and walk a short distance in that direction and
@@ -221,7 +221,7 @@ class ActionGenerator:
             goal_success_rate = 1.0
 
         elif goal_name == "Look around":
-            print "action_gen: look around."
+            print("action_gen: look around.")
 
             # Random walk:
             # Choose a random direction and walk 1 block in that direction and
@@ -253,13 +253,13 @@ class ActionGenerator:
 
         # Decide whether or not we should change the current goal, or if we
         # should keep doing the same thing in the next time step.
-        print "It has been %s time steps since the goal was changed." % self.steps_since_goal_change
+        print("It has been %s time steps since the goal was changed." % self.steps_since_goal_change)
 
         # Make it more and more likely to change the current goal depending on
         # how long we have been on the current goal.
         if random.normalvariate(0.0, 1.0) >= 1.5 - 0.1 * \
                 self.steps_since_goal_change + 0.1 * goal_success_rate:
-            print "\n\n\n\t\t\tChanging current goal\n\n\n"
+            print("\n\n\n\t\t\tChanging current goal\n\n\n")
             self.steps_since_goal_change = 1
 
             # Get the full list of all the goals in the atomspace
@@ -285,7 +285,7 @@ class ActionGenerator:
             # TODO: This should be done in atomese.
             random_goal = goal_atoms_list[
                 random.randint(0, len(goal_atoms_list) - 1)]
-            print "Random goal: ", random_goal
+            print("Random goal: ", random_goal)
 
             # delete the existing CURRENT_GOAL link and then
             # create a new one pointing to the newly chosen goal.
@@ -298,4 +298,4 @@ class ActionGenerator:
         else:
             self.steps_since_goal_change += 1
 
-        print "action_gen end"
+        print("action_gen end")

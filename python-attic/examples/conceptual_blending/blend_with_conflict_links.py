@@ -66,7 +66,7 @@ person=> SimilarityLink (stv 0.800000 0.900000)
 vehicle=> SimilarityLink (stv 0.100000 0.900000)
 person=> SimilarityLink (stv 0.800000 0.900000)
 """
-print "--------Start third example--------"
+print("--------Start third example--------")
 a = AtomSpace()
 initialize_opencog(a)
 
@@ -132,8 +132,8 @@ a.set_tv(l6.h, TruthValue(0.1, 0.8))
 a.set_tv(l7.h, TruthValue(0.8, 0.9))
 
 focus_atoms = [car, man, move]
-print "Source data:\n" + \
-      str(focus_atoms) + "\n"
+print("Source data:\n" + \)
+str(focus_atoms) + "\n"
 
 # Make custom config.
 InheritanceLink(
@@ -171,16 +171,16 @@ result = ConceptualBlending(a).run(
     focus_atoms,
     ConceptNode("my-config")
 )
-print "Newly blended nodes:"
-print str(result) + "\n"
+print("Newly blended nodes:")
+print(str(result) + "\n")
 
-print "Detail information of selected conflict links:"
+print("Detail information of selected conflict links:")
 for node in result:
-    print "-----"
-    print node
+    print("-----")
+    print(node)
     for sim_link in node.xincoming_by_type(types.SimilarityLink):
         for out_node in sim_link.out:
             if out_node.name == "vehicle" or out_node.name == 'person':
-                print str(out_node.name) + "=> " + \
-                      str(sim_link.type_name) + " " + \
-                      str(sim_link.tv)
+                print(str(out_node.name) + "=> " + \)
+                str(sim_link.type_name) + " " + \
+                    str(sim_link.tv)
