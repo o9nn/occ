@@ -11,7 +11,7 @@ AB = a.add_link(t.InheritanceLink, [A, B], TV)
 BC = a.add_link(t.InheritanceLink, [B, C], TV)
 AC = a.add_link(t.InheritanceLink, [A, C])
 
-print(AB.incoming)
+print AB.incoming
 
 
 a.print_list()
@@ -24,7 +24,7 @@ target = tree_from_atom(AC)
 chainer = logic.Chainer(a)
 results = chainer.bc(target)
 
-print('\n---------------------------\n')
+print '\n---------------------------\n'
 
-print(results)
-print(AC.tv)
+print results
+print AC.tv

@@ -30,7 +30,7 @@ def remove_white_space(sequence_element):
         return  ''
     white_space_offset = 0
     while sequence_element[white_space_offset] is ' ' and\
-            white_space_offset < len(sequence_element) - 1:
+          white_space_offset < len(sequence_element) - 1:
         white_space_offset += 1
     return sequence_element[white_space_offset:]
 
@@ -72,14 +72,14 @@ class CompositeRecord(dict):
                 if ignore_if_incomplete:
                     return
             if value is not INCOMPLETE_VALUE:
-                if self._function_by_index is None:
-                    value = _convert_value(
-                        default_convertor_function, value)
-                elif self._function_by_index.has_key(name):
-                    value = self._function_by_index[name](value)
-                else:
-                    value = _convert_value(
-                        default_convertor_function, value)
+               if self._function_by_index is None:
+                   value = _convert_value(
+                       default_convertor_function, value)
+               elif self._function_by_index.has_key(name):
+                   value = self._function_by_index[name](value)
+               else:
+                   value = _convert_value(
+                       default_convertor_function, value)
 
             self[attribute_names[index]] = value
         self.index_in_dataset = dataset.number_of_records - 1
@@ -91,7 +91,7 @@ class CompositeRecord(dict):
         for convertor_and_names_tuple in converter_by_names_tuples:
             for name in convertor_and_names_tuple[1:]:
                 self._function_by_index[name] =\
-                    convertor_and_names_tuple[0]
+                convertor_and_names_tuple[0]
 
     def set_attribute_names_for_repr(self, attribute_names):
         self._attributes_for_repr = attribute_names
@@ -102,7 +102,7 @@ class CompositeRecord(dict):
         repr_str = 'Record[' + str(self.index_in_dataset) + ']{ '
         for name in self._attributes_for_repr:
             repr_str += name + ':' +\
-                str(self[name]) + ' '
+                        str(self[name]) + ' '
         return repr_str + '}'
 
 
@@ -138,10 +138,10 @@ class Dataset(list):
             if len(row) != len(attribute_names):
                 continue
             record = CompositeRecord(self, row,
-                                     default_convertor_expression,
-                                     attribute_names,
-                                     converter_by_names_tuples,
-                                     incomplete_value_evaluation_fn,ignore_if_incomplete)
+                default_convertor_expression,
+                attribute_names,
+                converter_by_names_tuples,
+                incomplete_value_evaluation_fn,ignore_if_incomplete)
             record.set_attribute_names_for_repr(names_for_repr)
             self.variable_names = record.keys()
             if not ignore_if_incomplete or record.is_incomplete is not True:

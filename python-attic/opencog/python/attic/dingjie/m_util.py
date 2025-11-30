@@ -46,7 +46,7 @@ class Logger(object):
             try:
                 self._file = open(f,'w')
             except IOError:
-                print(" error: can't open logging file %s " % f)
+                print " error: can't open logging file %s " % f
         self._filename = f
         # default setting
         self.offset = 0
@@ -59,51 +59,51 @@ class Logger(object):
         try:
             if self.to_file and Logger.DEBUG in self._levels:
                 temp = "[DEBUG]" + str(head) + ":" + str(msg) if head else "[DEBUG]" + str(msg)
-                print(>>self._file, temp)
+                print >>self._file, temp
         except IOError:
-            print(Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END)
+            print  Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END
 
         if self.to_stdout and Logger.DEBUG in self._levels:
             temp = "[DEBUG]" + str(head) + ":" + str(msg) if head else "[DEBUG]" + str(msg)
-            print(Logger.BLUE + temp + Logger.COLOR_END)
+            print Logger.BLUE + temp + Logger.COLOR_END
 
     def info(self, msg, head = "" ):
         try:
             if self.to_file and Logger.INFO in self._levels:
                 temp = "[INFO]" + str(head) + ":" + str(msg) if head else "[INFO]" + str(msg)
-                print(>>self._file, temp)
+                print >>self._file, temp
         except IOError:
-            print(Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END)
+            print  Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END
 
         if self.to_stdout and Logger.INFO in self._levels:
             temp = "[INFO]" + str(head) + ":" + str(msg) if head else "[INFO]" + str(msg)
-            print(Logger.GREEN + temp + Logger.COLOR_END)
+            print Logger.GREEN + temp + Logger.COLOR_END
 
 
     def warning(self,msg, head = "" ):
         try:
             if self.to_file and Logger.WARNING in self._levels:
                 temp = "[WARNING]" + str(head) + ":" + str(msg) if head else "[WARNING]" + str(msg)
-                print(>>self._file, temp)
+                print >>self._file, temp
         except IOError:
-            print(Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END)
+            print  Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END
 
 
         if self.to_stdout and Logger.WARNING in self._levels:
             temp = "[WARNING]" + str(head) + ":" + str(msg) if head else "[WARNING]" + str(msg)
-            print(Logger.YELLOW + temp + Logger.COLOR_END)
+            print Logger.YELLOW + temp + Logger.COLOR_END
 
     def error(self, msg, head = "" ):
         try:
             if self.to_file and Logger.ERROR in self._levels:
                 temp = "[ERROR]" + str(head) + ":" + str(msg) if head else "[ERROR]" + str(msg)
-                print(>>self._file, temp)
+                print >>self._file, temp
         except IOError:
-            print(Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END)
+            print  Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END
 
         if self.to_stdout and Logger.ERROR in self._levels:
             temp = "[ERROR]" + str(head) + ":" + str(msg) if head else "[ERROR]" + str(msg)
-            print(Logger.RED + temp + Logger.COLOR_END)
+            print Logger.RED + temp + Logger.COLOR_END
 
     def pprint(self, obj, head = "" ):
         '''docstring for pprint()'''
@@ -112,7 +112,7 @@ class Logger(object):
                 #print head
                 pprint(obj, self._file)
         except IOError:
-            print(Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END)
+            print  Logger.RED + " error: can't write logging file %s " % self._filename + Logger.COLOR_END
         if self.to_stdout:
             #print str(head)
             pprint(obj)
@@ -139,7 +139,7 @@ def dict_sub(text, d):
     anonymous matching-groups.
     Returns the new string."""
     try:
-        # Create a regular expression  from the dictionary keys
+    # Create a regular expression  from the dictionary keys
         regex = re.compile("|".join("(%s)" % k for k in d))
         # Facilitate lookup from group number to value
         lookup = dict((i+1, v) for i, v in enumerate(d.itervalues()))
@@ -207,8 +207,8 @@ def rough_compare_files(s_filename, t_filename):
         s_file = open(s_filename, 'r')
         t_file = open(t_filename, 'r')
         diff_file = open("diff.log", 'w')
-        print(s_filename + " not including:")
-        print(>> diff_file, s_filename + " not including:")
+        print s_filename + " not including:"
+        print >> diff_file, s_filename + " not including:"
         # 
         source = set()
         for line in s_file.readlines():
@@ -216,10 +216,10 @@ def rough_compare_files(s_filename, t_filename):
             # compare it with output of atomspace load with cogserver
         for i,line in enumerate(t_file.readlines()):
             if line not in source:
-                print("line %s failed: %s"%(i+1,line))
-                print(>> diff_file, "line %s failed: %s"%(i+1,line))
-    except IOError as e:
-        print(e)
+                print "line %s failed: %s"%(i+1,line)
+                print >> diff_file, "line %s failed: %s"%(i+1,line)
+    except IOError,e:
+        print e
         #print >> diff_file, e
         #s_file.close()
         #t_file.close()
