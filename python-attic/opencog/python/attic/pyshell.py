@@ -5,7 +5,7 @@ from opencog.atomspace import types
 # NOTE: it uses the CogServer input/output, not the telnet shell
 
 class shell(opencog.cogserver.Request):
-
+    
     # These are printed by the 'help' command
     summary = "OpenCog IPython Shell"
     description = "Usage: pyshell.shell\n\n" \
@@ -38,14 +38,14 @@ class shell(opencog.cogserver.Request):
             banner = "OpenCog IPython Shell. Access the main AtomSpace as 'atomspace'."
             exit_message = "Leaving Interpreter, back to program."
             ipython_shell = InteractiveShellEmbed(
-                config=cfg,
-                user_ns=namespace, banner1 = banner, 
-                exit_msg = exit_message)                
+                    config=cfg,
+                    user_ns=namespace, banner1 = banner, 
+                    exit_msg = exit_message)                
 
             # Launch the shell in a new thread so the request doesn't hang
             # the shell that launched this shell.
             shell_thread = threading.Thread(None, ipython_shell, "ipython",())
             shell_thread.start()
-        except Exception as e:
-            print(e)
+        except Exception,  e:
+            print e
 

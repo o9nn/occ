@@ -39,7 +39,7 @@ Newly blended node:
 [(ConceptNode "man-car" (av 0 0 0) (stv 1.000000 0.000000)) ; [389]
 ]
 """
-print("--------Start second example--------")
+print "--------Start second example--------"
 a = AtomSpace()
 initialize_opencog(a)
 
@@ -53,8 +53,8 @@ a.set_av(man.h, 13)
 a.set_av(block.h, 5)
 a.set_av(build.h, 5)
 focus_atoms = [car, man, block, build]
-print("Source data:\n" + \)
-str(focus_atoms) + "\n"
+print "Source data:\n" + \
+      str(focus_atoms) + "\n"
 
 # Make custom config.
 InheritanceLink(
@@ -91,5 +91,5 @@ result = ConceptualBlending(a).run(
     focus_atoms,
     ConceptNode("my-config")
 )
-print("Newly blended node: \n" + \)
-str(result)
+print "Newly blended node: \n" + \
+      str(result)

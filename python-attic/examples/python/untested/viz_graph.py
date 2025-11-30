@@ -67,7 +67,7 @@ def tree_to_viz_graphic(tree, graph):
         return tree.op
 
 
-
+        
 import pygephi
 class Gephi_Output:
 
@@ -194,7 +194,7 @@ class Viz_Graph(object):
     def add_edge(self, source, target, **attr):
         self._nx_graph.add_edge(str(source), str(target))
         if attr:
-            self.set_edge_attr(str(source), str(target), **attr) 
+           self.set_edge_attr(str(source), str(target), **attr) 
     # should use carefully
     def add_edge_unique(self, source, target, **attr):
         '''docstring for add_edge_unique''' 
@@ -254,7 +254,7 @@ class Viz_Graph(object):
     def number_of_nodes(self):
         '''docstring for number_of_nodes''' 
         return self._nx_graph.number_of_nodes()
-
+    
     def write(self, filename):
         """ draw the graph"""
         assert self.viz 
@@ -272,21 +272,21 @@ class Viz_Graph(object):
     #def write_json(self, root,parent = None):
         #""" write to a javascript library"""
         #data = '''{
-        #"id": "%s",
-        #"name" : "%s",
-        #"data": {
-        #"band": "%s",
-        #"relation": "member of band" 
-        #},
-        #"children":[%s] } '''
+                    #"id": "%s",
+                    #"name" : "%s",
+                    #"data": {
+                    #"band": "%s",
+                    #"relation": "member of band" 
+                    #},
+                    #"children":[%s] } '''
         #children = "" 
         #for child in self._nx_graph.neighbors(root):
-        #str_child = self.write_json(child,root)
-        #if str_child:
-        #temp = "%s," %(str_child)
-        #children += temp
+            #str_child = self.write_json(child,root)
+            #if str_child:
+                #temp = "%s," %(str_child)
+                #children += temp
         #if children:
-        #children = children[0:len(children) - 1 ]
+            #children = children[0:len(children) - 1 ]
         #return data %(root,root,parent,children)
 
     def clear(self):
@@ -327,17 +327,17 @@ class Graph_Abserver(object):
         '''docstring for graph_info''' 
         #nodes = { }
         #for e_type in self.valid_edge_types:
-        #edges = self._get_edges(e_type)
-        #for edge in edges:
-        #nodes = self._nodes_from_edge(edge)
-        ## none empty edges!
-        #if len(nodes) > 0:
-        #if self.valid_edge(edge,nodes):
-        #self.edge_types.setdefault(self._edge_type(edge), 0)
-        #self.edge_types[self._edge_type(edge)] += 1
-        #nodes[self._node_type(nodes[0])].append(nodes[0].)
-
-        #self.graph.add_edge(nodes[0], nodes[1])
+            #edges = self._get_edges(e_type)
+            #for edge in edges:
+                #nodes = self._nodes_from_edge(edge)
+                ## none empty edges!
+                #if len(nodes) > 0:
+                    #if self.valid_edge(edge,nodes):
+                        #self.edge_types.setdefault(self._edge_type(edge), 0)
+                        #self.edge_types[self._edge_type(edge)] += 1
+                        #nodes[self._node_type(nodes[0])].append(nodes[0].)
+                        
+                        #self.graph.add_edge(nodes[0], nodes[1])
         pass
 
     def _nodes_from_edge(self,edge):
@@ -364,7 +364,7 @@ class Graph_Abserver(object):
 
 
     def valid_edge(self,edge,nodes):
-        """make sure the type edge and it targets are required type,
+	"""make sure the type edge and it targets are required type,
        if one of the target is invalid, then the edge is invalid
     """
         assert len(self.valid_edge_types) and len(self.valid_node_types) > 0

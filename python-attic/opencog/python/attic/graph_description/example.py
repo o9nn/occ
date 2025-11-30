@@ -32,4 +32,4 @@ atomset = atomspace.get_atoms_by_type(types.Atom)
 # language
 dot_output = dot.get_dot_representation(atomset)
 
-print(dot_output)
+print dot_output
