@@ -15,7 +15,7 @@ class BayesNetPopulation(Population):
         variable_names = data.variable_names
         self.scoring_function = BayesianInformationCriterionScore(variable_names, data)
         Population.__init__(self, NetworkChromosomeRepresentation, number_of_individuals,
-                            variable_names=variable_names, scoring_function=self.scoring_function)
+            variable_names=variable_names, scoring_function=self.scoring_function)
 
     def process_new_data(self, data):
         self.scoring_function.process_new_data(data)

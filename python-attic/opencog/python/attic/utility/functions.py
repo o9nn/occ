@@ -41,18 +41,18 @@ def invoke_method_on(method, sequence_or_point):
 
 
 def index_of_first_local_maximum(sequence):
-    first_time = True
-    index = 0
-    for element in sequence:
-        if first_time:
+        first_time = True
+        index = 0
+        for element in sequence:
+            if first_time:
+                previous = element
+                first_time = False
+                continue
+            if element <= previous:
+                return index
             previous = element
-            first_time = False
-            continue
-        if element <= previous:
-            return index
-        previous = element
-        index += 1
-    return None
+            index += 1
+        return None
 
 
 class Function(object):
@@ -65,7 +65,7 @@ class Function(object):
             self.function_undefined = function_undefined
         if domain is not None:
             if not hasattr(domain, '__iter__') or not hasattr(domain, '__getitem__'):
-                raise TypeError("'domain' should be iterable and support indexing")
+                    raise TypeError("'domain' should be iterable and support indexing")
             self._domain = domain
 
     def call_on_single_point(self, x):
@@ -321,4 +321,4 @@ class FunctionPiecewiseLinear(FunctionComposite):
 if __name__ == '__main__':
     a = FunctionLinear(1, 0)
     b = FunctionLinear(-1, 1)
-    print(a.intersect(b))
+    print a.intersect(b)

@@ -214,8 +214,8 @@ if __name__ == '__main__':
         )
 
     if 1 < len(sys.argv) < 5:
-        print("\n\n\tUsage: " + sys.argv[0] + \)
-        " input.csv corpus_freqs.csv scm output_file.scm 0\n\n"
+        print "\n\n\tUsage: " + sys.argv[0] + \
+              " input.csv corpus_freqs.csv scm output_file.scm 0\n\n"
         sys.exit(1)
 
     if len(sys.argv) >= 5:
@@ -240,4 +240,4 @@ if __name__ == '__main__':
         corpus_file_path,
         concept_net_start_row
     ).convert()
-    print(("Converting was successfully finished."))
+    print ("Converting was successfully finished.")

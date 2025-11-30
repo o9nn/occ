@@ -31,8 +31,8 @@ class DecideRandom(BaseDecider):
             :param result_atoms_count: int
         """
         if len(chosen_atoms) < result_atoms_count:
-            self.last_status = blending_status.NOT_ENOUGH_ATOMS
-            return
+                self.last_status = blending_status.NOT_ENOUGH_ATOMS
+                return
 
         # Generate the random number to choose atom.
         random_atom_indexes = random.sample(
