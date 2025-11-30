@@ -27,7 +27,7 @@
 #include <opencog/util/oc_assert.h>
 #include <opencog/atoms/base/Link.h>
 #include <opencog/atoms/base/Node.h>
-#include <opencog/atoms/core/TypeNode.h>
+#include <opencog/atoms/signature/TypeNode.h>
 #include <opencog/atoms/value/LinkValue.h>
 #include <opencog/atoms/value/ContainerValue.h>
 #include <opencog/atoms/value/StringValue.h>
@@ -70,6 +70,11 @@ void StreamNode::open(const ValuePtr& item_type)
 // ==============================================================
 
 // Wrap ourselves in a streamer.
+//
+// This is a "reasonable" default implementation, enough to get an
+// operational stream() method for those classes that do not provide
+// thier own. If a class does over-ride this method, it will typically
+// return a ContainerValue (QueueValue or UnisetValue) here.
 ValuePtr StreamNode::stream(void) const
 {
 	return createReadStream(get_handle());
