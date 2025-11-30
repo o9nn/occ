@@ -48,8 +48,8 @@ function setup()
   });
   connectButton.addEventListener('click', changeConnection);
 
-  // Initial server and endpoint.
-  server = 'ws://localhost:18080/';
+  // Initial server and endpoint - use current hostname.
+  server = `ws://${window.location.hostname}:18080/`;
   endpoint = 'json';
   serverURL = server + endpoint;
 
@@ -136,7 +136,8 @@ function reportError(event)
 function readReplyMessage(event)
 {
   console.log("got reply=" + event.data + "<<");
-  replySpan.innerHTML = event.data;
+  // Append each message chunk (don't replace) so errors aren't lost
+  replySpan.innerHTML += event.data;
 }
 
 function sendMessage(keepCommand)
@@ -144,6 +145,8 @@ function sendMessage(keepCommand)
   console.log("enter sendmsg; socket state=" + socket.readyState + " vs open=" + WebSocket.OPEN);
   // If the socket's open, send a message:
   if (socket.readyState === WebSocket.OPEN) {
+    // Clear previous results before sending new command
+    replySpan.innerHTML = "";
     winl = outgoingText.value;
     console.log("going to send this" + winl + "<<");
     socket.send(winl);
