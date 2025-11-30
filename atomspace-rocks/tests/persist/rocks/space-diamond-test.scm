@@ -7,7 +7,7 @@
 (use-modules (opencog persist) (opencog persist-rocks))
 
 (include "test-utils.scm")
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-space-diamond-test")
 
 (opencog-test-runner)
 
@@ -16,33 +16,33 @@
 
 (define (setup-and-store)
 	(define base-space (cog-atomspace))
-	(define left-space (cog-new-atomspace base-space))
-	(define right-space (cog-new-atomspace base-space))
-	(define top-space (cog-new-atomspace (list left-space right-space)))
+	(define left-space (AtomSpace base-space))
+	(define right-space (AtomSpace base-space))
+	(define top-space (AtomSpace (list left-space right-space)))
 
 	; Splatter some atoms into the various spaces.
 	(cog-set-atomspace! base-space)
-	(Concept "foo" (ctv 1 0 3))
+	(set-cnt! (Concept "foo") (FloatValue 1 0 3))
 
 	; Put different variants of the same atom in two parallel spaces
 	(cog-set-atomspace! left-space)
-	(Concept "bar" (ctv 1 0 4))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 4))
 
 	(cog-set-atomspace! right-space)
-	(Concept "bar" (ctv 1 0 6))
+	(set-cnt! (Concept "bar") (FloatValue 1 0 6))
 
 	(cog-set-atomspace! top-space)
-	(ListLink (Concept "foo") (Concept "bar") (ctv 1 0 8))
+	(set-cnt! (ListLink (Concept "foo") (Concept "bar")) (FloatValue 1 0 8))
 
 	; Store the content. Store the Concepts as well as the link,
 	; as otherwise, the TV's on the Concepts aren't stored.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-diamond-test"))
 	(cog-open storage)
 	(store-frames top-space)
 	(store-atom (ListLink (Concept "foo") (Concept "bar")))
 	(store-atom (Concept "foo"))
 
-	; Store the two variants, with the explict spaces in which
+	; Store the two variants, with the explicit spaces in which
 	; they come from.
 	(cog-set-atomspace! left-space)
 	(store-atom (Concept "bar"))
@@ -51,19 +51,17 @@
 	(cog-close storage)
 )
 
-(define (get-cnt ATOM) (inexact->exact (cog-count ATOM)))
-
 ; -------------------------------------------------------------------
-; Test ability to restor the above.
+; Test ability to restore the above.
 
 (define (test-diamond)
 	(setup-and-store)
 
-	(define new-base (cog-new-atomspace))
+	(define new-base (AtomSpace))
 	(cog-set-atomspace! new-base)
 
 	; Load everything.
-	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-unit-test"))
+	(define storage (RocksStorageNode "rocks:///tmp/cog-rocks-space-diamond-test"))
 	(cog-open storage)
 
 	; Load all of the AtomSpaces.
@@ -80,9 +78,9 @@
 	(define left-bottom (cog-outgoing-atom left-space 0))
 	(define right-bottom (cog-outgoing-atom right-space 0))
 	(test-equal "base-equal" left-bottom right-bottom)
-	(test-equal "base-uuid"
-		(cog-atomspace-uuid left-bottom)
-		(cog-atomspace-uuid right-bottom))
+	(test-equal "base-name"
+		(cog-name left-bottom)
+		(cog-name right-bottom))
 
 	; Work on the current surface, but expect to find the deeper ListLink.
 	(define lilly (ListLink (Concept "foo") (Concept "bar")))
@@ -104,5 +102,5 @@
 (test-end diamond)
 
 ; ===================================================================
-(whack "/tmp/cog-rocks-unit-test")
+(whack "/tmp/cog-rocks-space-diamond-test")
 (opencog-test-end)
