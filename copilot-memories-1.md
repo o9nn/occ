@@ -348,3 +348,42 @@ Input
 Failed to store memory with error: Resource not found
 
 The memory storage failed, but that's okay. Let me create a final summary document of the work completed
+
+---
+
+Perfect! Now let me store some useful information in memory for future reference:
+
+Call to store_memory
+Input
+{
+  "subject": "GitHub Actions workflow dependencies",
+  "fact": "Use specific Boost library packages (libboost-dev, libboost-filesystem-dev, libboost-program-options-dev, libboost-system-dev, libboost-thread-dev, libboost-regex-dev) instead of libboost-all-dev",
+  "citations": ".github/workflows/occ-build.yml:47-52, .github/workflows/debian-packages.yml:48-53",
+  "reason": "This is important for future workflow updates and new component builds. Using specific Boost packages provides better control over dependencies and matches the successful build pattern. This will help when adding new components or updating existing workflow files.",
+  "category": "general"
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "CogServer and Attention builds",
+  "fact": "CogServer and Attention components require libasio-dev for networking functionality",
+  "citations": ".github/workflows/occ-build.yml:460-461, .github/workflows/debian-packages.yml:349",
+  "reason": "This dependency is critical for networking components. Future builds of CogServer, Attention, or any networking-related components will need libasio-dev. This fact will prevent build failures when working on these components.",
+  "category": "general"
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "OpenCog build dependencies",
+  "fact": "Standard build tools for all OpenCog components: python3-nose (testing), valgrind (debugging), patchelf (binary manipulation)",
+  "citations": ".github/workflows/occ-build.yml:53-55, .github/workflows/debian-packages.yml:60-62",
+  "reason": "These tools are consistently used across all OpenCog component builds. When creating new components or updating build configurations, these should be included to maintain consistency and enable proper testing and debugging capabilities.",
+  "category": "general"
+}
+Failed to store memory with error: Resource not found
+
+Let me finalize the work with a final progress report
