@@ -465,3 +465,20 @@ Input
 Failed to store memory with error: Resource not found
 
 The memory storage failed, but that's okay. Let me create a final summary of the work completed
+
+---
+
+Let me store this important fact about Asio dependency:
+
+Call to store_memory
+Input
+{
+  "subject": "Asio dependency",
+  "fact": "CogServer requires libasio-dev for network communication. All jobs building CogServer or its dependents need libasio-dev installed.",
+  "citations": "cogserver/CMakeLists.txt:98, core/cogserver/CMakeLists.txt:98, cogserver/README.md:155-157",
+  "reason": "This fact is crucial for future maintenance of the CI/CD workflows. When adding new jobs that depend on CogServer (or components that depend on it like AtomSpace-Cog, Attention, SpaceTime, Learn), developers must remember to install libasio-dev in those jobs. Without this dependency, CMake will fail with \"Could NOT find Asio\" errors. This information will help prevent build failures when the workflow is modified or extended.",
+  "category": "general"
+}
+Failed to store memory with error: Resource not found
+
+Now let me request a code review to validate my changes
