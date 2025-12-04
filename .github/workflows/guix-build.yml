@@ -16,14 +16,19 @@ on:
     branches: [ "main", "master" ]
   workflow_dispatch:
     inputs:
+      update_channels:
+        description: 'Update Guix channels (slow, may freeze - only enable if needed)'
+        required: false
+        default: false
+        type: boolean
       guix_channel:
-        description: 'Guix channel commit (leave empty for latest)'
+        description: 'Guix channel commit (requires update_channels=true)'
         required: false
         default: ''
       run_tests:
         description: 'Run tests after build'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 env:
@@ -191,6 +196,7 @@ jobs:
         echo "GUIX_LOCPATH=$HOME/.guix-profile/lib/locale" >> $GITHUB_ENV
 
     - name: Update Guix Channels
+      if: github.event.inputs.update_channels == 'true'
       run: |
         echo "=== Updating Guix Channels ==="
 
@@ -210,6 +216,15 @@ jobs:
         # Show current Guix description
         guix describe || true
       continue-on-error: true
+      timeout-minutes: 10
+
+    - name: Skip Channel Update
+      if: github.event.inputs.update_channels != 'true'
+      run: |
+        echo "=== Skipping Guix Channel Update ==="
+        echo "Channel update disabled (default). Using bundled Guix version."
+        echo "To update channels, run workflow manually with 'update_channels' enabled."
+        guix --version || true
 
     - name: Cache Guix Store
       uses: actions/cache@v4
