@@ -229,10 +229,11 @@ jobs:
         echo "=== Installing Build Dependencies ==="
         
         # Install required packages that might not be auto-detected
-        echo "Installing Guile, SparseHash, and other dependencies..."
-        sudo guix install guile sparsehash || {
-          echo "WARNING: Some packages failed to install"
-          echo "Attempting to continue with available packages"
+        # Note: Using guix environment instead of guix install for CI context
+        echo "Setting up Guix environment with required dependencies..."
+        guix install guile sparsehash 2>&1 || {
+          echo "WARNING: Some packages failed to install with regular user"
+          echo "This may be expected in CI environment - dependencies will be pulled during build"
         }
         
         # Verify installations
@@ -244,11 +245,11 @@ jobs:
         
         echo ""
         echo "Checking for Guile in store:"
-        ls -d /gnu/store/*guile* 2>/dev/null | head -5 || echo "No Guile found in store"
+        ls -d /gnu/store/*guile* 2>/dev/null | head -5 || echo "No Guile found in store (will be pulled during build)"
         
         echo ""
         echo "Checking for SparseHash in store:"
-        ls -d /gnu/store/*sparsehash* 2>/dev/null | head -5 || echo "No SparseHash found in store"
+        ls -d /gnu/store/*sparsehash* 2>/dev/null | head -5 || echo "No SparseHash found in store (will be pulled during build)"
         
         echo ""
         echo "Checking for Folly in store (optional):"

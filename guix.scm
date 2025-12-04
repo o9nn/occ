@@ -154,9 +154,16 @@
               (format #t "~%Guile version:~%")
               (system* "guile" "--version")
               
-              ;; Verify dependencies in store
+              ;; Verify dependencies in store (with error handling)
               (format #t "~%Checking for dependencies in GNU store:~%")
-              (system* "ls" "-d" "/gnu/store/*guile*" "/gnu/store/*sparsehash*")
+              (let ((guile-check (system "ls -d /gnu/store/*guile* 2>/dev/null"))
+                    (sparse-check (system "ls -d /gnu/store/*sparsehash* 2>/dev/null")))
+                (if (zero? guile-check)
+                    (format #t "  ✓ Guile found in store~%")
+                    (format #t "  ⚠ Guile not found in store (may be expected)~%"))
+                (if (zero? sparse-check)
+                    (format #t "  ✓ SparseHash found in store~%")
+                    (format #t "  ⚠ SparseHash not found in store (may be expected)~%")))
               
               (format #t "~%=================================~%~%")
               #t))

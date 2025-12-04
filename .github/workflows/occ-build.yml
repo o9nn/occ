@@ -73,11 +73,24 @@ jobs:
         
         echo ""
         echo "Checking for SparseHash headers:"
-        ls -la /usr/include/sparsehash/ || ls -la /usr/include/google/sparsehash/ || echo "WARNING: SparseHash headers not found"
+        if [ -d /usr/include/sparsehash/ ]; then
+          echo "  ✓ Found at /usr/include/sparsehash/"
+          ls -la /usr/include/sparsehash/ | head -5
+        elif [ -d /usr/include/google/sparsehash/ ]; then
+          echo "  ✓ Found at /usr/include/google/sparsehash/"
+          ls -la /usr/include/google/sparsehash/ | head -5
+        else
+          echo "  ✗ WARNING: SparseHash headers not found in standard locations"
+        fi
         
         echo ""
         echo "Checking for Guile headers:"
-        ls -la /usr/include/guile/3.0/ || echo "WARNING: Guile headers not found"
+        if [ -d /usr/include/guile/3.0/ ]; then
+          echo "  ✓ Found at /usr/include/guile/3.0/"
+          ls -la /usr/include/guile/3.0/ | head -5
+        else
+          echo "  ✗ WARNING: Guile 3.0 headers not found"
+        fi
         
         echo ""
         echo "PKG_CONFIG check for Guile:"
