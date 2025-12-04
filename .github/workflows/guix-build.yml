@@ -95,6 +95,19 @@ jobs:
       with:
         submodules: false
 
+    - name: Fix File Permissions
+      run: |
+        echo "=== Fixing File Permissions ==="
+        # Ensure all files are readable and directories are accessible
+        chmod -R a+rX .
+        
+        # Verify permissions
+        echo "Verifying permissions on key files:"
+        ls -la guix.scm
+        ls -la CMakeLists.txt
+        
+        echo "Permissions fixed successfully"
+
     - name: Free Disk Space
       run: |
         echo "Freeing up disk space for Guix store..."
@@ -211,6 +224,40 @@ jobs:
         guix describe || true
       continue-on-error: true
 
+    - name: Install Build Dependencies
+      run: |
+        echo "=== Installing Build Dependencies ==="
+        
+        # Install required packages that might not be auto-detected
+        echo "Installing Guile, SparseHash, and other dependencies..."
+        sudo guix install guile sparsehash || {
+          echo "WARNING: Some packages failed to install"
+          echo "Attempting to continue with available packages"
+        }
+        
+        # Verify installations
+        echo ""
+        echo "=== Verifying Installed Dependencies ==="
+        
+        echo "Checking Guile version:"
+        guix show guile 2>/dev/null || echo "Guile package info not available"
+        
+        echo ""
+        echo "Checking for Guile in store:"
+        ls -d /gnu/store/*guile* 2>/dev/null | head -5 || echo "No Guile found in store"
+        
+        echo ""
+        echo "Checking for SparseHash in store:"
+        ls -d /gnu/store/*sparsehash* 2>/dev/null | head -5 || echo "No SparseHash found in store"
+        
+        echo ""
+        echo "Checking for Folly in store (optional):"
+        ls -d /gnu/store/*folly* 2>/dev/null | head -5 || echo "Folly not found in store (may not be available in Guix)"
+        
+        echo ""
+        echo "=== Dependency Installation Complete ==="
+      continue-on-error: true
+
     - name: Cache Guix Store
       uses: actions/cache@v4
       with:
@@ -234,6 +281,20 @@ jobs:
         echo ""
         echo "System Information:"
         uname -a
+        echo ""
+        
+        echo "=== Pre-Build Diagnostics ==="
+        
+        # Check Guile availability and version
+        echo "Guile version check:"
+        guile --version 2>/dev/null || echo "WARNING: guile command not found"
+        
+        # Check for required packages in Guix
+        echo ""
+        echo "Checking Guix package availability:"
+        guix show guile 2>/dev/null | head -10 || echo "Guile package not available via 'guix show'"
+        guix show sparsehash 2>/dev/null | head -10 || echo "SparseHash package not available via 'guix show'"
+        
         echo ""
         echo "Available Disk Space:"
         df -h

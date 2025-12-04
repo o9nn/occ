@@ -33,7 +33,8 @@
              (gnu packages cpp)
              (gnu packages check)
              (gnu packages build-tools)
-             (gnu packages commencement))
+             (gnu packages commencement)
+             (gnu packages datastructures))  ;; For sparsehash
 
 (define-public opencog-collection
   (package
@@ -118,30 +119,52 @@
               ;; Set up environment variables for the build
               (let ((boost (assoc-ref inputs "boost"))
                     (guile (assoc-ref inputs "guile"))
-                    (pkg-config (assoc-ref inputs "pkg-config")))
+                    (pkg-config (assoc-ref inputs "pkg-config"))
+                    (sparsehash (assoc-ref inputs "sparsehash")))
                 (when boost
                   (setenv "BOOST_ROOT" boost)
                   (format #t "BOOST_ROOT set to: ~a~%" boost))
                 (when guile
                   (setenv "GUILE_LOAD_PATH" 
                           (string-append guile "/share/guile/site/3.0"))
+                  (setenv "GUILE_LIBRARY"
+                          (string-append guile "/lib"))
+                  (setenv "GUILE_INCLUDE_DIR"
+                          (string-append guile "/include/guile/3.0"))
                   (format #t "GUILE_LOAD_PATH set to: ~a~%" 
-                          (string-append guile "/share/guile/site/3.0")))
+                          (string-append guile "/share/guile/site/3.0"))
+                  (format #t "GUILE_LIBRARY set to: ~a~%" 
+                          (string-append guile "/lib"))
+                  (format #t "GUILE_INCLUDE_DIR set to: ~a~%" 
+                          (string-append guile "/include/guile/3.0")))
                 (when pkg-config
                   (setenv "PKG_CONFIG_PATH"
                           (string-append pkg-config "/lib/pkgconfig"))
                   (format #t "PKG_CONFIG_PATH set to: ~a~%" 
-                          (string-append pkg-config "/lib/pkgconfig"))))
+                          (string-append pkg-config "/lib/pkgconfig")))
+                (when sparsehash
+                  (format #t "SparseHash available at: ~a~%" sparsehash)))
               
-              ;; Display CMake version
-              (format #t "~%CMake version:~%")
+              ;; Display diagnostic information
+              (format #t "~%=== Pre-build Diagnostics ===~%")
+              (format #t "CMake version:~%")
               (system* "cmake" "--version")
-              (format #t "~%")
+              
+              ;; Check Guile version
+              (format #t "~%Guile version:~%")
+              (system* "guile" "--version")
+              
+              ;; Verify dependencies in store
+              (format #t "~%Checking for dependencies in GNU store:~%")
+              (system* "ls" "-d" "/gnu/store/*guile*" "/gnu/store/*sparsehash*")
+              
+              (format #t "~%=================================~%~%")
               #t))
           (replace 'configure
-            (lambda* (#:key configure-flags outputs #:allow-other-keys)
+            (lambda* (#:key configure-flags inputs outputs #:allow-other-keys)
               ;; Custom configure phase with better error handling
-              (let ((out (assoc-ref outputs "out")))
+              (let ((out (assoc-ref outputs "out"))
+                    (guile (assoc-ref inputs "guile")))
                 (format #t "~%=== Starting CMake Configuration ===~%")
                 (format #t "Output directory: ~a~%" out)
                 (format #t "Configure flags: ~a~%" configure-flags)
@@ -150,9 +173,16 @@
                 (chdir "../build")
                 
                 (format #t "~%Running cmake...~%")
-                (let ((cmake-args (cons* (string-append "-DCMAKE_INSTALL_PREFIX=" out)
-                                         "../source" 
-                                         configure-flags)))
+                ;; Build cmake args with explicit Guile paths if available
+                (let ((cmake-args (append
+                                   (list (string-append "-DCMAKE_INSTALL_PREFIX=" out))
+                                   (if guile
+                                       (list
+                                        (string-append "-DGUILE_LIBRARY=" guile "/lib")
+                                        (string-append "-DGUILE_INCLUDE_DIR=" guile "/include/guile/3.0"))
+                                       '())
+                                   configure-flags
+                                   (list "../source"))))
                   (format #t "Full cmake command: cmake ~{~a ~}~%" cmake-args)
                   (apply invoke "cmake" cmake-args))
                 
@@ -317,7 +347,8 @@
            openblas
            lapack
            gsl
-           cxxtest))
+           cxxtest
+           sparsehash))  ;; Added for sparse data structures
     (propagated-inputs
      (list python-numpy
            python-pandas
