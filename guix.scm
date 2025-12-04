@@ -62,24 +62,26 @@
     (arguments
       `(#:tests? #f  ; Disable tests for now as they may require network access
         #:configure-flags
-        ,(list "-DCMAKE_BUILD_TYPE=Release"
-               "-DCMAKE_VERBOSE_MAKEFILE=ON"
-               "-DBUILD_COGUTIL=ON"
-               "-DBUILD_ATOMSPACE=ON"
-               "-DBUILD_COGSERVER=ON"
-               "-DBUILD_MATRIX=ON"
-               "-DBUILD_LEARN=ON"
-               "-DBUILD_AGENTS=ON"
-               "-DBUILD_SENSORY=ON"
-               "-DBUILD_COGGML=ON"
-               "-DBUILD_COGSELF=ON"
-               "-DBUILD_ATOMSPACE_ACCELERATOR=ON"
-               "-DBUILD_AGENTIC_CHATBOTS=ON"
-               "-DBUILD_ATOMSPACE_STORAGE=OFF"
-               "-DBUILD_ATOMSPACE_EXTENSIONS=OFF"
-               "-DBUILD_GNUCASH=OFF"
-               "-DBUILD_KOBOLDCPP=OFF"
-               "-DBUILD_APHRODITE=OFF")
+        ;; Fixed: Use quoted list instead of ,(list ...) to avoid Scheme error
+        ;; "Wrong type to apply" - see commit 70c2752785a1b9316ffe03d09ebf81f4d01e6529
+        '("-DCMAKE_BUILD_TYPE=Release"
+          "-DCMAKE_VERBOSE_MAKEFILE=ON"
+          "-DBUILD_COGUTIL=ON"
+          "-DBUILD_ATOMSPACE=ON"
+          "-DBUILD_COGSERVER=ON"
+          "-DBUILD_MATRIX=ON"
+          "-DBUILD_LEARN=ON"
+          "-DBUILD_AGENTS=ON"
+          "-DBUILD_SENSORY=ON"
+          "-DBUILD_COGGML=ON"
+          "-DBUILD_COGSELF=ON"
+          "-DBUILD_ATOMSPACE_ACCELERATOR=ON"
+          "-DBUILD_AGENTIC_CHATBOTS=ON"
+          "-DBUILD_ATOMSPACE_STORAGE=OFF"
+          "-DBUILD_ATOMSPACE_EXTENSIONS=OFF"
+          "-DBUILD_GNUCASH=OFF"
+          "-DBUILD_KOBOLDCPP=OFF"
+          "-DBUILD_APHRODITE=OFF")
         #:phases
         (modify-phases %standard-phases
           (add-after 'unpack 'set-source-permissions
