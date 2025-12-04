@@ -482,3 +482,20 @@ Input
 Failed to store memory with error: Resource not found
 
 Now let me request a code review to validate my changes
+
+---
+
+Excellent! Now let me add a memory about this fix for future reference:
+
+Call to store_memory
+Input
+{
+  "category": "general",
+  "citations": "User input: Problem statement describing Guix build failure with \"Wrong type to apply: '-DCMAKE_BUILD_TYPE=Release'\" error at ice-9/eval.scm:217:33. Fixed in guix.scm:65-84, .guix/modules/opencog-package.scm:37-49, packaging/opencog.scm:28-34",
+  "fact": "In Guix package definitions using quasiquote, use '(...) for configure-flags, not ,(list ...)",
+  "reason": "This prevents Scheme evaluation errors where list elements get unpacked and passed individually to internal procedures instead of as a single list. When using backquote syntax in Guix packages, ,(list ...) causes the configure-flags to be evaluated prematurely, leading to \"Wrong type to apply\" errors during build. This will help prevent similar issues in future Guix package development and code reviews.",
+  "subject": "Guix package syntax"
+}
+Failed to store memory with error: Resource not found
+
+Now let me run a quick syntax check to make sure everything is correct
