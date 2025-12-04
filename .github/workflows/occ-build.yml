@@ -27,6 +27,13 @@ jobs:
       with:
         submodules: false
     
+    - name: Fix File Permissions
+      run: |
+        echo "=== Fixing File Permissions ==="
+        # Ensure all files are readable and directories are accessible
+        chmod -R a+rX .
+        echo "Permissions fixed successfully"
+    
     - name: Cache CCache
       uses: actions/cache@v4
       with:
@@ -50,10 +57,46 @@ jobs:
           libboost-system-dev \
           libboost-thread-dev \
           libboost-regex-dev \
+          guile-3.0-dev \
+          libgoogle-sparsehash-dev \
           python3-nose \
           valgrind \
           doxygen \
           ccache
+    
+    - name: Verify Dependencies
+      run: |
+        echo "=== Verifying Installed Dependencies ==="
+        
+        echo "Guile version:"
+        guile --version || echo "WARNING: Guile not found"
+        
+        echo ""
+        echo "Checking for SparseHash headers:"
+        if [ -d /usr/include/sparsehash/ ]; then
+          echo "  ✓ Found at /usr/include/sparsehash/"
+          ls -la /usr/include/sparsehash/ | head -5
+        elif [ -d /usr/include/google/sparsehash/ ]; then
+          echo "  ✓ Found at /usr/include/google/sparsehash/"
+          ls -la /usr/include/google/sparsehash/ | head -5
+        else
+          echo "  ✗ WARNING: SparseHash headers not found in standard locations"
+        fi
+        
+        echo ""
+        echo "Checking for Guile headers:"
+        if [ -d /usr/include/guile/3.0/ ]; then
+          echo "  ✓ Found at /usr/include/guile/3.0/"
+          ls -la /usr/include/guile/3.0/ | head -5
+        else
+          echo "  ✗ WARNING: Guile 3.0 headers not found"
+        fi
+        
+        echo ""
+        echo "PKG_CONFIG check for Guile:"
+        pkg-config --modversion guile-3.0 || echo "WARNING: Guile pkg-config not found"
+        
+        echo "=== Dependency Verification Complete ==="
     
     - name: Configure CogUtil
       run: |
