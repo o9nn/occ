@@ -499,3 +499,53 @@ Input
 Failed to store memory with error: Resource not found
 
 Now let me run a quick syntax check to make sure everything is correct
+
+---
+
+Perfect! Now let me store some useful facts about this codebase for future reference:
+
+Call to store_memory
+Input
+{
+  "subject": "CI/CD permission handling",
+  "fact": "Always run `chmod -R a+rX .` after checkout in CI workflows to prevent permission denied errors",
+  "citations": "User input: Problem statement mentioned \"Files (headers, sources, sysroots) in multiple directories fail to be read during CI/CD. Action: Insert universal permission fix step: `chmod -R a+rX .` before build/configure stages.\"",
+  "reason": "This is a critical pattern for ensuring CI builds succeed. Permission issues are common in CI environments and this fix should be applied consistently across all workflows. This will help prevent similar issues in future workflow additions or modifications.",
+  "category": "bootstrap_and_build"
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "Guile CMake configuration",
+  "fact": "When building with Guile, explicitly pass -DGUILE_LIBRARY and -DGUILE_INCLUDE_DIR to CMake to prevent auto-detection failures",
+  "citations": "guix.scm:166-176 - Configure phase passes explicit Guile paths to CMake; User input: \"If Guile is still not discovered, pass the variables manually\"",
+  "reason": "Guile auto-detection frequently fails in CI environments and Guix builds. Passing explicit paths ensures reliable builds and is essential for enabling Scheme bindings in the AtomSpace. Future build system changes should maintain this pattern.",
+  "category": "bootstrap_and_build"
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "Required dependencies",
+  "fact": "Core dependencies are: guile-3.0-dev (or guile-3.0 in Guix), libgoogle-sparsehash-dev (or sparsehash in Guix), boost, cmake, cxxtest",
+  "citations": ".github/workflows/occ-build.yml:52-57; guix.scm:309-320",
+  "reason": "These dependencies are fundamental to the build process across all workflow types (Guix, direct CMake, Debian packages). Documenting this will help maintain consistency when adding new workflows or updating existing ones, and assists in troubleshooting dependency-related build failures.",
+  "category": "bootstrap_and_build"
+}
+Failed to store memory with error: Resource not found
+
+Call to store_memory
+Input
+{
+  "subject": "Guix store operations",
+  "fact": "Never use sudo with guix install in CI - use regular guix commands to avoid permission conflicts with the Guix daemon",
+  "citations": ".github/workflows/guix-build.yml:233 - Changed from `sudo guix install` to `guix install` per code review feedback",
+  "reason": "Using sudo with Guix commands in CI environments causes permission conflicts between different user contexts and the Guix daemon. This pattern should be followed in all Guix-related workflows to prevent store corruption and permission errors. Important for future Guix integration work.",
+  "category": "bootstrap_and_build"
+}
+Failed to store memory with error: Resource not found
+
+The memory storage didn't work, but that's okay. Let me create a final summary and report progress
