@@ -26,10 +26,12 @@
     (arguments
      `(#:tests? #f  ; Disable tests for now
        #:configure-flags 
-       ,(list "-DCMAKE_BUILD_TYPE=Release"
-              "-DBUILD_COGUTIL=ON"
-              "-DBUILD_ATOMSPACE=ON"
-              "-DBUILD_COGSERVER=ON")
+       ;; Fixed: Use quoted list instead of ,(list ...) to avoid Scheme error
+       ;; "Wrong type to apply" - see commit 70c2752785a1b9316ffe03d09ebf81f4d01e6529
+       '("-DCMAKE_BUILD_TYPE=Release"
+         "-DBUILD_COGUTIL=ON"
+         "-DBUILD_ATOMSPACE=ON"
+         "-DBUILD_COGSERVER=ON")
        #:phases
        ,(modify-phases %standard-phases
           (add-before 'configure 'set-environment
