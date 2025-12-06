@@ -194,13 +194,17 @@ for task in prioritized[:2]:
 - **lti_threshold** (default: 50.0): Minimum LTI for atom to be considered important
 - **fitness_scaling** (default: 1.0): Scaling factor for attention → fitness conversion
 - **max_tasks** (default: 10): Maximum number of concurrent learning tasks
+- **max_importance** (default: 1000.0): Maximum expected importance value for normalization
+- **feedback_lti_delta** (default: 10.0): LTI increase for successfully learned atoms
+- **feedback_sti_boost** (default: 50.0): STI boost for newly discovered patterns
 
 ### Fitness Calculation Weights
 
 - **STI weight**: 0.7 (short-term importance gets higher weight)
 - **LTI weight**: 0.3 (long-term importance contributes less)
+- **Max importance**: Configurable normalization ceiling (default: 1000.0)
 
-Formula: `bonus = (0.7 * normalized_STI + 0.3 * normalized_LTI) * fitness_scaling`
+Formula: `bonus = (0.7 * (STI/max_importance) + 0.3 * (LTI/max_importance)) * fitness_scaling`
 
 ## Testing
 

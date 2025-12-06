@@ -31,6 +31,9 @@
 (define *lti-threshold* 50.0)
 (define *fitness-scaling* 1.0)
 (define *max-concurrent-tasks* 10)
+(define *max-importance* 1000.0)
+(define *feedback-lti-delta* 10.0)
+(define *feedback-sti-boost* 50.0)
 
 ;;; ============================================================================
 ;;; Attention Signal Extraction
@@ -113,8 +116,8 @@
          (lti (assoc-ref signal 'lti))
          (sti-weight 0.7)
          (lti-weight 0.3)
-         (norm-sti (normalize-importance sti 1000.0))
-         (norm-lti (normalize-importance lti 1000.0))
+         (norm-sti (normalize-importance sti *max-importance*))
+         (norm-lti (normalize-importance lti *max-importance*))
          (importance (+ (* sti-weight norm-sti) (* lti-weight norm-lti)))
          (bonus (* importance *fitness-scaling*)))
     bonus))
@@ -225,15 +228,15 @@
           (when (> accuracy 0.7)
             (for-each
               (lambda (atom)
-                (apply-lti-delta atom 10.0)
-                (format #t "Increased LTI of ~a by 10.0~%" (cog-name atom)))
+                (apply-lti-delta atom *feedback-lti-delta*)
+                (format #t "Increased LTI of ~a by ~a~%" (cog-name atom) *feedback-lti-delta*))
               target-atoms))
           
           ; Boost STI of newly discovered patterns
           (for-each
             (lambda (pattern)
-              (apply-sti-delta pattern 50.0)
-              (format #t "Boosted STI of pattern ~a by 50.0~%" (cog-name pattern)))
+              (apply-sti-delta pattern *feedback-sti-boost*)
+              (format #t "Boosted STI of pattern ~a by ~a~%" (cog-name pattern) *feedback-sti-boost*))
             patterns-learned)
           
           (format #t "Feedback applied for task ~a~%" task-id)))))

@@ -78,7 +78,10 @@ class AttentionMOSESBridge:
                  sti_threshold: float = 100.0,
                  lti_threshold: float = 50.0,
                  fitness_scaling: float = 1.0,
-                 max_tasks: int = 10):
+                 max_tasks: int = 10,
+                 max_importance: float = 1000.0,
+                 feedback_lti_delta: float = 10.0,
+                 feedback_sti_boost: float = 50.0):
         """
         Initialize the Attention-MOSES bridge.
         
@@ -87,11 +90,17 @@ class AttentionMOSESBridge:
             lti_threshold: Minimum LTI for atom to be considered important
             fitness_scaling: Scaling factor for attention to fitness conversion
             max_tasks: Maximum number of concurrent learning tasks
+            max_importance: Maximum expected importance value for normalization
+            feedback_lti_delta: LTI increase for successfully learned atoms
+            feedback_sti_boost: STI boost for newly discovered patterns
         """
         self.sti_threshold = sti_threshold
         self.lti_threshold = lti_threshold
         self.fitness_scaling = fitness_scaling
         self.max_tasks = max_tasks
+        self.max_importance = max_importance
+        self.feedback_lti_delta = feedback_lti_delta
+        self.feedback_sti_boost = feedback_sti_boost
         
         # State tracking
         self.attention_signals: List[AttentionSignal] = []
@@ -189,9 +198,9 @@ class AttentionMOSESBridge:
         sti_weight = 0.7
         lti_weight = 0.3
         
-        # Normalize to 0-1 range (assuming max STI/LTI around 1000)
-        normalized_sti = min(signal.sti / 1000.0, 1.0)
-        normalized_lti = min(signal.lti / 1000.0, 1.0)
+        # Normalize to 0-1 range using configurable max importance
+        normalized_sti = min(signal.sti / self.max_importance, 1.0)
+        normalized_lti = min(signal.lti / self.max_importance, 1.0)
         
         # Calculate weighted importance
         importance = (sti_weight * normalized_sti + lti_weight * normalized_lti)
@@ -346,7 +355,7 @@ class AttentionMOSESBridge:
             for atom_id in task.target_atoms:
                 recommendations['updates'].append({
                     'atom_id': atom_id,
-                    'lti_delta': +10.0,  # Increase long-term importance
+                    'lti_delta': self.feedback_lti_delta,
                     'reason': f'successful_learning_task_{task_id}'
                 })
         
@@ -355,7 +364,7 @@ class AttentionMOSESBridge:
         for pattern in patterns_learned:
             recommendations['updates'].append({
                 'atom_id': pattern.get('id', 'unknown'),
-                'sti_delta': +50.0,  # Boost short-term importance
+                'sti_delta': self.feedback_sti_boost,
                 'reason': f'new_pattern_from_{task_id}'
             })
         
