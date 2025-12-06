@@ -14,8 +14,12 @@
 # Build Methods:
 #   make guix-build     - Build using GNU Guix (recommended, reproducible)
 #   make direct-build   - Build directly (for development)
+#   make cmake-agi-os-stack - Build via CMake with proper sequences
 #
 # ============================================================================
+
+# Include CMake build sequences
+include Makefile.build-sequences
 
 # Project Configuration
 # ============================================================================
@@ -97,11 +101,17 @@ help:
 	@echo "$(COLOR_BOLD)BUILD TARGETS:$(COLOR_RESET)"
 	@echo "  make guix-build       Build using GNU Guix (reproducible)"
 	@echo "  make direct-build     Build directly without Guix (development)"
+	@echo "  make cmake-agi-os-stack  Build complete stack via CMake (recommended)"
 	@echo "  make cognumach        Build Layer 1: Cognitive Microkernel"
 	@echo "  make hurdcog          Build Layer 2: Cognitive OS"
 	@echo "  make occ              Build Layer 3: AGI Framework"
 	@echo "  make synergy          Build integration infrastructure"
 	@echo "  make metamodel        Build Scheme metamodel"
+	@echo ""
+	@echo "$(COLOR_BOLD)CMAKE BUILD SEQUENCES:$(COLOR_RESET)"
+	@echo "  make build-sequences-help  Show detailed CMake build sequences"
+	@echo "  make cmake-foundation      Build cogutil + atomspace"
+	@echo "  make cmake-occ-full        Build complete OCC components"
 	@echo ""
 	@echo "$(COLOR_BOLD)TESTING:$(COLOR_RESET)"
 	@echo "  make test             Run all integration tests"
