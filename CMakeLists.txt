@@ -53,10 +53,24 @@ OPTION(BUILD_APHRODITE "Build Aphrodite Engine LLM inference integration" OFF)
 # ============================================================================
 # AGI-OS Build Sequence - Three Layer Architecture
 # ============================================================================
+# Layer 0: Build Tools (MIG - Mach Interface Generator)
 # Layer 1: Cognumach (Microkernel)
 # Layer 2: HurdCog (Operating System + Cognitive Extensions) 
 # Layer 3: OCC (AGI Framework)
 # ============================================================================
+
+# Layer 0: Build Tools - MIG (Mach Interface Generator)
+IF(BUILD_COGNUMACH OR BUILD_HURDCOG)
+    MESSAGE(STATUS "Building Layer 0: MIG (Mach Interface Generator)...")
+    MESSAGE(STATUS "  Location: build-tools/mig/")
+    MESSAGE(STATUS "  Note: Centralized MIG for all Mach-based components")
+    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build-tools/mig/Makefile.am")
+        # MIG uses autotools, so we'll handle it separately
+        MESSAGE(STATUS "  MIG found at build-tools/mig/ (autotools-based)")
+    ELSE()
+        MESSAGE(WARNING "  MIG not found at build-tools/mig/")
+    ENDIF()
+ENDIF()
 
 # Layer 1: Cognumach Microkernel (autotools-based)
 IF(BUILD_COGNUMACH)
@@ -153,6 +167,15 @@ ENDIF()
 IF(BUILD_APHRODITE AND BUILD_ATOMSPACE)
     MESSAGE(STATUS "Building Aphrodite Engine LLM inference integration...")
     add_subdirectory(aphrodite-engine)
+ENDIF()
+
+# Integration layer
+OPTION(BUILD_INTEGRATION_LAYER "Build integration bridges" ON)
+IF(BUILD_INTEGRATION_LAYER)
+    MESSAGE(STATUS "Building integration layer...")
+    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/CMakeLists.txt")
+        add_subdirectory(integration)
+    ENDIF()
 ENDIF()
 
 # Optional: Additional AtomSpace extensions
