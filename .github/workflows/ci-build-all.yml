@@ -229,7 +229,7 @@ jobs:
           sudo make install && sudo ldconfig
       
       - name: Build ${{ matrix.component }}
-        if: hashFiles(format('{0}/CMakeLists.txt', matrix.component)) != ''
+        if: hashFiles(format('{0}/CMakeLists.txt', matrix.component))
         run: |
           mkdir -p ${{ matrix.component }}/build
           cd ${{ matrix.component }}/build
@@ -238,7 +238,7 @@ jobs:
           sudo make install && sudo ldconfig
       
       - name: Run Tests
-        if: hashFiles(format('{0}/CMakeLists.txt', matrix.component)) != ''
+        if: hashFiles(format('{0}/CMakeLists.txt', matrix.component))
         run: |
           cd ${{ matrix.component }}/build
           make check ARGS="${{ env.MAKEFLAGS }}"
@@ -302,7 +302,7 @@ jobs:
           fi
       
       - name: Build ${{ matrix.component }}
-        if: hashFiles(format('{0}/CMakeLists.txt', matrix.component)) != ''
+        if: hashFiles(format('{0}/CMakeLists.txt', matrix.component))
         run: |
           mkdir -p ${{ matrix.component }}/build
           cd ${{ matrix.component }}/build
@@ -311,7 +311,7 @@ jobs:
           sudo make install && sudo ldconfig
       
       - name: Run Tests
-        if: hashFiles(format('{0}/CMakeLists.txt', matrix.component)) != ''
+        if: hashFiles(format('{0}/CMakeLists.txt', matrix.component))
         run: |
           cd ${{ matrix.component }}/build
           make check ARGS="${{ env.MAKEFLAGS }}"
@@ -323,7 +323,7 @@ jobs:
   build-with-guix:
     runs-on: ubuntu-22.04
     name: Guix Reproducible Build
-    if: github.event.inputs.build_method == 'guix' || github.event.inputs.build_method == 'both'
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.build_method == 'guix' || github.event.inputs.build_method == 'both')
     
     steps:
       - name: Checkout Repository
