@@ -18,8 +18,26 @@ The build order was determined by:
 ## Component Dependency Graph
 
 ### Foundation Layer (No Internal Dependencies)
+
+**Core Foundation:**
 - **cogutil** - Foundation utilities library
-- Independent components: agents, aphrodite-engine, atomspace-accelerator, blender_api_msgs, coggml, cognumach, cogself, ghost_bridge, gnucash, hurdcog, integration, koboldcpp, motor, perception, agentic-chatbots
+
+**Independent Components:**
+- agents
+- aphrodite-engine
+- atomspace-accelerator
+- blender_api_msgs
+- coggml
+- cognumach
+- cogself
+- ghost_bridge
+- gnucash
+- hurdcog
+- integration
+- koboldcpp
+- motor
+- perception
+- agentic-chatbots
 
 ### Layer 1: CogUtil Dependents
 - **atomspace** → cogutil
@@ -170,7 +188,23 @@ The scientifically correct build sequence for `.github/workflows/ocall.yml`:
 35. pln                    (probabilistic logic - requires spacetime, unify, ure!)
 36. opencog                (main integration - requires cogserver, ure, pln!)
 37. benchmark              (benchmarking suite)
-38-52. [Independent components can be built anytime]
+
+**Independent Components** (can be built anytime after foundation):
+- agents (agent framework)
+- agentic-chatbots (chatbot integration)
+- aphrodite-engine (LLM inference engine)
+- atomspace-accelerator (performance optimizations)
+- blender_api_msgs (Blender integration messages)
+- coggml (GGML cognitive kernel)
+- cognumach (L1 microkernel)
+- cogself (AGI synergy framework)
+- ghost_bridge (GHOST integration)
+- gnucash (cognitive accounting)
+- hurdcog (L2 cognitive OS)
+- integration (integration testing)
+- koboldcpp (story/world modeling)
+- motor (motor control)
+- perception (perception framework)
 ```
 
 ## Validation
