@@ -46,8 +46,11 @@ class OpenCogTransformer:
             
         # Check for common source file extensions
         source_exts = ['.c', '.cc', '.cpp', '.h', '.hpp', '.cxx']
-        has_source = any((self.source_dir / '**' / f'*{ext}').glob('**/*')
-                         for ext in source_exts)
+        has_source = False
+        for ext in source_exts:
+            if list(self.source_dir.glob(f'**/*{ext}')):
+                has_source = True
+                break
         
         if not has_source:
             print(f"Warning: No C/C++ source files found in {self.source_dir}")

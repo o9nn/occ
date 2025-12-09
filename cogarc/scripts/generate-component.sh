@@ -100,9 +100,9 @@ if ! [[ "$COMPONENT_NAME" =~ ^[a-z][a-z0-9-]*$ ]]; then
     exit 1
 fi
 
-# Derive variations of component name
+# Derive variations of component name - use sed -E for portability
 COMPONENT_NAME_UPPER=$(echo "$COMPONENT_NAME" | tr '[:lower:]' '[:upper:]' | tr '-' '_')
-COMPONENT_NAME_CAMEL=$(echo "$COMPONENT_NAME" | sed -r 's/(^|-)([a-z])/\U\2/g')
+COMPONENT_NAME_CAMEL=$(echo "$COMPONENT_NAME" | sed -E 's/(^|-)([a-z])/\U\2/g')
 
 # Parse version
 VERSION_MAJOR=$(echo "$VERSION" | cut -d. -f1)
@@ -131,22 +131,39 @@ cd "$COMPONENT_DIR"
 echo "Creating directory structure..."
 mkdir -p .circleci cmake debian doc/doxydoc examples lib opencog/$COMPONENT_NAME scripts tests/$COMPONENT_NAME
 
-# Function to substitute variables in a file
+# Function to substitute variables in a file - consolidated for efficiency
 substitute_variables() {
     local file="$1"
-    sed -i.bak "s/@COMPONENT_NAME@/$COMPONENT_NAME/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@COMPONENT_NAME_UPPER@/$COMPONENT_NAME_UPPER/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@COMPONENT_NAME_CAMEL@/$COMPONENT_NAME_CAMEL/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@COMPONENT_DESCRIPTION@/$COMPONENT_DESCRIPTION/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@VERSION@/$VERSION/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@VERSION_MAJOR@/$VERSION_MAJOR/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@VERSION_MINOR@/$VERSION_MINOR/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@VERSION_PATCH@/$VERSION_PATCH/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@AUTHOR@/$AUTHOR/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@EMAIL@/$EMAIL/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@YEAR@/$(date +%Y)/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@DATE@/$DATE/g" "$file" && rm -f "$file.bak"
-    sed -i.bak "s/@COGUTIL_MIN_VERSION@/$COGUTIL_MIN_VERSION/g" "$file" && rm -f "$file.bak"
+    # Use awk for safe multi-variable substitution
+    awk -v cn="$COMPONENT_NAME" \
+        -v cnu="$COMPONENT_NAME_UPPER" \
+        -v cnc="$COMPONENT_NAME_CAMEL" \
+        -v desc="$COMPONENT_DESCRIPTION" \
+        -v ver="$VERSION" \
+        -v vma="$VERSION_MAJOR" \
+        -v vmi="$VERSION_MINOR" \
+        -v vpa="$VERSION_PATCH" \
+        -v auth="$AUTHOR" \
+        -v email="$EMAIL" \
+        -v year="$(date +%Y)" \
+        -v date="$DATE" \
+        -v cumin="$COGUTIL_MIN_VERSION" '
+    {
+        gsub(/@COMPONENT_NAME@/, cn)
+        gsub(/@COMPONENT_NAME_UPPER@/, cnu)
+        gsub(/@COMPONENT_NAME_CAMEL@/, cnc)
+        gsub(/@COMPONENT_DESCRIPTION@/, desc)
+        gsub(/@VERSION@/, ver)
+        gsub(/@VERSION_MAJOR@/, vma)
+        gsub(/@VERSION_MINOR@/, vmi)
+        gsub(/@VERSION_PATCH@/, vpa)
+        gsub(/@AUTHOR@/, auth)
+        gsub(/@EMAIL@/, email)
+        gsub(/@YEAR@/, year)
+        gsub(/@DATE@/, date)
+        gsub(/@COGUTIL_MIN_VERSION@/, cumin)
+        print
+    }' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 }
 
 # Copy and process template files
@@ -177,8 +194,8 @@ for dep in "${DEPS[@]}"; do
                 dep_camel="CogUtil"
                 ;;
             *)
-                # Generic CamelCase conversion
-                dep_camel=$(echo "$dep" | sed -r 's/(^|-)([a-z])/\U\2/g')
+                # Generic CamelCase conversion - use sed -E for portability
+                dep_camel=$(echo "$dep" | sed -E 's/(^|-)([a-z])/\U\2/g')
                 ;;
         esac
         
@@ -209,15 +226,26 @@ fi
 cp "$TEMPLATE_DIR/README.md" .
 substitute_variables README.md
 
-# Fill in placeholder sections
-sed -i.bak "s/@COMPONENT_BADGE@/[![CircleCI](https:\/\/circleci.com\/gh\/opencog\/$COMPONENT_NAME.svg?style=svg)](https:\/\/circleci.com\/gh\/opencog\/$COMPONENT_NAME)/" README.md && rm -f README.md.bak
-sed -i.bak "s/@COMPONENT_OVERVIEW@/This component provides $COMPONENT_DESCRIPTION for OpenCog./" README.md && rm -f README.md.bak
-sed -i.bak "s/@REQUIRED_DEPENDENCIES@//" README.md && rm -f README.md.bak
-sed -i.bak "s/@OPTIONAL_DEPENDENCIES@//" README.md && rm -f README.md.bak
-sed -i.bak "s/@USAGE_EXAMPLES@/See the examples\/ directory for sample code./" README.md && rm -f README.md.bak
-sed -i.bak "s/@ARCHITECTURE_NOTES@/This component follows standard OpenCog architectural patterns./" README.md && rm -f README.md.bak
-sed -i.bak "s/@ACKNOWLEDGMENTS@/Thanks to the OpenCog community./" README.md && rm -f README.md.bak
-sed -i.bak "s/@REFERENCES@/- OpenCog Wiki: https:\/\/wiki.opencog.org\//" README.md && rm -f README.md.bak
+# Fill in placeholder sections - using awk for safe substitution
+awk '
+    /@COMPONENT_BADGE@/ {
+        print "[![CircleCI](https://circleci.com/gh/opencog/'"$COMPONENT_NAME"'.svg?style=svg)](https://circleci.com/gh/opencog/'"$COMPONENT_NAME"')"
+        next
+    }
+    /@COMPONENT_OVERVIEW@/ {
+        print "This component provides '"$COMPONENT_DESCRIPTION"' for OpenCog."
+        next
+    }
+    /@REQUIRED_DEPENDENCIES@|@OPTIONAL_DEPENDENCIES@|@USAGE_EXAMPLES@|@ARCHITECTURE_NOTES@|@ACKNOWLEDGMENTS@/ {
+        # Remove these placeholders
+        next
+    }
+    /@REFERENCES@/ {
+        print "- OpenCog Wiki: https://wiki.opencog.org/"
+        next
+    }
+    {print}
+' README.md > README.md.tmp && mv README.md.tmp README.md
 
 # Version header
 cp "$TEMPLATE_DIR/opencog/version.h" "opencog/$COMPONENT_NAME/version.h"
