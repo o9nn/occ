@@ -88,6 +88,19 @@ ELSE (ATOMSPACE_FOUND)
 	MESSAGE(FATAL_ERROR "AtomSpace missing: it is needed!")
 ENDIF (ATOMSPACE_FOUND)
 
+# OpenDHT
+FIND_PATH(OPENDHT_INCLUDE_DIR opendht.h
+	PATHS /usr/include /usr/local/include)
+FIND_LIBRARY(OPENDHT_LIBRARY
+	NAMES opendht
+	PATHS /usr/lib /usr/local/lib /usr/lib/x86_64-linux-gnu)
+IF (OPENDHT_INCLUDE_DIR AND OPENDHT_LIBRARY)
+	MESSAGE(STATUS "OpenDHT found: ${OPENDHT_LIBRARY}")
+	SET(HAVE_OPENDHT 1)
+ELSE ()
+	MESSAGE(FATAL_ERROR "OpenDHT missing: it is needed!")
+ENDIF ()
+
 # ----------------------------------------------------------
 # Needed for unit tests
 
@@ -105,7 +118,8 @@ include(OpenCogFindGuile)
 
 # Set default include paths.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}
-	${COGUTIL_INCLUDE_DIR} ${ATOMSPACE_INCLUDE_DIR})
+	${COGUTIL_INCLUDE_DIR} ${ATOMSPACE_INCLUDE_DIR}
+	${OPENDHT_INCLUDE_DIR})
 
 # Macros that define how atom types get declared.
 IF (NOT DEFINED ATOMSPACE_DATA_DIR)
