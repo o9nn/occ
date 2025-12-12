@@ -14,7 +14,7 @@ on:
 env:
   BUILD_TYPE: Release
   CMAKE_GENERATOR: "Visual Studio 17 2022"
-  VCPKG_ROOT: C:\vcpkg
+  VCPKG_ROOT: ${{ github.workspace }}\third_party\vcpkg
 
 jobs:
   # Stage 1: Build CogUtil (Foundation)
@@ -31,21 +31,24 @@ jobs:
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
     
-    - name: Setup vcpkg
+    - name: Bootstrap vcpkg from monorepo
       shell: pwsh
       run: |
-        Write-Host "=== Setting up vcpkg ===" -ForegroundColor Cyan
-        if (-not (Test-Path $env:VCPKG_ROOT)) {
-          git clone https://github.com/Microsoft/vcpkg.git $env:VCPKG_ROOT
-          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat"
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
         }
         Write-Host "vcpkg setup complete" -ForegroundColor Green
     
-    - name: Cache vcpkg
+    - name: Cache vcpkg installed packages
       uses: actions/cache@v4
       with:
-        path: C:\vcpkg\installed
-        key: vcpkg-cogutil-${{ runner.os }}-${{ hashFiles('cogutil/**') }}
+        path: ${{ github.workspace }}\third_party\vcpkg\installed
+        key: vcpkg-cogutil-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
           vcpkg-cogutil-${{ runner.os }}-
     
@@ -151,21 +154,24 @@ jobs:
         name: cogutil-build-windows
         path: install
     
-    - name: Setup vcpkg
+    - name: Bootstrap vcpkg from monorepo
       shell: pwsh
       run: |
-        Write-Host "=== Setting up vcpkg ===" -ForegroundColor Cyan
-        if (-not (Test-Path $env:VCPKG_ROOT)) {
-          git clone https://github.com/Microsoft/vcpkg.git $env:VCPKG_ROOT
-          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat"
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
         }
         Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Cache vcpkg
       uses: actions/cache@v4
       with:
-        path: C:\vcpkg\installed
-        key: vcpkg-atomspace-${{ runner.os }}-${{ hashFiles('atomspace/**') }}
+        path: ${{ github.workspace }}\third_party\vcpkg\installed
+        key: vcpkg-atomspace-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
           vcpkg-atomspace-${{ runner.os }}-
     
@@ -280,21 +286,24 @@ jobs:
         name: cogutil-build-windows
         path: install
     
-    - name: Setup vcpkg
+    - name: Bootstrap vcpkg from monorepo
       shell: pwsh
       run: |
-        Write-Host "=== Setting up vcpkg ===" -ForegroundColor Cyan
-        if (-not (Test-Path $env:VCPKG_ROOT)) {
-          git clone https://github.com/Microsoft/vcpkg.git $env:VCPKG_ROOT
-          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat"
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
         }
         Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Cache vcpkg
       uses: actions/cache@v4
       with:
-        path: C:\vcpkg\installed
-        key: vcpkg-moses-${{ runner.os }}-${{ hashFiles('moses/**') }}
+        path: ${{ github.workspace }}\third_party\vcpkg\installed
+        key: vcpkg-moses-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
           vcpkg-moses-${{ runner.os }}-
     
