@@ -34,7 +34,7 @@ on:
 env:
   BUILD_TYPE: Release
   CMAKE_GENERATOR: "Visual Studio 17 2022"
-  VCPKG_ROOT: C:\vcpkg
+  VCPKG_ROOT: ${{ github.workspace }}\third_party\vcpkg
   INSTALL_PREFIX: C:\OpenCog
 
 jobs:
@@ -59,10 +59,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -170,10 +178,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -306,10 +322,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -438,10 +462,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -584,10 +616,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -730,10 +770,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -889,10 +937,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -1021,10 +1077,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -1166,10 +1230,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -1325,10 +1397,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -1484,10 +1564,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -1643,10 +1731,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -1775,10 +1871,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -1934,10 +2038,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
@@ -2134,10 +2246,18 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
     
-    - name: Setup vcpkg
-      uses: microsoft/setup-vcpkg@v1
-      with:
-        vcpkg-github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Bootstrap vcpkg from monorepo
+      shell: pwsh
+      run: |
+        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
+        Set-Location "$env:VCPKG_ROOT"
+        if (-not (Test-Path "vcpkg.exe")) {
+          & ".\bootstrap-vcpkg.bat"
+          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
+        } else {
+          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
+        }
+        Write-Host "vcpkg setup complete" -ForegroundColor Green
     
     - name: Install Dependencies
       shell: pwsh
