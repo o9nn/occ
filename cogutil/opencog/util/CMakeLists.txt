@@ -103,19 +103,31 @@ INSTALL(FILES
 	async_buffer.h
 	async_method_caller.h
 	backtrace-symbols.h
+	based_variant.h
 	cogutil.h
+	comprehension.h
 	Config.h
 	Counter.h
 	concurrent_queue.h
 	concurrent_set.h
 	concurrent_stack.h
+	digraph.h
 	dorepeat.h
 	empty_string.h
 	exceptions.h
+	functional.h
+	hashing.h
+	iostreamContainer.h
+	jaccard_index.h
+	KLD.h
+	lazy_normal_selector.h
 	lazy_random_selector.h
 	lazy_selector.h
+	log_prog_name.h
 	Logger.h
+	lru_cache.h
 	macros.h
+	MannWhitneyU.h
 	misc.h
 	mt19937ar.h
 	numeric.h
@@ -123,9 +135,12 @@ INSTALL(FILES
 	oc_omp.h
 	platform.h
 	pool.h
+	ranking.h
 	RandGen.h
 	random.h
+	selection.h
 	sigslot.h
+	tree.h
 	zipf.h
 	DESTINATION "include/opencog/util"
 )
@@ -139,3 +154,9 @@ IF (CYGWIN)
 ELSE (CYGWIN) #Linux
     INSTALL(TARGETS cogutil LIBRARY DESTINATION "lib${LIB_DIR_SUFFIX}/opencog")
 ENDIF (CYGWIN)
+
+# Install boost_ext headers
+INSTALL(DIRECTORY boost_ext
+	DESTINATION "include/opencog/util"
+	FILES_MATCHING PATTERN "*.h"
+)
