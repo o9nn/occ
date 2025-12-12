@@ -11,7 +11,7 @@
 #define _OPENCOG_MACHSPACE_STORAGE_NODE_H
 
 #include <opencog/atomspace/AtomSpace.h>
-#include <opencog/atomspace/BackingStore.h>
+#include <opencog/persist/api/BackingStore.h>
 #include <opencog/atoms/base/Node.h>
 
 namespace opencog

@@ -1,5 +1,4 @@
 # .github/workflows/ocall.yml
-# Fixed version with correct dependency order and missing dependencies
 
 name: ocog all
 
@@ -41,9 +40,7 @@ jobs:
             python3-dev \
             python3-nose \
             uuid-dev \
-            valgrind \
-            libopendht-dev \
-            link-grammar-dev
+            valgrind
           
       - name: Install Cython
         run: python3 -m pip install --upgrade pip cython
@@ -57,25 +54,20 @@ jobs:
 
       - name: build & install all
         run: |
-          # Cognitive Flowchart: Dependency-Based Build Order (CORRECTED)
-          # This sequencing follows the correct topological sort of CMakeLists.txt FIND_PACKAGE dependencies
+          # Cognitive Flowchart: Dependency-Based Build Order
+          # This sequencing is computed via topological sort of CMakeLists.txt FIND_PACKAGE dependencies
           # ensuring that all prerequisites are built before dependent components.
-          # 
-          # Key fixes:
-          # 1. atomspace-storage MUST be built before cogserver (cogserver depends on it)
-          # 2. Components with missing external dependencies are commented out
-          # 3. Build order follows the dependency graph from knowledge base
+          # Components with no internal dependencies are built first, followed by layers of increasing dependency depth.
           
           for repo in \
             cogutil \
             atomspace \
             atomspace-storage \
             agi-bio \
-            atomspace-bridge \
+            atomspace-agents \
             atomspace-dht \
+            atomspace-ipfs \
             atomspace-metta \
-            atomspace-pgres \
-            atomspace-rocks \
             atomspace-rpc \
             atomspace-websockets \
             cheminformatics \
@@ -88,6 +80,10 @@ jobs:
             unify \
             vision \
             visualization \
+            atomese-simd \
+            atomspace-bridge \
+            atomspace-pgres \
+            atomspace-rocks \
             cogserver \
             lg-atomese \
             ure \
@@ -103,11 +99,19 @@ jobs:
             benchmark \
             agents \
             agentic-chatbots \
+            aphrodite-engine \
             atomspace-accelerator \
+            blender_api_msgs \
             coggml \
+            cognumach \
             cogself \
+            ghost_bridge \
+            gnucash \
+            hurdcog \
             integration \
-            motor
+            koboldcpp \
+            motor \
+            perception
           do
             echo "spawning $repo..."
             # Skip if directory doesn't exist
@@ -131,19 +135,6 @@ jobs:
             cd ../..
             echo "✅ Successfully built and installed $repo"
           done
-          
-          # Disabled components (missing dependencies or source files):
-          # - atomspace-agents: CMake configuration issues
-          # - atomspace-ipfs: requires ipfs-http-client library (not in apt) - header paths fixed but lib missing
-          # - atomese-simd: CMake configuration issues
-          # - aphrodite-engine: requires CUDA and specific Python setup
-          # - blender_api_msgs: requires ROS
-          # - cognumach: GNU Mach microkernel (requires special build environment)
-          # - ghost_bridge: missing dependencies
-          # - gnucash: requires gnucash-dev (not needed for core functionality)
-          # - hurdcog: GNU Hurd OS (requires special build environment)
-          # - koboldcpp: missing source files
-          # - perception: CMake configuration issues
           
           echo ""
           echo "=================================================================================="
