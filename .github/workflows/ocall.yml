@@ -62,14 +62,13 @@ jobs:
           for repo in \
             cogutil \
             atomspace \
-            moses \
+            atomspace-storage \
             agi-bio \
             atomspace-agents \
             atomspace-dht \
             atomspace-ipfs \
             atomspace-metta \
             atomspace-rpc \
-            atomspace-storage \
             atomspace-websockets \
             cheminformatics \
             dimensional-embedding \
@@ -88,6 +87,7 @@ jobs:
             cogserver \
             lg-atomese \
             ure \
+            moses \
             asmoses \
             atomspace-cog \
             atomspace-restful \
