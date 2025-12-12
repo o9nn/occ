@@ -55,15 +55,10 @@ jobs:
     - name: Install Dependencies
       shell: pwsh
       run: |
-        Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
-        & "$env:VCPKG_ROOT\vcpkg.exe" install `
-          boost-system:x64-windows `
-          boost-filesystem:x64-windows `
-          boost-program-options:x64-windows `
-          boost-thread:x64-windows `
-          boost-regex:x64-windows `
-          --recurse
-        Write-Host "Dependencies installed successfully" -ForegroundColor Green
+        Write-Host "=== Installing Dependencies via vcpkg (manifest mode) ===" -ForegroundColor Cyan
+        # vcpkg is in manifest mode, dependencies will be installed automatically during CMake configure
+        & "$env:VCPKG_ROOT\vcpkg.exe" version
+        Write-Host "vcpkg ready for manifest mode" -ForegroundColor Green
     
     - name: Configure CogUtil
       shell: pwsh
@@ -178,15 +173,10 @@ jobs:
     - name: Install Dependencies
       shell: pwsh
       run: |
-        Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
-        & "$env:VCPKG_ROOT\vcpkg.exe" install `
-          boost-system:x64-windows `
-          boost-filesystem:x64-windows `
-          boost-program-options:x64-windows `
-          boost-thread:x64-windows `
-          boost-regex:x64-windows `
-          --recurse
-        Write-Host "Dependencies installed successfully" -ForegroundColor Green
+        Write-Host "=== Installing Dependencies via vcpkg (manifest mode) ===" -ForegroundColor Cyan
+        # vcpkg is in manifest mode, dependencies will be installed automatically during CMake configure
+        & "$env:VCPKG_ROOT\vcpkg.exe" version
+        Write-Host "vcpkg ready for manifest mode" -ForegroundColor Green
     
     - name: Configure AtomSpace
       shell: pwsh
@@ -310,15 +300,10 @@ jobs:
     - name: Install Dependencies
       shell: pwsh
       run: |
-        Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
-        & "$env:VCPKG_ROOT\vcpkg.exe" install `
-          boost-system:x64-windows `
-          boost-filesystem:x64-windows `
-          boost-program-options:x64-windows `
-          boost-thread:x64-windows `
-          boost-regex:x64-windows `
-          --recurse
-        Write-Host "Dependencies installed successfully" -ForegroundColor Green
+        Write-Host "=== Installing Dependencies via vcpkg (manifest mode) ===" -ForegroundColor Cyan
+        # vcpkg is in manifest mode, dependencies will be installed automatically during CMake configure
+        & "$env:VCPKG_ROOT\vcpkg.exe" version
+        Write-Host "vcpkg ready for manifest mode" -ForegroundColor Green
     
     - name: Configure Moses
       shell: pwsh
