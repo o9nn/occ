@@ -25,7 +25,6 @@ jobs:
   build-opencog:
     runs-on: ubuntu-latest
     name: "L11: Build OpenCog (Main Application)"
-    needs: [build-pln, build-learn, build-attention]
     
     steps:
     - name: Checkout Repository
