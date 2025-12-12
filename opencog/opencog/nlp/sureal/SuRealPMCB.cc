@@ -187,7 +187,9 @@ bool SuRealPMCB::clause_match(const Handle &pattrn_link_h, const Handle &grnd_li
             grnd_link_h->to_short_string().c_str());
 
     HandleSeq qISet;
-    grnd_link_h->getIncomingSetByType(back_inserter(qISet), SET_LINK);
+    // API change: getIncomingSetByType() now returns IncomingSet instead of using output iterator
+    IncomingSet incoming = grnd_link_h->getIncomingSetByType(SET_LINK);
+    qISet.insert(qISet.end(), incoming.begin(), incoming.end());
 
     // Store the InterpretationNodes, will be needed if this grounding
     // is accepted.
@@ -334,7 +336,9 @@ bool SuRealPMCB::propose_grounding(const HandleMap &var_soln, const HandleMap &p
     auto getInterpretation = [&](const Handle& h)
     {
         HandleSeq qISet;
-        h->getIncomingSetByType(back_inserter(qISet), SET_LINK);
+        // API change: getIncomingSetByType() now returns IncomingSet instead of using output iterator
+        IncomingSet incoming = h->getIncomingSetByType(SET_LINK);
+        qISet.insert(qISet.end(), incoming.begin(), incoming.end());
 
         HandleSeq results;
         for (auto& hSetLink : qISet)
