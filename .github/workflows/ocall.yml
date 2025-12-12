@@ -43,7 +43,7 @@ jobs:
             uuid-dev \
             valgrind \
             libopendht-dev \
-            link-grammar-dev
+            liblink-grammar-dev
           
       - name: Install Cython
         run: python3 -m pip install --upgrade pip cython
