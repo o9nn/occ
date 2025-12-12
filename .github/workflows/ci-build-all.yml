@@ -185,7 +185,59 @@ jobs:
           retention-days: 1
 
   # ============================================================================
-  # Stage 3: Core Components (Parallel Build)
+  # Stage 3a: Build CogServer (required by attention)
+  # ============================================================================
+  build-cogserver:
+    runs-on: ubuntu-latest
+    name: Build cogserver
+    needs: build-atomspace
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake build-essential cxxtest \
+            libboost-dev libboost-filesystem-dev \
+            libboost-program-options-dev libboost-system-dev \
+            libboost-thread-dev guile-3.0-dev \
+            libasio-dev cython3 python3-dev \
+            valgrind doxygen ccache
+      
+      - name: Rebuild Prerequisites
+        run: |
+          # Build CogUtil
+          mkdir -p cogutil/build && cd cogutil/build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          make ${{ env.MAKEFLAGS }}
+          sudo make install && sudo ldconfig
+          
+          # Build AtomSpace
+          cd ../..
+          mkdir -p atomspace/build && cd atomspace/build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          make ${{ env.MAKEFLAGS }}
+          sudo make install && sudo ldconfig
+      
+      - name: Build cogserver
+        run: |
+          mkdir -p cogserver/build
+          cd cogserver/build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          make ${{ env.MAKEFLAGS }}
+          sudo make install && sudo ldconfig
+      
+      - name: Run Tests
+        run: |
+          cd cogserver/build
+          make check ARGS="${{ env.MAKEFLAGS }}"
+        continue-on-error: true
+
+  # ============================================================================
+  # Stage 3b: Core Components (Unify, Matrix, Learn)
   # ============================================================================
   build-core-components:
     runs-on: ubuntu-latest
@@ -196,10 +248,8 @@ jobs:
       fail-fast: false
       matrix:
         component:
-          - cogserver
           - unify
           - matrix
-          - attention
           - learn
     
     steps:
@@ -245,6 +295,65 @@ jobs:
         if: hashFiles(format('{0}/CMakeLists.txt', matrix.component))
         run: |
           cd ${{ matrix.component }}/build
+          make check ARGS="${{ env.MAKEFLAGS }}"
+        continue-on-error: true
+
+  # ============================================================================
+  # Stage 3c: Build Attention (requires CogServer)
+  # ============================================================================
+  build-attention:
+    runs-on: ubuntu-latest
+    name: Build attention
+    needs: build-cogserver
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake build-essential cxxtest \
+            libboost-dev libboost-filesystem-dev \
+            libboost-program-options-dev libboost-system-dev \
+            libboost-thread-dev guile-3.0-dev \
+            libasio-dev cython3 python3-dev \
+            valgrind doxygen ccache
+      
+      - name: Rebuild Prerequisites
+        run: |
+          # Build CogUtil
+          mkdir -p cogutil/build && cd cogutil/build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          make ${{ env.MAKEFLAGS }}
+          sudo make install && sudo ldconfig
+          
+          # Build AtomSpace
+          cd ../..
+          mkdir -p atomspace/build && cd atomspace/build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          make ${{ env.MAKEFLAGS }}
+          sudo make install && sudo ldconfig
+          
+          # Build CogServer
+          cd ../..
+          mkdir -p cogserver/build && cd cogserver/build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          make ${{ env.MAKEFLAGS }}
+          sudo make install && sudo ldconfig
+      
+      - name: Build attention
+        run: |
+          mkdir -p attention/build
+          cd attention/build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          make ${{ env.MAKEFLAGS }}
+          sudo make install && sudo ldconfig
+      
+      - name: Run Tests
+        run: |
+          cd attention/build
           make check ARGS="${{ env.MAKEFLAGS }}"
         continue-on-error: true
 
