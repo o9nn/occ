@@ -77,9 +77,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for cogutil ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -196,9 +196,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for atomspace ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         # Python packages
         python -m pip install --upgrade pip
@@ -340,9 +340,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for atomspace-storage ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -480,10 +480,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for atomspace-rocks ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
-        & "$env:VCPKG_ROOT\vcpkg.exe" install rocksdb:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -634,10 +633,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for cogserver ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
-        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -788,10 +786,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for atomspace-cog ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
-        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -955,9 +952,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for unify ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1095,9 +1092,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for ure ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1248,9 +1245,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for miner ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1415,10 +1412,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for attention ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
-        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1582,9 +1578,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for asmoses ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1749,9 +1745,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for matrix ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1889,10 +1885,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for spacetime ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
-        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -2056,10 +2051,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for pln ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
-        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -2264,10 +2258,9 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies for learn ===" -ForegroundColor Cyan
         
-        # Install vcpkg dependencies
+        # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
-        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
