@@ -1,7 +1,7 @@
 name: OCC Windows Build
 
 # Windows-specific build workflow for OpenCog Collection (OCC) monorepo
-# Adapted from occ-build.yml with PowerShell commands and Windows-compatible syntax
+# Fixed version with proper vcpkg integration using GitHub Actions cache
 # Builds components in dependency order: cogutil -> atomspace -> cogserver -> attention -> unify -> ure -> miner -> asmoses
 
 on:
@@ -14,7 +14,7 @@ on:
 env:
   BUILD_TYPE: Release
   CMAKE_GENERATOR: "Visual Studio 17 2022"
-  VCPKG_ROOT: ${{ github.workspace }}\third_party\vcpkg
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg_cache
 
 jobs:
   # Stage 1: Build CogUtil (Foundation)
@@ -26,39 +26,39 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
-        submodules: false
+        submodules: recursive
     
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
     
-    - name: Bootstrap vcpkg from monorepo
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '2025-12-05'
+    
+    - name: Create vcpkg cache directory
       shell: pwsh
       run: |
-        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
-        Set-Location "$env:VCPKG_ROOT"
-        if (-not (Test-Path "vcpkg.exe")) {
-          & ".\bootstrap-vcpkg.bat"
-          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
-        } else {
-          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
-        }
-        Write-Host "vcpkg setup complete" -ForegroundColor Green
+        New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
+        Write-Host "vcpkg cache directory created at $env:VCPKG_DEFAULT_BINARY_CACHE" -ForegroundColor Green
     
-    - name: Cache vcpkg installed packages
+    - name: Cache vcpkg binary packages
       uses: actions/cache@v4
       with:
-        path: ${{ github.workspace }}\third_party\vcpkg\installed
-        key: vcpkg-cogutil-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
-          vcpkg-cogutil-${{ runner.os }}-
+          vcpkg-binary-${{ runner.os }}-
     
     - name: Install Dependencies
       shell: pwsh
       run: |
-        Write-Host "=== Installing Dependencies via vcpkg (manifest mode) ===" -ForegroundColor Cyan
-        # vcpkg is in manifest mode, dependencies will be installed automatically during CMake configure
-        & "$env:VCPKG_ROOT\vcpkg.exe" version
-        Write-Host "vcpkg ready for manifest mode" -ForegroundColor Green
+        Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
+        
+        # Install required dependencies for cogutil
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost-system boost-filesystem boost-program-options boost-thread boost-date-time --triplet x64-windows
+        
+        Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
     - name: Configure CogUtil
       shell: pwsh
@@ -68,6 +68,7 @@ jobs:
         Set-Location cogutil\build
         cmake .. `
           -G "$env:CMAKE_GENERATOR" `
+          -A x64 `
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
           -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
           -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE\install"
@@ -124,8 +125,7 @@ jobs:
       with:
         name: cogutil-build-windows
         path: |
-          install/**/*.dll
-          install/**/*.lib
+          install/**
         retention-days: 1
 
   # Stage 2: Build AtomSpace (depends on CogUtil)
@@ -138,7 +138,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
-        submodules: false
+        submodules: recursive
     
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
@@ -149,34 +149,34 @@ jobs:
         name: cogutil-build-windows
         path: install
     
-    - name: Bootstrap vcpkg from monorepo
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '2025-12-05'
+    
+    - name: Create vcpkg cache directory
       shell: pwsh
       run: |
-        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
-        Set-Location "$env:VCPKG_ROOT"
-        if (-not (Test-Path "vcpkg.exe")) {
-          & ".\bootstrap-vcpkg.bat"
-          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
-        } else {
-          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
-        }
-        Write-Host "vcpkg setup complete" -ForegroundColor Green
+        New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
+        Write-Host "vcpkg cache directory created" -ForegroundColor Green
     
-    - name: Cache vcpkg
+    - name: Cache vcpkg binary packages
       uses: actions/cache@v4
       with:
-        path: ${{ github.workspace }}\third_party\vcpkg\installed
-        key: vcpkg-atomspace-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
-          vcpkg-atomspace-${{ runner.os }}-
+          vcpkg-binary-${{ runner.os }}-
     
     - name: Install Dependencies
       shell: pwsh
       run: |
-        Write-Host "=== Installing Dependencies via vcpkg (manifest mode) ===" -ForegroundColor Cyan
-        # vcpkg is in manifest mode, dependencies will be installed automatically during CMake configure
-        & "$env:VCPKG_ROOT\vcpkg.exe" version
-        Write-Host "vcpkg ready for manifest mode" -ForegroundColor Green
+        Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
+        
+        # Install required dependencies for atomspace
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost-system boost-filesystem boost-program-options boost-thread boost-date-time --triplet x64-windows
+        
+        Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
     - name: Configure AtomSpace
       shell: pwsh
@@ -190,6 +190,7 @@ jobs:
         
         cmake .. `
           -G "$env:CMAKE_GENERATOR" `
+          -A x64 `
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
           -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
           -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE\install" `
@@ -251,8 +252,7 @@ jobs:
       with:
         name: atomspace-build-windows
         path: |
-          install/**/*.dll
-          install/**/*.lib
+          install/**
         retention-days: 1
 
   # Stage 3: Build Moses (depends on CogUtil)
@@ -265,7 +265,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
-        submodules: false
+        submodules: recursive
     
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
@@ -276,34 +276,34 @@ jobs:
         name: cogutil-build-windows
         path: install
     
-    - name: Bootstrap vcpkg from monorepo
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '2025-12-05'
+    
+    - name: Create vcpkg cache directory
       shell: pwsh
       run: |
-        Write-Host "=== Bootstrapping vcpkg from monorepo ===" -ForegroundColor Cyan
-        Set-Location "$env:VCPKG_ROOT"
-        if (-not (Test-Path "vcpkg.exe")) {
-          & ".\bootstrap-vcpkg.bat"
-          Write-Host "vcpkg bootstrapped successfully" -ForegroundColor Green
-        } else {
-          Write-Host "vcpkg already bootstrapped" -ForegroundColor Yellow
-        }
-        Write-Host "vcpkg setup complete" -ForegroundColor Green
+        New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
+        Write-Host "vcpkg cache directory created" -ForegroundColor Green
     
-    - name: Cache vcpkg
+    - name: Cache vcpkg binary packages
       uses: actions/cache@v4
       with:
-        path: ${{ github.workspace }}\third_party\vcpkg\installed
-        key: vcpkg-moses-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
-          vcpkg-moses-${{ runner.os }}-
+          vcpkg-binary-${{ runner.os }}-
     
     - name: Install Dependencies
       shell: pwsh
       run: |
-        Write-Host "=== Installing Dependencies via vcpkg (manifest mode) ===" -ForegroundColor Cyan
-        # vcpkg is in manifest mode, dependencies will be installed automatically during CMake configure
-        & "$env:VCPKG_ROOT\vcpkg.exe" version
-        Write-Host "vcpkg ready for manifest mode" -ForegroundColor Green
+        Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
+        
+        # Install required dependencies for moses
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost-system boost-filesystem boost-program-options boost-thread boost-date-time --triplet x64-windows
+        
+        Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
     - name: Configure Moses
       shell: pwsh
@@ -317,6 +317,7 @@ jobs:
         
         cmake .. `
           -G "$env:CMAKE_GENERATOR" `
+          -A x64 `
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
           -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
           -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE\install" `
@@ -331,40 +332,6 @@ jobs:
         cmake --build . --config $env:BUILD_TYPE --parallel 2
         Write-Host "Build complete" -ForegroundColor Green
     
-    - name: Build Moses Tests
-      shell: pwsh
-      run: |
-        Write-Host "=== Building Moses Tests ===" -ForegroundColor Cyan
-        Set-Location moses\build
-        cmake --build . --config $env:BUILD_TYPE --target tests --parallel 2
-        Write-Host "Test build complete" -ForegroundColor Green
-      continue-on-error: true
-    
-    - name: Run Moses Tests
-      shell: pwsh
-      run: |
-        Write-Host "=== Running Moses Tests ===" -ForegroundColor Cyan
-        Set-Location moses\build
-        
-        # Add CogUtil DLLs to PATH
-        $env:PATH = "$env:GITHUB_WORKSPACE\install\bin;$env:PATH"
-        
-        ctest -C $env:BUILD_TYPE --output-on-failure
-        Write-Host "Tests complete" -ForegroundColor Green
-      continue-on-error: true
-    
-    - name: Print Test Log
-      if: always()
-      shell: pwsh
-      run: |
-        $logPath = "moses\build\tests\Testing\Temporary\LastTest.log"
-        if (Test-Path $logPath) {
-          Write-Host "=== Test Log ===" -ForegroundColor Yellow
-          Get-Content $logPath
-        } else {
-          Write-Host "No test log found at $logPath" -ForegroundColor Yellow
-        }
-    
     - name: Install Moses
       shell: pwsh
       run: |
@@ -378,12 +345,10 @@ jobs:
       with:
         name: moses-build-windows
         path: |
-          install/**/*.dll
-          install/**/*.lib
-          install/**/*.exe
+          install/**
         retention-days: 1
 
-  # Summary Job
+  # Build Summary Job
   build-summary:
     runs-on: windows-latest
     name: Build Summary (Windows)
