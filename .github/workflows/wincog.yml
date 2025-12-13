@@ -79,7 +79,7 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -198,7 +198,7 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
         
         # Python packages
         python -m pip install --upgrade pip
@@ -342,7 +342,7 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -482,8 +482,8 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
-        vcpkg install rocksdb:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install rocksdb:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -636,8 +636,8 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
-        vcpkg install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -790,8 +790,8 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
-        vcpkg install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -957,7 +957,7 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1097,7 +1097,7 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1250,7 +1250,7 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1417,8 +1417,8 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
-        vcpkg install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1584,7 +1584,7 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1751,7 +1751,7 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1891,8 +1891,8 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
-        vcpkg install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -2058,8 +2058,8 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
-        vcpkg install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -2266,8 +2266,8 @@ jobs:
         
         # Install vcpkg dependencies
 
-        vcpkg install boost:x64-windows
-        vcpkg install asio:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install boost:x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install asio:x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
