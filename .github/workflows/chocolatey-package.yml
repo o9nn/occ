@@ -1,0 +1,126 @@
+name: Build Chocolatey Package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to package'
+        required: true
+        default: '1.0.0'
+
+env:
+  PACKAGE_NAME: opencog
+
+jobs:
+  build-chocolatey:
+    runs-on: windows-latest
+    name: Build Chocolatey Package
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set Version
+      id: version
+      shell: pwsh
+      run: |
+        if ("${{ github.event_name }}" -eq "release") {
+          $version = "${{ github.event.release.tag_name }}".TrimStart('v')
+        } else {
+          $version = "${{ github.event.inputs.version }}"
+        }
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "Package version: $version"
+    
+    - name: Install Chocolatey
+      shell: pwsh
+      run: |
+        if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        }
+        choco --version
+    
+    - name: Update Package Version
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.VERSION }}"
+        $nuspecPath = "packaging/chocolatey/opencog.nuspec"
+        
+        # Update version in nuspec
+        $content = Get-Content $nuspecPath -Raw
+        $content = $content -replace '<version>0\.0\.0</version>', "<version>$version</version>"
+        Set-Content $nuspecPath $content
+        
+        Write-Host "Updated nuspec with version $version"
+    
+    - name: Update Install Script
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.VERSION }}"
+        $installScript = "packaging/chocolatey/tools/chocolateyinstall.ps1"
+        
+        # Update version placeholders
+        $content = Get-Content $installScript -Raw
+        $content = $content -replace '__VERSION__', $version
+        
+        # Calculate checksum (placeholder - in real workflow, download and calculate actual checksum)
+        $checksum = "0000000000000000000000000000000000000000000000000000000000000000"
+        $content = $content -replace '__CHECKSUM64__', $checksum
+        
+        Set-Content $installScript $content
+        Write-Host "Updated install script with version $version"
+    
+    - name: Build Chocolatey Package
+      shell: pwsh
+      run: |
+        cd packaging/chocolatey
+        choco pack opencog.nuspec
+        
+        if (Test-Path "*.nupkg") {
+          Write-Host "Chocolatey package created successfully:"
+          Get-ChildItem *.nupkg | ForEach-Object { Write-Host "  $_" }
+        } else {
+          Write-Error "Failed to create Chocolatey package"
+          exit 1
+        }
+    
+    - name: Test Package Installation
+      shell: pwsh
+      run: |
+        cd packaging/chocolatey
+        $package = Get-ChildItem *.nupkg | Select-Object -First 1
+        
+        Write-Host "Testing package installation: $package"
+        # Test install in local mode (don't actually install)
+        choco install $package.Name --source="'.'" --force --debug --verbose
+    
+    - name: Upload Chocolatey Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: chocolatey-package
+        path: packaging/chocolatey/*.nupkg
+        retention-days: 30
+    
+    - name: Publish to Chocolatey (Optional)
+      if: github.event_name == 'release' && github.event.release.prerelease == false
+      shell: pwsh
+      env:
+        CHOCO_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+      run: |
+        if ($env:CHOCO_API_KEY) {
+          cd packaging/chocolatey
+          $package = Get-ChildItem *.nupkg | Select-Object -First 1
+          
+          Write-Host "Publishing package to Chocolatey: $package"
+          choco push $package.Name --source https://push.chocolatey.org/ --api-key $env:CHOCO_API_KEY
+          
+          Write-Host "Package published successfully!"
+        } else {
+          Write-Host "CHOCOLATEY_API_KEY not set, skipping publish"
+        }

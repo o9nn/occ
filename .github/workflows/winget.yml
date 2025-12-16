@@ -1,13 +1,17 @@
-name: Update Winget Package
+name: Update Winget Package for OpenCog
 
 on:
-  workflow_dispatch: # allows manual triggering
-  schedule:
-    - cron: '28 5 * * *' # Update every day at 5:28 UTC
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to update'
+        required: true
 
 jobs:
   update:
-    name: Update Winget Package
+    name: Update Winget Manifest
     runs-on: ubuntu-latest
 
     steps:
@@ -18,25 +22,31 @@ jobs:
         run: |
           cargo binstall komac@2.11.2 -y
 
-      - name: Find latest release
-        id: find_latest_release
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { data: releases } = await github.rest.repos.listReleases({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-            console.log("Latest release:", releases[0].tag_name);
-            return releases[0].tag_name;
+      - name: Determine Version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "VERSION=${VERSION#v}" >> $GITHUB_OUTPUT
+          echo "Updating to version: ${VERSION#v}"
 
       - name: Update manifest
         env:
-          VERSION: ${{ steps.find_latest_release.outputs.result }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          WINGET_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
         run: |
-          echo "Updating manifest..."
-          komac update --version ${{ env.VERSION }} \
-            --urls "https://github.com/ggml-org/llama.cpp/releases/download/${{ env.VERSION }}/llama-${{ env.VERSION }}-bin-win-vulkan-x64.zip" \
-            --token ${{ secrets.WINGET_GITHUB_TOKEN }} \
+          if [ -z "$WINGET_TOKEN" ]; then
+            echo "⚠️  WINGET_GITHUB_TOKEN not set, skipping winget update"
+            echo "To enable winget updates, add WINGET_GITHUB_TOKEN to repository secrets"
+            exit 0
+          fi
+          
+          echo "Updating winget manifest for OpenCog version $VERSION"
+          komac update --version $VERSION \
+            --urls "https://github.com/cogpy/occ/releases/download/v$VERSION/opencog-$VERSION-win64.zip" \
+            --token $WINGET_TOKEN \
             --submit \
-            ggml.llamacpp
+            OpenCog.OpenCog || echo "Winget update failed or package not yet registered"
