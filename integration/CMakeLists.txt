@@ -1,7 +1,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 PROJECT(occ-integration VERSION 1.0.0)
 
+MESSAGE(STATUS "")
+MESSAGE(STATUS "==============================================")
 MESSAGE(STATUS "Building OCC Integration Layer")
+MESSAGE(STATUS "==============================================")
 
 # Integration components
 OPTION(BUILD_ATOMSPACE_MACHSPACE "Build AtomSpace-MachSpace bridge" ON)
@@ -51,5 +54,33 @@ IF(BUILD_COGKERNEL_BRIDGE)
         MESSAGE(WARNING "CogKernel bridge not yet implemented")
     ENDIF()
 ENDIF()
+
+# Install integration bridge scripts
+IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../hurdcog-integration/atomspace-hurdcog-bridge.py")
+    MESSAGE(STATUS "Installing AtomSpace-HurdCog bridge script...")
+    INSTALL(
+        FILES ${CMAKE_CURRENT_SOURCE_DIR}/../hurdcog-integration/atomspace-hurdcog-bridge.py
+        DESTINATION bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    )
+ENDIF()
+
+# Check if we're building the full AGI-OS stack
+IF(BUILD_COGNUMACH AND BUILD_HURDCOG)
+    MESSAGE(STATUS "Full AGI-OS stack detected")
+    SET(AGI_OS_FULL_STACK ON)
+ELSE()
+    MESSAGE(STATUS "Userspace-only OCC build")
+    SET(AGI_OS_FULL_STACK OFF)
+ENDIF()
+
+MESSAGE(STATUS "")
+MESSAGE(STATUS "Integration Layer Summary:")
+MESSAGE(STATUS "  AGI-OS Full Stack: ${AGI_OS_FULL_STACK}")
+MESSAGE(STATUS "  AtomSpace-MachSpace: ${BUILD_ATOMSPACE_MACHSPACE}")
+MESSAGE(STATUS "  Cognitive Scheduler: ${BUILD_COGNITIVE_SCHEDULER}")
+MESSAGE(STATUS "  CogKernel Bridge: ${BUILD_COGKERNEL_BRIDGE}")
+MESSAGE(STATUS "==============================================")
+MESSAGE(STATUS "")
 
 MESSAGE(STATUS "Integration layer configuration complete")

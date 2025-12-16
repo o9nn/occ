@@ -7,7 +7,11 @@ param(
     [string]$BuildType = "Release",
     [switch]$SkipTests,
     [switch]$UseNinja,
-    [int]$ParallelJobs = 0
+    [int]$ParallelJobs = 0,
+    [switch]$BuildCognumach,
+    [switch]$BuildHurdcog,
+    [switch]$BuildAtomspaceStorage,
+    [switch]$BuildAllComponents
 )
 
 $ErrorActionPreference = "Stop"
@@ -42,6 +46,26 @@ if ($ParallelJobs -eq 0) {
     $ParallelJobs = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
 }
 
+# Set OCC build options
+$BuildOptions = @{
+    "BUILD_COGUTIL" = "ON"
+    "BUILD_ATOMSPACE" = "ON"
+    "BUILD_COGSERVER" = "ON"
+    "BUILD_MATRIX" = "ON"
+    "BUILD_LEARN" = "ON"
+    "BUILD_AGENTS" = "ON"
+    "BUILD_SENSORY" = "ON"
+    "BUILD_COGGML" = "ON"
+    "BUILD_COGSELF" = "ON"
+    "BUILD_ATOMSPACE_ACCELERATOR" = "ON"
+    "BUILD_AGENTIC_CHATBOTS" = "ON"
+    "BUILD_COGNUMACH" = if ($BuildCognumach -or $BuildAllComponents) { "ON" } else { "OFF" }
+    "BUILD_HURDCOG" = if ($BuildHurdcog -or $BuildAllComponents) { "ON" } else { "OFF" }
+    "BUILD_ATOMSPACE_STORAGE" = if ($BuildAtomspaceStorage -or $BuildAllComponents) { "ON" } else { "ON" }  # Always ON by default
+    "BUILD_ATOMSPACE_EXTENSIONS" = if ($BuildAllComponents) { "ON" } else { "OFF" }
+    "BUILD_INTEGRATION_LAYER" = "ON"
+}
+
 Write-Host ""
 Write-Host "Build Configuration:" -ForegroundColor Cyan
 Write-Host "  Build Type: $BuildType" -ForegroundColor White
@@ -49,6 +73,12 @@ Write-Host "  Install Prefix: $InstallPrefix" -ForegroundColor White
 Write-Host "  Parallel Jobs: $ParallelJobs" -ForegroundColor White
 Write-Host "  Generator: $(if ($Generator) { $Generator } else { 'Default (MSBuild)' })" -ForegroundColor White
 Write-Host "  Skip Tests: $SkipTests" -ForegroundColor White
+Write-Host ""
+Write-Host "OCC Component Options:" -ForegroundColor Cyan
+foreach ($option in $BuildOptions.GetEnumerator() | Sort-Object Name) {
+    $color = if ($option.Value -eq "ON") { "Green" } else { "Gray" }
+    Write-Host "  $($option.Key): $($option.Value)" -ForegroundColor $color
+}
 Write-Host ""
 
 # Create build directory
@@ -73,6 +103,11 @@ $CMakeArgs = @(
     "-DCMAKE_INSTALL_PREFIX=$InstallPrefix",
     "-DBUILD_TESTING=$(if ($SkipTests) { 'OFF' } else { 'ON' })"
 )
+
+# Add OCC build options to CMake
+foreach ($option in $BuildOptions.GetEnumerator()) {
+    $CMakeArgs += "-D$($option.Key)=$($option.Value)"
+}
 
 if ($Generator) {
     $CMakeArgs += "-G", $Generator
@@ -144,6 +179,43 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "✓ Installation successful" -ForegroundColor Green
 
+# Create distribution package
+Write-Host ""
+Write-Host "==================================================" -ForegroundColor Cyan
+Write-Host "Creating Distribution Package..." -ForegroundColor Cyan
+Write-Host "==================================================" -ForegroundColor Cyan
+
+$Version = "1.0.0"  # TODO: Extract from git tag or version file
+$PackageName = "opencog-$Version-win64"
+$PackageDir = "dist\$PackageName"
+
+if (Test-Path "dist") {
+    Remove-Item -Recurse -Force "dist"
+}
+New-Item -ItemType Directory -Path $PackageDir | Out-Null
+
+# Copy installed files to package directory
+Write-Host "Copying files to package directory..." -ForegroundColor Cyan
+Copy-Item -Recurse "$InstallPrefix\*" $PackageDir
+
+# Create ZIP archive
+Write-Host "Creating ZIP archive..." -ForegroundColor Cyan
+$ZipPath = "dist\$PackageName.zip"
+Compress-Archive -Path $PackageDir -DestinationPath $ZipPath -Force
+
+Write-Host ""
+Write-Host "✓ Distribution package created: $ZipPath" -ForegroundColor Green
+
+# Calculate SHA256 checksum
+Write-Host ""
+Write-Host "Calculating SHA256 checksum..." -ForegroundColor Cyan
+$Hash = (Get-FileHash $ZipPath -Algorithm SHA256).Hash
+$HashFile = "dist\$PackageName.sha256"
+"$Hash  $PackageName.zip" | Out-File -FilePath $HashFile -Encoding ASCII
+
+Write-Host "SHA256: $Hash" -ForegroundColor White
+Write-Host "✓ Checksum saved to: $HashFile" -ForegroundColor Green
+
 # Summary
 Write-Host ""
 Write-Host "==================================================" -ForegroundColor Cyan
@@ -152,6 +224,10 @@ Write-Host "==================================================" -ForegroundColor
 Write-Host ""
 Write-Host "OpenCog Collection has been successfully built and installed to:" -ForegroundColor Green
 Write-Host "  $InstallPrefix" -ForegroundColor White
+Write-Host ""
+Write-Host "Distribution package created:" -ForegroundColor Green
+Write-Host "  $ZipPath" -ForegroundColor White
+Write-Host "  SHA256: $Hash" -ForegroundColor White
 Write-Host ""
 Write-Host "To use OpenCog, add the following to your PATH:" -ForegroundColor Yellow
 Write-Host "  $InstallPrefix\bin" -ForegroundColor White

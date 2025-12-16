@@ -116,7 +116,16 @@ IF(BUILD_ATOMSPACE_ACCELERATOR)
     add_subdirectory(atomspace-accelerator)
 ENDIF()
 
-IF(BUILD_COGSERVER AND BUILD_ATOMSPACE)
+# AtomSpace Storage - MUST be built before CogServer
+OPTION(BUILD_ATOMSPACE_STORAGE "Build AtomSpace storage backends" ON)
+IF(BUILD_ATOMSPACE_STORAGE AND BUILD_ATOMSPACE)
+    MESSAGE(STATUS "Building AtomSpace Storage (required by CogServer)...")
+    add_subdirectory(atomspace-storage)
+    add_subdirectory(atomspace-rocks)
+    add_subdirectory(atomspace-cog)
+ENDIF()
+
+IF(BUILD_COGSERVER AND BUILD_ATOMSPACE AND BUILD_ATOMSPACE_STORAGE)
     MESSAGE(STATUS "Building CogServer...")
     add_subdirectory(cogserver)
 ENDIF()
@@ -179,13 +188,6 @@ IF(BUILD_INTEGRATION_LAYER)
 ENDIF()
 
 # Optional: Additional AtomSpace extensions
-OPTION(BUILD_ATOMSPACE_STORAGE "Build AtomSpace storage backends" OFF)
-IF(BUILD_ATOMSPACE_STORAGE AND BUILD_ATOMSPACE)
-    add_subdirectory(atomspace-storage)
-    add_subdirectory(atomspace-rocks)
-    add_subdirectory(atomspace-cog)
-ENDIF()
-
 OPTION(BUILD_ATOMSPACE_EXTENSIONS "Build AtomSpace language extensions" OFF)
 IF(BUILD_ATOMSPACE_EXTENSIONS AND BUILD_ATOMSPACE)
     add_subdirectory(atomspace-metta)
