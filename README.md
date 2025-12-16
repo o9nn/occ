@@ -12,6 +12,8 @@ This repository provides a complete, FSF-endorsed, and reproducible environment 
 - **Unified Cognitive Architecture**: A coherent system that brings together core OpenCog components like the **AtomSpace** (a hypergraph database) with advanced AI tools.
 - **Cognitive Synergy by Design**: The architecture is explicitly designed to facilitate the interaction and collaboration of different AI paradigms, including symbolic reasoning, machine learning, and evolutionary algorithms.
 - **Autogenesis - Self-Evolution**: AI-powered system that identifies novel features in the "adjacent possible" - capabilities that can emerge from current components through synergy and integration.
+- **Cross-Modal Cognitive Fusion**: Unified cognitive loops integrating reasoning (PLN), learning (MOSES), and memory (AtomSpace) with bidirectional feedback and meta-learning capabilities.
+- **Distributed Cognitive Shard Network**: Network of specialized cognitive processing units with shared memory, enabling parallel distributed cognition.
 - **Reproducible Development Environment**: Utilizes **GNU Guix** and a devcontainer to provide a fully declarative and isolated development environment, ensuring that all developers have a consistent setup.
 - **Extensible and Modular**: The OCC is designed to be easily extended with new components and integrations, allowing researchers to experiment with different cognitive architectures.
 - **Focus on AGI Research**: The ultimate goal of the OCC is to provide a platform for building and experimenting with AGI systems.
@@ -92,7 +94,33 @@ The OpenCog project is a community-driven effort. We welcome contributions from 
 
 ## Cognitive Synergy Enhancements
 
-To enforce and test the cognitive synergy between the various components (C++, Python, Rust), a unified entry point has been created.
+The OCC implements several cognitive synergy enhancements based on the autogenesis roadmap:
+
+### 1. Cross-Modal Cognitive Fusion (✅ Implemented)
+
+Integrates reasoning, learning, and memory into unified cognitive loops:
+- Shared representation layer in AtomSpace
+- PLN → MOSES feedback loop (reasoning guides learning)
+- MOSES → PLN feedback loop (learning enriches reasoning)
+- Meta-learning system that evolves cognitive strategies
+- **See:** `docs/cross-modal-cognitive-fusion.md`
+
+### 2. Distributed Cognitive Shard Network (✅ Implemented)
+
+Network of specialized cognitive shards with shared memory:
+- 9 shard specializations (reasoning, learning, pattern mining, etc.)
+- Thread-safe shared AtomSpace view
+- Inter-shard communication via message bus
+- Dynamic task allocation and load balancing
+- **See:** `docs/distributed-cognitive-shard-network.md`
+
+### 3. Attention-Guided Evolutionary Learning (✅ Implemented)
+
+Uses attention allocation to guide MOSES learning:
+- Extract high-STI atoms from attention system
+- Convert attention signals to MOSES fitness bonuses
+- Feedback loop from learning outcomes to attention
+- **See:** `docs/attention-guided-learning.md`
 
 ### Unified Synergy Check
 
