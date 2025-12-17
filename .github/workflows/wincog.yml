@@ -76,7 +76,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -192,7 +192,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         # Python packages
         python -m pip install --upgrade pip
@@ -333,7 +333,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -470,7 +470,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -620,7 +620,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -770,7 +770,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -933,7 +933,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1070,7 +1070,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1220,7 +1220,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1384,7 +1384,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1547,7 +1547,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1711,7 +1711,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -1848,7 +1848,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -2011,7 +2011,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         
@@ -2215,7 +2215,7 @@ jobs:
         
         # Install vcpkg dependencies from manifest (vcpkg.json)
 
-        & "$env:VCPKG_ROOT\vcpkg.exe" install
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "✓ Dependencies installed" -ForegroundColor Green
         

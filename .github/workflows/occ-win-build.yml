@@ -56,7 +56,7 @@ jobs:
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
         
         # Install required dependencies for cogutil
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost-system boost-filesystem boost-program-options boost-thread boost-date-time --triplet x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
@@ -174,7 +174,7 @@ jobs:
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
         
         # Install required dependencies for atomspace
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost-system boost-filesystem boost-program-options boost-thread boost-date-time --triplet x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
@@ -301,7 +301,7 @@ jobs:
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
         
         # Install required dependencies for moses
-        & "$env:VCPKG_ROOT\vcpkg.exe" install boost-system boost-filesystem boost-program-options boost-thread boost-date-time --triplet x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
