@@ -6,88 +6,37 @@
   "license": "AGPL-3.0",
   "supports": "windows & linux & osx",
   "dependencies": [
-    {
-      "name": "boost",
-      "version>=": "1.82.0",
-      "features": [
-        "system",
-        "filesystem",
-        "program-options",
-        "regex",
-        "thread",
-        "date-time",
-        "serialization",
-        "random"
-      ]
-    },
+    "boost-system",
+    "boost-filesystem",
+    "boost-program-options",
+    "boost-regex",
+    "boost-thread",
+    "boost-date-time",
+    "boost-serialization",
+    "boost-random",
     {
       "name": "guile",
       "platform": "!windows"
     },
-    {
-      "name": "cxxopts",
-      "version>=": "3.0.0"
-    },
-    {
-      "name": "asio",
-      "version>=": "1.24.0"
-    },
-    {
-      "name": "rocksdb",
-      "version>=": "8.0.0"
-    },
-    {
-      "name": "libpq",
-      "version>=": "15.0"
-    },
-    {
-      "name": "protobuf",
-      "version>=": "3.21.0"
-    },
-    {
-      "name": "grpc",
-      "version>=": "1.50.0"
-    },
-    {
-      "name": "catch2",
-      "version>=": "3.0.0"
-    },
-    {
-      "name": "spdlog",
-      "version>=": "1.11.0"
-    },
-    {
-      "name": "fmt",
-      "version>=": "9.0.0"
-    },
-    {
-      "name": "nlohmann-json",
-      "version>=": "3.11.0"
-    },
-    {
-      "name": "yaml-cpp",
-      "version>=": "0.7.0"
-    },
-    {
-      "name": "tbb",
-      "version>=": "2021.5.0"
-    },
-    {
-      "name": "eigen3",
-      "version>=": "3.4.0"
-    },
-    {
-      "name": "cppzmq",
-      "version>=": "4.9.0"
-    },
+    "cxxopts",
+    "asio",
+    "rocksdb",
+    "libpq",
+    "protobuf",
+    "grpc",
+    "catch2",
+    "spdlog",
+    "fmt",
+    "nlohmann-json",
+    "yaml-cpp",
+    "tbb",
+    "eigen3",
+    "cppzmq",
     {
       "name": "curl",
       "features": ["ssl"]
     },
-    {
-      "name": "openssl",
-      "version>=": "3.0.0"
-    }
+    "openssl"
   ],
   "builtin-baseline": "544a4c5c297e60e4ac4a5a1810df66748d908869"
 }
