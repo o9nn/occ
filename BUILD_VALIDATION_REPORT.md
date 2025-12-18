@@ -112,12 +112,16 @@ Many workflows are disabled with `.disabled` extension:
 
 ### Requirements
 
+The `requirements.txt` file contains the following dependencies (without version pinning):
+
 ```
 numpy
 pandas
 scikit-learn
 matplotlib
 ```
+
+**Note:** Consider adding version specifications for reproducible builds in production environments.
 
 ## Test Infrastructure
 
