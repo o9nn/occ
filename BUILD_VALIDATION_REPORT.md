@@ -59,7 +59,7 @@ cmake .. \
 - **CMake:** 3.12+ (Currently: 3.31.6) ✅
 - **C++ Compiler:** C++17 support (Currently: GCC 13.3.0) ✅
 - **Python:** 3.x (Currently: 3.12.3) ✅
-- **Guile:** 2.2.2+ ❌ Not installed
+- **Guile:** 3.0+ (recommended for AtomSpace) ❌ Not installed
 - **Boost:** All libraries ❌ Not installed
 - **CxxTest:** For unit tests ❌ Not installed
 

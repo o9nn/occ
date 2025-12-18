@@ -1,7 +1,8 @@
 #!/bin/bash
 # Basic build validation test for OCC repository
 
-# Don't exit on error for arithmetic operations
+# Allow script to continue even if individual tests fail
+# This enables us to collect all test results
 set +e
 
 echo "========================================="
@@ -55,7 +56,7 @@ fi
 # Test 4: Check Python syntax
 echo ""
 echo "Test 4: Checking Python files..."
-if python3 -m py_compile app.py 2>&1 && python3 -m py_compile autogenesis_engine.py 2>&1; then
+if python3 -m py_compile app.py >/dev/null 2>&1 && python3 -m py_compile autogenesis_engine.py >/dev/null 2>&1; then
     echo -e "${GREEN}✓ Python files compile correctly${NC}"
     ((PASSED++))
 else
