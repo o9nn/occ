@@ -78,6 +78,8 @@ IF (WIN32) # Windows host but not cygwin
 		ADD_DEFINITIONS(-D_SCL_SECURE_NO_WARNINGS)
 		ADD_DEFINITIONS(-D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
 		SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+		# Include Windows-specific headers (getopt.h, etc.)
+		INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include/win32")
 	ENDIF()
 
 	# Previous definitions used for win32 (non cygwin) compilation.
