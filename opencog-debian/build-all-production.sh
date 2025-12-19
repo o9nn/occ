@@ -120,6 +120,15 @@ echo -e "${CYAN}========================================${NC}"
 
 build_package "atomspace" || exit 1
 
+# Stage 2.5: Core Cognitive Architecture Components
+echo ""
+echo -e "${CYAN}========================================${NC}"
+echo -e "${CYAN}Stage 2.5: Core Cognitive Components${NC}"
+echo -e "${CYAN}========================================${NC}"
+
+build_package "coggml" || true
+build_package "atomspace-accelerator" || true
+
 # Stage 3: Storage Backends (CRITICAL: Before CogServer)
 echo ""
 echo -e "${CYAN}========================================${NC}"
@@ -149,6 +158,7 @@ echo -e "${CYAN}========================================${NC}"
 
 build_package "cogserver" || exit 1
 build_package "ure" || exit 1
+build_package "matrix" || true
 
 # Stage 4.5: AGI-OS Operating System Layer (Optional)
 if [ "${BUILD_AGI_OS}" = "yes" ]; then
@@ -175,6 +185,8 @@ build_package "pln" || exit 1
 build_package "miner" || true
 build_package "unify" || true
 build_package "spacetime" || true
+build_package "opencog-agents" || true
+build_package "opencog-sensory" || true
 
 # Stage 6: Learning and Generation
 echo ""
@@ -204,6 +216,7 @@ build_package "moses" || true
 build_package "asmoses" || true
 build_package "agi-bio" || true
 build_package "vision" || true
+build_package "agentic-chatbots" || true
 
 # Stage 9: Meta-Package
 echo ""
@@ -211,6 +224,7 @@ echo -e "${CYAN}========================================${NC}"
 echo -e "${CYAN}Stage 9: Meta-Package${NC}"
 echo -e "${CYAN}========================================${NC}"
 
+build_package "cogself" || true
 build_package "opencog" || true
 
 # Stage 10: AGI-OS Unified Package (Optional)

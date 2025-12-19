@@ -1,0 +1,18 @@
+Source: opencog-agents
+Section: science
+Priority: optional
+Maintainer: OpenCog Developers <opencog@googlegroups.com>
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.12),
+               libcogutil-dev (>= 2.1.0), opencog-atomspace (>= 5.0.5), libboost-dev, guile-3.0-dev | guile-2.2-dev
+Standards-Version: 4.6.0
+Homepage: https://opencog.org/
+Vcs-Browser: https://github.com/cogpy/occ
+Vcs-Git: https://github.com/cogpy/occ.git
+
+Package: opencog-agents
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         libcogutil3, opencog-atomspace
+Description: Interactive agents for OpenCog AtomSpace
+ This package is part of the OpenCog AGI framework and AGI-OS architecture.

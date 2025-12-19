@@ -1,134 +1,337 @@
-> # OpenCog Collection (OCC)
-> ### An Integrated Architecture for Cognitive Synergy
+# OpenCog Collection (OCC) - AGI Operating System
 
-**The OpenCog Collection (OCC) is a monorepo that integrates multiple OpenCog components and external tools into a unified cognitive architecture.** Our primary goal is to foster **cognitive synergy**, where the interaction of diverse AI components leads to emergent intelligence and capabilities beyond the sum of their individual parts.
+**Version**: 3.0.0  
+**Repository**: https://github.com/o9nn/occ  
+**License**: AGPL-3.0
 
-This repository provides a complete, FSF-endorsed, and reproducible environment for research and development in Artificial General Intelligence (AGI), cognitive computing, and hypergraph-based AI.
+> ### An Integrated Architecture for Cognitive Synergy and AGI-OS
+
+**The OpenCog Collection (OCC) is a comprehensive monorepo that integrates the entire OpenCog ecosystem with operating system-level cognitive capabilities.** Our primary goal is to foster **cognitive synergy**, where the interaction of diverse AI components leads to emergent intelligence and capabilities beyond the sum of their individual parts.
+
+This repository provides a complete, production-ready environment for research and development in Artificial General Intelligence (AGI), featuring a three-layer architecture from microkernel to cognitive applications.
 
 ---
 
 ## Key Features
 
-- **Unified Cognitive Architecture**: A coherent system that brings together core OpenCog components like the **AtomSpace** (a hypergraph database) with advanced AI tools.
-- **Cognitive Synergy by Design**: The architecture is explicitly designed to facilitate the interaction and collaboration of different AI paradigms, including symbolic reasoning, machine learning, and evolutionary algorithms.
-- **Autogenesis - Self-Evolution**: AI-powered system that identifies novel features in the "adjacent possible" - capabilities that can emerge from current components through synergy and integration.
-- **Cross-Modal Cognitive Fusion**: Unified cognitive loops integrating reasoning (PLN), learning (MOSES), and memory (AtomSpace) with bidirectional feedback and meta-learning capabilities.
-- **Distributed Cognitive Shard Network**: Network of specialized cognitive processing units with shared memory, enabling parallel distributed cognition.
-- **Reproducible Development Environment**: Utilizes **GNU Guix** and a devcontainer to provide a fully declarative and isolated development environment, ensuring that all developers have a consistent setup.
-- **Extensible and Modular**: The OCC is designed to be easily extended with new components and integrations, allowing researchers to experiment with different cognitive architectures.
-- **Focus on AGI Research**: The ultimate goal of the OCC is to provide a platform for building and experimenting with AGI systems.
+### Cognitive Synergy Architecture
+- **Unified Cognitive Architecture**: Coherent integration of AtomSpace hypergraph database with advanced AI reasoning, learning, and attention systems
+- **Cognitive Synergy by Design**: Explicit facilitation of interaction between symbolic reasoning, machine learning, and evolutionary algorithms
+- **Autogenesis - Self-Evolution**: AI-powered system identifying novel features in the "adjacent possible" through component synergy
+- **Cross-Modal Cognitive Fusion**: Unified cognitive loops integrating PLN reasoning, MOSES learning, and AtomSpace memory with bidirectional feedback
+- **Distributed Cognitive Shard Network**: Specialized cognitive processing units with shared memory for parallel distributed cognition
+
+### AGI-OS Integration
+- **Three-Layer AGI-OS Stack**: CogNumach microkernel → HurdCog operating system → OCC cognitive framework
+- **Kernel-Level Cognitive Primitives**: Attention-aware scheduling, distributed hypergraph storage, and reasoning at the OS level
+- **AtomSpace-MachSpace Bridge**: Direct integration between hypergraph knowledge representation and microkernel memory management
+- **Production-Ready Packaging**: Complete Debian packaging infrastructure and Windows builds with Chocolatey support
+
+### Development Excellence
+- **Reproducible Environment**: GNU Guix declarative builds and devcontainer support for consistent development
+- **Extensible and Modular**: Easy integration of new components and cognitive architectures
+- **Comprehensive Testing**: Automated CI/CD with cognitive synergy validation
+- **Focus on AGI Research**: Platform designed specifically for building and experimenting with AGI systems
 
 ---
 
-## Getting Started
+## Architecture
 
-We recommend using the provided devcontainer for the best experience. This will automatically set up a complete development environment with all the necessary dependencies.
+### Three-Layer AGI-OS Stack
 
-1.  **Clone the repository:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Layer 3: OCC Framework (Cognitive Applications)            │
+│  ├─ AtomSpace (Hypergraph Knowledge Representation)         │
+│  ├─ PLN (Probabilistic Logic Networks)                      │
+│  ├─ URE (Unified Rule Engine)                               │
+│  ├─ ECAN (Economic Attention Networks)                      │
+│  ├─ CogGML (Self-Aware Microkernel Shards)                  │
+│  ├─ CogSelf (AGI Synergy Framework)                         │
+│  ├─ MOSES (Evolutionary Program Learning)                   │
+│  └─ Agentic Chatbots, Learning, Vision, Bioinformatics      │
+├─────────────────────────────────────────────────────────────┤
+│  Integration Layer (Cognitive Bridges)                      │
+│  ├─ AtomSpace ↔ MachSpace Bridge                           │
+│  ├─ ECAN ↔ Cognitive Scheduler                             │
+│  └─ URE ↔ CogKernel Bridge                                 │
+├─────────────────────────────────────────────────────────────┤
+│  Layer 2: HurdCog (Cognitive Operating System)              │
+│  ├─ MachSpace (Distributed Hypergraph Storage)              │
+│  ├─ CogKernel (Kernel-Level Reasoning)                      │
+│  ├─ Cognitive Translators                                   │
+│  └─ AtomSpace-Hurd Bridge                                   │
+├─────────────────────────────────────────────────────────────┤
+│  Layer 1: CogNumach (Cognitive Microkernel)                 │
+│  ├─ Enhanced GNU Mach Microkernel                           │
+│  ├─ Cognitive Scheduler (Attention-Aware CPU Allocation)    │
+│  ├─ IPC with Cognitive Primitives                           │
+│  └─ Memory Management with Attention Values                 │
+└─────────────────────────────────────────────────────────────┘
+```
 
-    ```bash
-    git clone --recurse-submodules https://github.com/Kaw-Aii/occ.git
-    ```
+### Core Components
 
-2.  **Open in a devcontainer-compatible IDE (like VS Code).**
+#### Foundation
+- **cogutil** - Core C++ utilities and infrastructure
+- **atomspace** - Hypergraph database for knowledge representation
+- **atomspace-storage** - Persistence backends (RocksDB, PostgreSQL, CogServer)
+- **atomspace-accelerator** - High-performance inference engine
 
-3.  **Start building and experimenting!**
+#### Reasoning & Learning
+- **ure** - Unified Rule Engine for forward/backward chaining
+- **pln** - Probabilistic Logic Networks for uncertain reasoning
+- **miner** - Pattern mining and discovery
+- **learn** - Language learning and grammar induction
+- **moses** - Meta-Optimizing Semantic Evolutionary Search
 
-For more detailed instructions, please see our [Getting Started Guide](docs/getting-started.md).
+#### Cognitive Architecture
+- **coggml** - Self-aware cognitive microkernel with shard architecture
+- **cogself** - AGI cognitive synergy framework
+- **attention** - Economic Attention Networks (ECAN)
+- **matrix** - Sparse matrix operations on AtomSpace
+
+#### Integration & Services
+- **cogserver** - Network server for AtomSpace access
+- **agents** - Interactive cognitive agents
+- **sensory** - Sensory dataflow processing
+
+#### Applications
+- **agentic-chatbots** - Conversational AI with cognitive grounding
+- **vision** - Computer vision integration
+- **agi-bio** - Bioinformatics and genomics
+
+---
+
+## Quick Start
 
 ### System Dependencies
 
-The OCC requires several system dependencies to build successfully. On Ubuntu/Debian systems, install the following:
-
+**Ubuntu/Debian**:
 ```bash
 sudo apt-get update
 sudo apt-get install -y \
-  build-essential \
-  cmake \
-  libboost-all-dev \
-  guile-3.0-dev \
-  python3-dev \
-  cython3 \
-  liboctomap-dev \
-  liboctomap-tools
+  build-essential cmake git \
+  libboost-all-dev guile-3.0-dev \
+  python3-dev cython3 \
+  liboctomap-dev liboctomap-tools
 ```
 
-**Required Dependencies:**
-- **Octomap** (`liboctomap-dev`, `liboctomap-tools`): Required for the SpaceTime component, which provides 3D spatiotemporal object tracking and representation capabilities.
-- **Boost** (`libboost-all-dev`): C++ libraries providing utilities for threading, filesystem operations, and data structures.
-- **Guile 3.0** (`guile-3.0-dev`): Scheme interpreter for AtomSpace scripting and cognitive reasoning.
-- **Python 3 & Cython** (`python3-dev`, `cython3`): Python bindings for C++ components and high-level API access.
-- **CMake** (`cmake`): Cross-platform build system generator.
-- **Build Essentials** (`build-essential`): Compiler toolchain (gcc, g++, make) for building C++ components.
+**Windows**:
+- Visual Studio 2019 or later
+- vcpkg package manager
+- CMake 3.12+
+
+### Option 1: Quick Build (Recommended)
+
+```bash
+git clone --recurse-submodules https://github.com/o9nn/occ.git
+cd occ
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+sudo make install
+```
+
+### Option 2: Build with AGI-OS Stack (Advanced)
+
+```bash
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_COGNUMACH=ON \
+    -DBUILD_HURDCOG=ON \
+    -DBUILD_INTEGRATION_LAYER=ON \
+    -DBUILD_COGGML=ON \
+    -DBUILD_COGSELF=ON
+make -j$(nproc)
+sudo make install
+```
+
+### Option 3: Debian Packages
+
+```bash
+cd opencog-debian
+./build-all-production.sh
+```
+
+### Option 4: Windows Build
+
+```powershell
+.\build-windows.ps1 -BuildAllComponents
+```
+
+### Option 5: Devcontainer (Recommended for Development)
+
+1. Open repository in VS Code
+2. Reopen in container when prompted
+3. All dependencies automatically configured
 
 ---
-
-## Documentation
-
-### Core Documentation
-- **[Architecture Overview](docs/architecture.md)**: A detailed look at the OCC architecture and its components.
-- **[Cognitive Synergy](docs/cognitive-synergy.md)**: An explanation of the principles of cognitive synergy and how they are applied in the OCC.
-- **[Autogenesis](docs/autogenesis.md)**: AI-powered novel feature generation based on the adjacent possible.
-- **[Contributing Guide](CONTRIBUTING.md)**: How to contribute to the OpenCog Collection.
-
-### AGI-OS / AGI-Kern Evaluation
-- **[AGI Kernel Evaluation](docs/AGI_KERNEL_EVALUATION.md)**: Comprehensive evaluation of OCC against traditional OS kernel primitives for AGI-OS development.
-- **[AGI-OS Integration Guide](docs/AGI_OS_INTEGRATION_GUIDE.md)**: Technical specifications for integrating 5 OpenCog repositories into a unified AGI Operating System.
-- **[AGI-Kern Coverage Summary](docs/AGI_KERN_COVERAGE_SUMMARY.md)**: Quick reference guide for kernel feature coverage and integration roadmap.
-
-### Build & Infrastructure
-- **[Guix SSR Implementation](docs/guix-ssr-implementation.md)**: SSR-compliant GNU Guix build system with local installer mirroring for reproducible, reliable CI/CD.
-
----
-
-## Community and Support
-
-The OpenCog project is a community-driven effort. We welcome contributions from researchers, developers, and anyone interested in AGI.
-
-- **Discussions:** [GitHub Discussions](https://github.com/opencog/occ/discussions)
-- **Mailing List:** [OpenCog Google Group](https://groups.google.com/g/opencog)
-
----
-
-*The OpenCog Collection is a continuation of the OpenCog project, pioneered by Dr. Ben Goertzel.*
 
 ## Cognitive Synergy Enhancements
 
-The OCC implements several cognitive synergy enhancements based on the autogenesis roadmap:
-
-### 1. Cross-Modal Cognitive Fusion (✅ Implemented)
+### 1. Cross-Modal Cognitive Fusion ✅
 
 Integrates reasoning, learning, and memory into unified cognitive loops:
 - Shared representation layer in AtomSpace
 - PLN → MOSES feedback loop (reasoning guides learning)
 - MOSES → PLN feedback loop (learning enriches reasoning)
 - Meta-learning system that evolves cognitive strategies
-- **See:** `docs/cross-modal-cognitive-fusion.md`
 
-### 2. Distributed Cognitive Shard Network (✅ Implemented)
+**Documentation**: `docs/cross-modal-cognitive-fusion.md`
+
+### 2. Distributed Cognitive Shard Network ✅
 
 Network of specialized cognitive shards with shared memory:
 - 9 shard specializations (reasoning, learning, pattern mining, etc.)
 - Thread-safe shared AtomSpace view
 - Inter-shard communication via message bus
 - Dynamic task allocation and load balancing
-- **See:** `docs/distributed-cognitive-shard-network.md`
 
-### 3. Attention-Guided Evolutionary Learning (✅ Implemented)
+**Documentation**: `docs/distributed-cognitive-shard-network.md`
+
+### 3. Attention-Guided Evolutionary Learning ✅
 
 Uses attention allocation to guide MOSES learning:
 - Extract high-STI atoms from attention system
 - Convert attention signals to MOSES fitness bonuses
 - Feedback loop from learning outcomes to attention
-- **See:** `docs/attention-guided-learning.md`
+
+**Documentation**: `docs/attention-guided-learning.md`
 
 ### Unified Synergy Check
 
-Run the following script to build all components, and perform mock interoperability and demo tests:
+Run the synergy validation script to ensure all components work together:
 
 ```bash
 ./synergy.sh
 ```
 
-This script ensures that the entire collection is a coherent whole, a key principle for achieving cognitive synergy.
+This script builds all components and performs interoperability tests, validating the cognitive synergy architecture.
 
+---
+
+## Usage Examples
+
+### AtomSpace Basics (Scheme)
+
+```scheme
+(use-modules (opencog))
+
+; Create atoms
+(Concept "AI")
+(Concept "AGI")
+
+; Create relationships
+(Inheritance (Concept "AGI") (Concept "AI"))
+
+; Query the AtomSpace
+(cog-get-atoms 'Concept)
+```
+
+### AtomSpace Basics (Python)
+
+```python
+from opencog.atomspace import AtomSpace, types
+from opencog.type_constructors import *
+
+atomspace = AtomSpace()
+ai = ConceptNode("AI")
+agi = ConceptNode("AGI")
+InheritanceLink(agi, ai)
+```
+
+### Using CogServer
+
+```bash
+guile -c "(use-modules (opencog cogserver)) (start-cogserver)"
+telnet localhost 17001
+```
+
+---
+
+## Documentation
+
+### Core Documentation
+- **[Architecture Overview](docs/architecture.md)** - Detailed OCC architecture
+- **[Cognitive Synergy](docs/cognitive-synergy.md)** - Principles and implementation
+- **[Autogenesis](docs/autogenesis.md)** - AI-powered feature generation
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute
+
+### AGI-OS Documentation
+- **[AGI Kernel Evaluation](docs/AGI_KERNEL_EVALUATION.md)** - OS kernel primitives for AGI
+- **[AGI-OS Integration Guide](docs/AGI_OS_INTEGRATION_GUIDE.md)** - Technical integration specs
+- **[AGI-Kern Coverage Summary](docs/AGI_KERN_COVERAGE_SUMMARY.md)** - Feature coverage reference
+
+### Build & Infrastructure
+- **[Build Guide](docs/build/)** - Comprehensive build instructions
+- **[Guix SSR Implementation](docs/guix-ssr-implementation.md)** - Reproducible builds
+- **[Debian Packaging](opencog-debian/README_COMPLETE.md)** - Package infrastructure
+
+---
+
+## Build Options
+
+**AGI-OS Stack**:
+- `BUILD_COGNUMACH` - Cognitive microkernel (OFF by default)
+- `BUILD_HURDCOG` - Cognitive OS (OFF by default)
+- `BUILD_INTEGRATION_LAYER` - Integration bridges (ON by default)
+
+**Core Components**:
+- `BUILD_COGUTIL` - Core utilities (ON)
+- `BUILD_ATOMSPACE` - Hypergraph database (ON)
+- `BUILD_ATOMSPACE_STORAGE` - Storage backends (ON)
+- `BUILD_COGSERVER` - Network server (ON)
+
+**Cognitive Architecture**:
+- `BUILD_COGGML` - CogGML microkernel (ON)
+- `BUILD_COGSELF` - CogSelf framework (ON)
+- `BUILD_ATOMSPACE_ACCELERATOR` - Inference accelerator (ON)
+- `BUILD_AGENTIC_CHATBOTS` - Chatbot integration (ON)
+
+---
+
+## Releases
+
+### Version 3.0.0 (Current)
+- Complete AGI-OS integration with CogNumach and HurdCog
+- CogGML self-aware microkernel architecture
+- CogSelf AGI synergy framework
+- AtomSpace accelerator inference engine
+- Complete Debian packaging (40+ packages)
+- Windows build automation with Chocolatey
+- Cross-modal cognitive fusion
+- Distributed cognitive shard network
+
+---
+
+## Community and Support
+
+- **Website**: https://opencog.org/
+- **Wiki**: https://wiki.opencog.org/
+- **Discussions**: [GitHub Discussions](https://github.com/opencog/occ/discussions)
+- **Mailing List**: [OpenCog Google Group](https://groups.google.com/g/opencog)
+- **Issues**: https://github.com/o9nn/occ/issues
+
+---
+
+## License
+
+AGPL-3.0 License - see [LICENSE](LICENSE) file for details.
+
+## Citation
+
+```bibtex
+@software{opencog2025,
+  title = {OpenCog Collection: AGI Operating System},
+  author = {OpenCog Foundation},
+  year = {2025},
+  url = {https://github.com/o9nn/occ},
+  version = {3.0.0}
+}
+```
+
+---
+
+**Built with cognitive synergy for the future of AGI** 🧠✨
+
+*The OpenCog Collection continues the pioneering work of Dr. Ben Goertzel and the OpenCog community.*

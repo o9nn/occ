@@ -1,0 +1,6 @@
+opencog-sensory (3.0.0-1) unstable; urgency=medium
+
+  * Initial Debian package for opencog-sensory
+  * Integration with OpenCog AGI-OS architecture
+
+ -- OpenCog Developers <opencog@googlegroups.com>  Thu, 19 Dec 2025 17:00:00 +0000

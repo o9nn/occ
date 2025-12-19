@@ -185,7 +185,15 @@ Write-Host "==================================================" -ForegroundColor
 Write-Host "Creating Distribution Package..." -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
-$Version = "1.0.0"  # TODO: Extract from git tag or version file
+# Read version from VERSION file or git tag
+if (Test-Path "VERSION") {
+    $Version = (Get-Content "VERSION").Trim()
+} else {
+    $Version = (git describe --tags --always 2>$null)
+    if (-not $Version) {
+        $Version = "1.0.0"
+    }
+}
 $PackageName = "opencog-$Version-win64"
 $PackageDir = "dist\$PackageName"
 

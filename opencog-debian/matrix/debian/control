@@ -1,0 +1,39 @@
+Source: opencog-matrix
+Section: science
+Priority: optional
+Maintainer: OpenCog Developers <opencog@googlegroups.com>
+Build-Depends: debhelper-compat (= 13),
+               cmake (>= 3.12),
+               libcogutil-dev (>= 2.1.0),
+               opencog-atomspace (>= 5.0.5),
+               libboost-dev (>= 1.71),
+               libboost-filesystem-dev,
+               libboost-program-options-dev,
+               libboost-system-dev,
+               libboost-thread-dev,
+               guile-3.0-dev | guile-2.2-dev,
+               cxxtest
+Standards-Version: 4.6.0
+Homepage: https://opencog.org/
+Vcs-Browser: https://github.com/cogpy/occ
+Vcs-Git: https://github.com/cogpy/occ.git
+
+Package: opencog-matrix
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         libcogutil3 (>= 2.1.0),
+         opencog-atomspace (>= 5.0.5)
+Description: Sparse matrix and vector support for OpenCog AtomSpace
+ The Matrix library provides sparse matrix and vector operations
+ for the OpenCog AtomSpace hypergraph database. It enables efficient
+ storage and manipulation of large-scale sparse data structures
+ commonly used in machine learning and statistical analysis.
+ .
+ Key features:
+  - Sparse matrix representation using AtomSpace
+  - Vector operations and transformations
+  - Matrix multiplication and decomposition
+  - Integration with AtomSpace queries
+  - Support for large-scale data processing
+ .
+ This package is part of the OpenCog AGI framework.
