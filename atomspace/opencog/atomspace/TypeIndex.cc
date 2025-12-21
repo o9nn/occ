@@ -146,7 +146,7 @@ void TypeIndex::get_handles_by_type(UnorderedHandleSet& hset,
                                     Type type,
                                     bool subclass) const
 {
-	if (not subclass and type < _offset_to_atom) return;
+	if (! subclass and type < _offset_to_atom) return;
 
 	if (type >= _offset_to_atom)
 	{
@@ -165,7 +165,7 @@ void TypeIndex::get_handles_by_type(UnorderedHandleSet& hset,
 	Type tstar = std::max(type+1, _offset_to_atom);
 	for (Type t = tstar; t<_num_types; t++)
 	{
-		if (not _nameserver.isA(t, type)) continue;
+		if (! _nameserver.isA(t, type)) continue;
 
 		int start = get_bucket_start(t);
 		for (int ibu = start; ibu < start + POOL_SIZE; ibu++)

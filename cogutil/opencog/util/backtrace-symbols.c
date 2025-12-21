@@ -71,7 +71,11 @@
     #include <libiberty.h> // must appear before bfd.h !! see bug #696
     //  https://github.com/opencog/opencog/issues/696
     #include <bfd.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
     #include <dlfcn.h>
+#endif
     #include <link.h>
     #include <pthread.h>
 

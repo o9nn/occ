@@ -31,7 +31,7 @@ using namespace opencog;
 ConcatenateLink::ConcatenateLink(const HandleSeq&& oset, Type t)
 	: CollectionOfLink(std::move(oset), t)
 {
-	if (not nameserver().isA(t, CONCATENATE_LINK))
+	if (! nameserver().isA(t, CONCATENATE_LINK))
 	{
 		const std::string& tname = nameserver().getTypeName(t);
 		throw InvalidParamException(TRACE_INFO,

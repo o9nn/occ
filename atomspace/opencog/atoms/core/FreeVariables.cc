@@ -218,7 +218,7 @@ HandleSeq VarScraper::sorted_free_variables_ordered_outgoing(
 		// Recursive call
 		HandleSeq fvs = sorted_free_variables(h, ctx);
 
-		// Only retain variables that are not in res
+		// Only retain variables that are ! in res
 		HandleSeq fvs_n;
 		std::copy_if(fvs.begin(), fvs.end(), std::back_inserter(fvs_n),
 		             [&res](const Handle& var) {

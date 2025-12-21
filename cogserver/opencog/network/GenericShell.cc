@@ -175,7 +175,7 @@ static GenericShell* _redirector = nullptr;
 //    output is generated, instead of waiting for the evaluation
 //    to terminate first, before relaying output.
 //
-// The above requirements force us to create not just one, but two
+// The above requirements force us to create ! just one, but two
 // threads for each evaluation: one thread for the evaluation, and
 // another thread to listen for results, and pass them on.
 //

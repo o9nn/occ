@@ -11,7 +11,16 @@
  * explore writing guile (scheme) or python modules instead.
  */
 
+#ifdef _WIN32
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#include <windows.h>
+#endif
+#else
 #include <dlfcn.h>
+#endif
 #include <unistd.h>
 
 #include <filesystem>

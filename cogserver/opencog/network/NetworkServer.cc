@@ -11,7 +11,15 @@
 #include <netinet/tcp.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
+#ifdef _WIN32
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <winsock2.h>
+#endif
+#else
 #include <sys/socket.h>
+#endif
 #include <sys/time.h>
 #include <sys/types.h>
 #include <time.h>

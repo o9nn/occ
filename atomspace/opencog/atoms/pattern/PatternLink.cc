@@ -489,7 +489,7 @@ bool PatternLink::record_literal(const PatternTermPtr& clause, bool reverse)
 	}
 
 	// Everything under Choice is either a literal, or a grouping of
-	// PresentLinks. They are not mandatory, since they exist only in
+	// PresentLinks. They are ! mandatory, since they exist only in
 	// some of the choice branches, but not others. Unless there is
 	// only one branch, in which case they become mandatory.
 	if (not reverse and CHOICE_LINK == typ)
@@ -530,12 +530,12 @@ bool PatternLink::record_literal(const PatternTermPtr& clause, bool reverse)
 	}
 
 	// Pull clauses out of an AbsentLink
-	if ((not reverse and ABSENT_LINK == typ) or
+	if ((not reverse && ABSENT_LINK == typ) or
 	    (reverse and PRESENT_LINK == typ))
 	{
 		// We insist on an arity of 1, because anything else is
 		// ambiguous: consider absent(A B) is that: "both A and B must
-		// be absent"?  Or is it "if any of A and B are absent, then .."
+		// be absent"?  Or is it "if any of A && B are absent, then .."
 		if (1 != h->get_arity())
 			throw InvalidParamException(TRACE_INFO,
 				"AbsentLink can have an arity of one only!");
@@ -553,7 +553,7 @@ bool PatternLink::record_literal(const PatternTermPtr& clause, bool reverse)
 
 	if (reverse and CHOICE_LINK == typ)
 		throw InvalidParamException(TRACE_INFO,
-			"NotLink-ChoiceLink is not supported yet!");
+			"NotLink-ChoiceLink is ! supported yet!");
 
 	// Pull clauses out of an AlwaysLink
 	if (not reverse and ALWAYS_LINK == typ)
@@ -676,7 +676,7 @@ bool PatternLink::unbundle_clauses_rec(const PatternTermPtr& term,
 /// possible (e.g. linear logic, or any number of the modal logics),
 /// but these are not currently supported in this code base. Supporting
 /// probably requires a "LinearLogicPatternLink" which will borrow much
-/// of the code below, but not all, and work with a LinearTermMixin
+/// of the code below, but ! all, and work with a LinearTermMixin
 /// callback class to complete the matching process.
 void PatternLink::unbundle_clauses(const Handle& hbody)
 {
@@ -951,7 +951,7 @@ bool PatternLink::add_unaries(const PatternTermPtr& ptm)
 	// (should only appear) in SatisfactionLinks, and have their own
 	// distinct logic to them. So if we're inside of one of these,
 	// we drop out. Probably should refactor the code so that we are
-	// not even called for any of these cases.
+	// ! even called for any of these cases.
 	Type t = h->get_type();
 	if (CHOICE_LINK == t or ALWAYS_LINK == t) return false;
 	if (GROUP_LINK == t) return false;

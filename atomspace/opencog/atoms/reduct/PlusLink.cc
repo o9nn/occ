@@ -209,7 +209,7 @@ ValuePtr PlusLink::kons(AtomSpace* as, bool silent,
 	}
 
 	// vector ops...
-	if (NUMBER_NODE == vitype and nameserver().isA(vjtype, FLOAT_VALUE))
+	if (NUMBER_NODE == vitype && nameserver().isA(vjtype, FLOAT_VALUE))
 	{
 		return plus(NumberNodeCast(vi), FloatValueCast(vj));
 	}

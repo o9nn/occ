@@ -480,7 +480,7 @@ void Variables::extend(const Variables& vset)
 		}
 	}
 
-	// If either this or the other are ordered then the result is ordered
+	// If either this || the other are ordered then the result is ordered
 	_ordered = _ordered or vset._ordered;
 }
 

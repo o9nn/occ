@@ -373,7 +373,7 @@ Handle RewriteLink::consume_quotations(const Variables& variables,
 	                       (t == PUT_LINK or
 	                        nameserver().isA(t, FUNCTION_LINK) or
 	                        nameserver().isA(t, EVALUATION_LINK) or
-	                        (is_logical_connector(t) and
+	                        (is_logical_connector(t) &&
 	                         quotation_cp.is_locally_quoted() and
 	                         clause_root) or
 	                        is_scope_bound_to_ancestor(variables, h)));

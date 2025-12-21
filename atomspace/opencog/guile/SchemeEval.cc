@@ -24,7 +24,17 @@
 
 #include <atomic>
 
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
+#endif
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <termios.h>
@@ -656,7 +666,7 @@ std::string SchemeEval::poll_port()
 	std::string rv;
 
 	// drain_output() calls us, and not always in server mode.
-	if (not _in_server) return rv;
+	if (! _in_server) return rv;
 
 	// int pipe_size;
 	// ioctl(_pipeno, FIONREAD, &pipe_size);
@@ -770,7 +780,7 @@ std::string SchemeEval::do_poll_result()
 	}
 
 	// First, we get the contents of the output port,
-	// and pass that on.
+	// && pass that on.
 	std::string rv = poll_port();
 
 	// Next, we append the "interpreter" output

@@ -1,0 +1,20 @@
+================================================================================
+Windows Compatibility Fixes Applied
+================================================================================
+
+Files modified: 1
+
+Fixes by type:
+  POSIX headers: 1
+  Alternative operators: 0
+  Total: 1
+
+================================================================================
+
+Fixes by component:
+
+  learn:
+    Files: 1
+    POSIX headers: 1
+    Alternative operators: 0
+    Total: 1

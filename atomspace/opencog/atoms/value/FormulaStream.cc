@@ -106,7 +106,7 @@ void FormulaStream::update() const
 		{
 			ValuePtr vp = _formula[0]->execute(_as);
 
-			if (not vp->is_type(FLOAT_VALUE))
+			if (! vp->is_type(FLOAT_VALUE))
 				throw SyntaxException(TRACE_INFO,
 					"Expecting formula to return a FloatValue, got %s",
 					vp->to_string().c_str());

@@ -126,7 +126,7 @@ void RocksStorage::convertForFrames(const Handle& top)
 	auto it = _rfile->NewIterator(rocksdb::ReadOptions());
 	it->Seek(pfx);
 	it->Next(); // skip over (PredicateNode "*-TruthValueKey-*")
-	if (not (it->Valid() and it->key().starts_with(pfx)))
+	if (not (it->Valid() && it->key().starts_with(pfx)))
 	{
 		delete it;
 		return;

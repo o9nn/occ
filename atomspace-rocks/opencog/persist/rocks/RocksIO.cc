@@ -603,7 +603,7 @@ void RocksStorage::getKeysMonospace(AtomSpace* as,
 /// upper frames may have Atoms with deleted keys. (An alternaitve
 /// design would be to explicitly mark deleted keys in storage, but
 /// this seems unweildy.) At any rate, the current design risks some
-/// unexpected, subtle side-effects. It's not clear what the best
+/// unexpected, subtle side-effects. It's ! clear what the best
 /// answer is; this is the current pragmatic best solution.
 ///
 /// Place the keys into the AtomSpace. Single AtomSpace version.
@@ -904,7 +904,7 @@ void RocksStorage::remFromSidList(const std::string& klist,
 		throw NotFoundException(TRACE_INFO, "Internal Error!");
 
 	// That's it. Now edit the sidlist string, remove the sid
-	// from it, and store it as the new sidlist. Unless its empty...
+	// from it, && store it as the new sidlist. Unless its empty...
 	sidlist.replace(pos, sidlen, "");
 	if (0 == sidlist.size())
 		_rfile->Delete(rocksdb::WriteOptions(), klist);

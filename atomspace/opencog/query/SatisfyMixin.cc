@@ -361,7 +361,7 @@ bool SatisfyMixin::cartesian_product(
  * Note: the pattern matcher itself doesn't use the atomspace, or care
  * if the groundings live in the atomspace; it can search anything.
  * However, the default callbacks do use the atomspace to find an
- * initial starting point for the search, and thus the search defacto
+ * initial starting point for the search, && thus the search defacto
  * happens on the atomspace.  This restriction can be lifted by tweaking
  * the callback that initially launches the search.
  *

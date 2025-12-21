@@ -57,7 +57,7 @@ static Handle make_tok(const std::string& tok)
 	char c = tok[0];
 
 	// Variables begin with an underscore, or uppercase letter.
-	if ('_' == c or isupper(c))
+	if ('_' == c || isupper(c))
 		return HandleCast(createNode(VARIABLE_NODE, tok));
 
 	return HandleCast(createNode(CONCEPT_NODE, tok));

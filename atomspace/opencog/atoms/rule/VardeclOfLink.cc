@@ -50,7 +50,7 @@ void VardeclOfLink::init(void)
 		throw SyntaxException(TRACE_INFO, "Expecting at least one argument!");
 
 	const Handle& ho = _outgoing[0];
-	if (not ho->is_type(PRENEX_LINK))
+	if (! ho->is_type(PRENEX_LINK))
 		throw SyntaxException(TRACE_INFO, "Expecting a LambdaLink!");
 
 	_lambda = PrenexLinkCast(ho);

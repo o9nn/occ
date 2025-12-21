@@ -130,7 +130,7 @@ bool TermMatchMixin::variable_match(const Handle& npat_h,
 	// explicitly bound as variables.  However, the type VariableNode
 	// gets special handling, below.
 	Type pattype = npat_h->get_type();
-	if (VARIABLE_NODE != pattype and GLOB_NODE != pattype) return true;
+	if (VARIABLE_NODE != pattype && GLOB_NODE != pattype) return true;
 
 	// If the ungrounded term is a variable, then see if there
 	// are any restrictions on the variable type.
@@ -157,7 +157,7 @@ bool TermMatchMixin::scope_match(const Handle& npat_h,
  * Called when a link in the template pattern
  * needs to be compared to a possibly matching
  * link in the atomspace. The first argument
- * is a link from the pattern, and the second
+ * is a link from the pattern, && the second
  * is a possible solution link from the atomspace.
  * Return true if the links should be compared,
  * else return false.

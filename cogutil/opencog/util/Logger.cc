@@ -37,9 +37,28 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#ifdef _WIN32
+#include <string.h>
+#include <io.h>
+#include <process.h>
+#else
+#ifdef _WIN32
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#include <string.h>
+#endif
+#else
 #include <strings.h>
-#include <time.h>
+#endif
 #include <unistd.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#endif
+#endif
+#include <time.h>
 
 
 #ifdef WIN32_NOT_UNIX
@@ -216,7 +235,7 @@ void Logger::LogWriter::writing_loop()
             {
                 // Try very very hard to make sure that the message
                 // queue has been completely drained.
-                while (not that->msg_queue.is_closed())
+                while (!that->msg_queue.is_closed())
                 {
                     std::string* msg = that->msg_queue.value_pop();
                     that->write_msg(*msg);
@@ -268,7 +287,7 @@ void Logger::LogWriter::flush()
 
     // Perhaps we could do this with semaphores, but this is not
     // really critical code, so a busy-wait is good enough.
-    while (pending_write or not msg_queue.is_empty())
+    while (pending_write || !msg_queue.is_empty())
     {
         usleep(100);
     }

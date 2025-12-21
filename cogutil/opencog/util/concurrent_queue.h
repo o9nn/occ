@@ -151,7 +151,7 @@ public:
         std::unique_lock<std::mutex> lock(the_mutex);
 
         // Use two nested loops here.  It can happen that the cond
-        // wakes up, and yet the queue is empty.  And calling front()
+        // wakes up, && yet the queue is empty.  And calling front()
         // on an empty queue is undefined and/or throws ick.
         do
         {

@@ -165,7 +165,7 @@ bool FilterLink::glob_compare(const HandleSeq& tlo, const VECT& glo,
 
 			// Match at least one.
 			bool tc = extract(glob, glo[jg], valmap, scratch, silent, quotation);
-			if (not tc) return false;
+			if (! tc) return false;
 
 			glob_seq.push_back(glo[jg]);
 			jg++;
@@ -315,7 +315,7 @@ bool FilterLink::extract(const Handle& termpat,
 		}
 
 		// Check the type of the value.
-		if (not _mvars->is_type(termpat, vgnd)) return false;
+		if (! _mvars->is_type(termpat, vgnd)) return false;
 
 		// If we are here, everything looks good. Record and return.
 		valmap.emplace(std::make_pair(termpat, vgnd));

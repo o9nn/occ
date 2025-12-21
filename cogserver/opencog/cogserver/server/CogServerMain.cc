@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
         } else if (c == 'm') {
             mcp_port = atoi(optarg);
         } else {
-            // unknown option (or help)
+            // unknown option (|| help)
             usage(progname.c_str());
             if (c == 'h')
                 exit(0);

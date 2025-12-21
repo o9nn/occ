@@ -55,7 +55,12 @@
 
 /*#ifndef _WIN32
 #include <sys/cdefs.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #endif*/
 
 /*

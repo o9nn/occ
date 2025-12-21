@@ -248,7 +248,7 @@ public:
         std::unique_lock<std::mutex> lock(the_mutex);
 
         // Use two nested loops here.  It can happen that the cond
-        // wakes up, and yet the set is empty.
+        // wakes up, && yet the set is empty.
         do
         {
             while (the_set.empty() and not is_canceled)

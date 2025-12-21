@@ -227,7 +227,7 @@ SchemeSmob::scm_to_string_list (SCM svalue_list)
 	while (scm_is_pair(sl)) {
 		SCM svalue = SCM_CAR(sl);
 
-		if (not scm_is_null(svalue)) {
+		if (! scm_is_null(svalue)) {
 			char * v = scm_to_utf8_string(svalue);
 			valist.emplace_back(v);
 		}
@@ -294,7 +294,7 @@ ValuePtr SchemeSmob::make_value (Type t, SCM svalue_list)
 	    nameserver().isA(t, HANDLE_ARG))
 	{
 		ValuePtr vp(scm_to_protom(first_arg));
-		if (vp and vp->is_atom())
+		if (vp && vp->is_atom())
 		{
 			Handle h(verify_handle(first_arg, "cog-new-value", 2));
 			return valueserver().create(t, h);

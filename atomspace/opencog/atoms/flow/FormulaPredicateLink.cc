@@ -35,7 +35,7 @@ using namespace opencog;
 ///
 /// So, this is like a ScopeLink, except there do not need to be
 /// any explicit variable decls, and the variables are usually free,
-/// not typed, and there are *two* bodies, each body returning one
+/// not typed, && there are *two* bodies, each body returning one
 /// component of the final truth value...
 ///
 /// XXX FIXME - in the future, some user is going to want to include
