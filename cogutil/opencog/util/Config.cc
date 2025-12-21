@@ -33,7 +33,12 @@
 #include <cstdlib>
 
 #include <errno.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <opencog/util/platform.h>
 #include <opencog/util/exceptions.h>
@@ -122,7 +127,7 @@ void Config::check_for_file(std::ifstream& fin,
     std::filesystem::path configPath(path_str);
     configPath /= filename;
 
-    if (not std::filesystem::exists(configPath)) return;
+    if (!std::filesystem::exists(configPath)) return;
 
     // Try to open the config file
     fin.open(configPath.string().c_str());
@@ -312,13 +317,13 @@ void Config::set(const std::string &parameter_name,
 
 const string& Config::get(const string& name, const string& dfl) const
 {
-    if (not has(name)) return dfl;
+    if (!has(name)) return dfl;
     return _table.find(name)->second;
 }
 
 const string& Config::operator[](const string &name) const
 {
-    if (not has(name))
+    if (!has(name))
        throw InvalidParamException(TRACE_INFO,
                                    "[ERROR] parameter not found (%s)",
                                    name.c_str());
@@ -327,25 +332,25 @@ const string& Config::operator[](const string &name) const
 
 int Config::get_int(const string &name, int dfl) const
 {
-    if (not has(name)) return dfl;
+    if (!has(name)) return dfl;
     return std::stoi(get(name));
 }
 
 long Config::get_long(const string &name, long dfl) const
 {
-    if (not has(name)) return dfl;
+    if (!has(name)) return dfl;
     return std::stol(get(name));
 }
 
 double Config::get_double(const string &name, double dfl) const
 {
-    if (not has(name)) return dfl;
+    if (!has(name)) return dfl;
     return std::stod(get(name));
 }
 
 bool Config::get_bool(const string &name, bool dfl) const
 {
-    if (not has(name)) return dfl;
+    if (!has(name)) return dfl;
     if (0 == get(name).compare("true")) return true;
     if (0 == get(name).compare("false")) return false;
     throw InvalidParamException(TRACE_INFO,
