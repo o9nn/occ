@@ -88,7 +88,7 @@ static bool expand_deme(metapopulation& mp,
     }
     dex.free_demes();
 
-    // Might be empty, if the eval fails and throws an exception
+    // Might be empty, if the eval fails && throws an exception
     return done || mp.empty();
 }
 

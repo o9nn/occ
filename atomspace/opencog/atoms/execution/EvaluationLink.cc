@@ -653,7 +653,7 @@ static bool crispy_maybe(AtomSpace* as,
 			if (0.5 < tv->get_mean()) return true;
 			return false;
 		}
-		if (not vp->is_atom())
+		if (! vp->is_atom())
 			return false;
 
 		return crispy_eval_scratch(as, HandleCast(vp), scratch, silent);

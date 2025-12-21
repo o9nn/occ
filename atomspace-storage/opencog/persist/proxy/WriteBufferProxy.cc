@@ -22,7 +22,12 @@
 
 #include <chrono>
 #include <math.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <opencog/atoms/core/NumberNode.h>
 #include <opencog/persist/proxy/WriteBufferProxy.h>

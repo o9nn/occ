@@ -141,7 +141,7 @@ void PutLink::static_typecheck_arguments(void)
 		LambdaLinkPtr lam(LambdaLinkCast(_arguments));
 		Handle body = lam->get_body();
 
-		// The body might not exist, if there's an unmantched
+		// The body might ! exist, if there's an unmantched
 		// UnquoteLink in it.  I really dislike Quote/Unquote.
 		// There's something deeply evil about them.
 		if (nullptr == body)

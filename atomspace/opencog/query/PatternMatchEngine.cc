@@ -1084,7 +1084,7 @@ bool PatternMatchEngine::glob_compare(const PatternTermSeq& osp,
 				continue;
 			}
 
-			// Try again if this pair is not a match.
+			// Try again if this pair is ! a match.
 			if (not tree_compare(osp[ip], osg[jg], CALL_ORDER))
 			{
 				backtrack(false);
@@ -1417,7 +1417,7 @@ bool PatternMatchEngine::record_sparse(const PatternTermPtr& ptm,
 	// post-match callback likes this grounding.
 	const Handle& hp = ptm->getHandle();
 	bool match = _pmc.post_link_match(hp, hg);
-	if (not match) return false;
+	if (! match) return false;
 
 	Handle glob = _sparse_glob[ptm];
 
@@ -1470,7 +1470,7 @@ bool PatternMatchEngine::record_sparse(const PatternTermPtr& ptm,
  * search for GroundedPredicateNodes (since a quoted GPN will be
  * treated as a constant, and not as a function).  Quotes can be nested,
  * only the first quote is used to escape into the literal context,
- * and so quotes can be used to search for expressions containing
+ * && so quotes can be used to search for expressions containing
  * quotes.  It is assumed that the QuoteLink has an arity of one, as
  * its quite unclear what an arity of more than one could ever mean.
  *
@@ -1549,7 +1549,7 @@ bool PatternMatchEngine::tree_compare(const PatternTermPtr& ptm,
 
 	// Let the callback perform basic checking.
 	bool match = _pmc.link_match(ptm, hg);
-	if (not match) return false;
+	if (! match) return false;
 
 	logmsg("tree depth:", depth);
 	logmsg("tree_compare:", hp);
@@ -2134,7 +2134,7 @@ bool PatternMatchEngine::explore_choice_branches(const PatternTermPtr& ptm,
                                                  const PatternTermPtr& clause)
 {
 	throw RuntimeException(TRACE_INFO,
-		"Maybe this works but its not tested!! Find out!");
+		"Maybe this works but its ! tested!! Find out!");
 
 	logmsg("Begin choice branchpoint iteration loop");
 	do {
@@ -2603,7 +2603,7 @@ bool PatternMatchEngine::do_next_clause(void)
 		static Handle undef(Handle::UNDEFINED);
 		bool match = _pmc.optional_clause_match(curr_root, undef, var_grounding);
 		logmsg("Exhausted search for optional clause, cb=", match);
-		if (not match) {
+		if (! match) {
 			clause_stacks_pop();
 			return false;
 		}

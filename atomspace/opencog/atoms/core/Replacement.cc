@@ -68,7 +68,7 @@ Handle Replacement::substitute_scoped(Handle term,
 {
 	bool unquoted = quotation.is_unquoted();
 
-	// If we are not in a quote context, and `term` is a variable,
+	// If we are not in a quote context, && `term` is a variable,
 	// then just return the corresponding argument.
 	if (unquoted)
 	{

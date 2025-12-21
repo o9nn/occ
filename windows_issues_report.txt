@@ -1,0 +1,30 @@
+================================================================================
+Windows Compatibility Issues Report (Code Only)
+================================================================================
+
+Summary:
+  Files with issues: 1
+  POSIX headers: 1
+  Alternative operators: 9
+  Total issues: 10
+
+================================================================================
+
+File: attic/run-ull-2019/SchemeEval.cc
+--------------------------------------------------------------------------------
+  POSIX Headers (1):
+    Line 12: unistd.h
+      → io.h, process.h
+
+  Alternative Operators (9):
+    'and' → '&&' (2 occurrences)
+      Line 776: SchemeSmob::ss_set_env_as(_atomspace);
+      Line 793: // Restore the outport
+    'not' → '!' (7 occurrences)
+      Line 271: 
+      Line 276: // thread that will never-ever exit. If this thread exits, t
+      Line 552: */
+      Line 590: (void *) eval_str,
+      Line 644: /// This should never-ever need to actually be done atomical
+      ... and 2 more
+

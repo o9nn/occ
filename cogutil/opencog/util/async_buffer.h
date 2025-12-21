@@ -30,7 +30,12 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h> /* for usleep() */
+#endif
 
 #include <opencog/util/concurrent_set.h>
 #include <opencog/util/exceptions.h>

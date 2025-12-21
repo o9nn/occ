@@ -476,7 +476,7 @@ void Atom::keep_incoming_set()
 /// be queried; it is erased.
 void Atom::drop_incoming_set()
 {
-    if (not (_flags.load() & USE_ISET_FLAG)) return;
+    if (! (_flags.load() & USE_ISET_FLAG)) return;
     INCOMING_UNIQUE_LOCK;
     _flags.fetch_and(~USE_ISET_FLAG);
     drop_inset_map();
@@ -553,7 +553,7 @@ void Atom::remove_atom(const Handle& a)
 }
 
 /// Remove old, and add new, atomically, so that every user
-/// will see either one or the other, but not both/neither in
+/// will see either one or the other, but ! both/neither in
 /// the incoming set. This is used to manage the StateLink.
 void Atom::swap_atom(const Handle& old, const Handle& neu)
 {
@@ -752,7 +752,7 @@ IncomingSet Atom::getIncomingSetByType(Type type, const AtomSpace* as) const
     static const IncomingSet empty_set;
     if (not (_flags.load() & USE_ISET_FLAG)) return empty_set;
 
-    if (as and not nameserver().isA(_type, FRAME))
+    if (as and ! nameserver().isA(_type, FRAME))
     {
         // If the _copy_on_write flag is set, we need to
         // deduplicate the incoming set.

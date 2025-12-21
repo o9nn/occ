@@ -23,7 +23,25 @@
 
 #include <math.h>
 #include <time.h>
+#ifdef _WIN32
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#include <winsock2.h>
+#endif
+#else
+#ifdef _WIN32
+#include <winsock2.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#else
+#endif
 #include <sys/time.h>
+#endif
+#endif
 #include <unistd.h>
 
 #include <opencog/atoms/core/NumberNode.h>

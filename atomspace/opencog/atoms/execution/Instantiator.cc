@@ -566,7 +566,7 @@ ValuePtr Instantiator::instantiate(const Handle& expr,
 		if (nullptr == reduced) return nullptr;
 
 		// Nothing more to do, if not an atom.
-		if (not reduced->is_atom()) return reduced;
+		if (! reduced->is_atom()) return reduced;
 
 		Handle grounded(HandleCast(reduced));
 		ValuePtr vp(grounded->execute(_as, silent));

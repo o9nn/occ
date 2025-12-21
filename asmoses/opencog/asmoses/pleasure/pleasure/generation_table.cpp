@@ -30,7 +30,7 @@ using namespace moses;
         for (int i = 0; i < (int)atlist.size(); i++) {
             combo::argument arg(i + 1);
             int temp;
-            for (temp = 0; (temp != (int)type_node_list.size()) and (!combo::equal_type_tree(atlist[i], type_node_list[temp])); temp++);
+            for (temp = 0; (temp != (int)type_node_list.size()) && (!combo::equal_type_tree(atlist[i], type_node_list[temp])); temp++);
             if (temp == (int)type_node_list.size()) {
                 printf("Error. No candidates possible for given signature");
                 exit(1);

@@ -42,8 +42,21 @@
 #include <io.h>
 #include <process.h>
 #else
+#ifdef _WIN32
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#include <string.h>
+#endif
+#else
 #include <strings.h>
+#endif
 #include <unistd.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#endif
 #endif
 #include <time.h>
 

@@ -32,7 +32,12 @@
 
 #include <atomic>
 #include <string>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h> /* for close() */
+#endif
 
 #include <opencog/util/async_buffer.h>
 

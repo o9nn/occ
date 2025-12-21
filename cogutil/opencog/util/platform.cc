@@ -78,7 +78,12 @@ unsigned long long atoll(const char *str)
 // ==========================================================
 
 #include <stdlib.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>   // for sbrk(), sysconf()
+#endif
 
 // Return memory usage per sbrk system call.
 size_t opencog::getMemUsage()

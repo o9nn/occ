@@ -9,7 +9,16 @@
  */
 
 #include <time.h>
+#ifdef _WIN32
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <io.h>
+#endif
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #include <sys/time.h>
 #include <sys/prctl.h>
 

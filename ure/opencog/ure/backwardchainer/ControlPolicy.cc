@@ -289,7 +289,7 @@ bool ControlPolicy::is_control_rule_active(const AndBIT& andbit,
 		// matches)
 		nexe_actl_andbit = createLink(DONT_EXEC_LINK, actl_andbit);
 
-	// Make sure that the variables in the control rule and the actual
+	// Make sure that the variables in the control rule && the actual
 	// andbit are disjoint
 	//
 	// TODO: should be alpha-converted to have no variable in common.

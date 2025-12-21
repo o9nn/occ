@@ -31,7 +31,7 @@ using namespace opencog;
 NumberOfLink::NumberOfLink(const HandleSeq&& oset, Type t)
 	: FunctionLink(std::move(oset), t)
 {
-	if (not nameserver().isA(t, NUMBER_OF_LINK))
+	if (! nameserver().isA(t, NUMBER_OF_LINK))
 	{
 		const std::string& tname = nameserver().getTypeName(t);
 		throw InvalidParamException(TRACE_INFO,

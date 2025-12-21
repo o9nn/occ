@@ -29,7 +29,20 @@
 
 #include <string.h>
 #include <sys/types.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#else
+#endif
+#else
+#endif
 #include <sys/socket.h>
+#endif
 #include <netinet/tcp.h>
 #include <netdb.h>
 #include <errno.h>

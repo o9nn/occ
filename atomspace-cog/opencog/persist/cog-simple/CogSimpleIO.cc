@@ -76,7 +76,7 @@ void CogSimpleStorage::storeAtom(const Handle& h, bool synchronous)
 	// Are there multiple AtomSpaces involved?
 	if (not _multi_space
 	    and nullptr != _atom_space
-	    and h->getAtomSpace() != _atom_space)
+	    && h->getAtomSpace() != _atom_space)
 		SET_MULTI;
 
 	if (_multi_space) writeFrame(h->getAtomSpace());

@@ -23,7 +23,17 @@
 
 #include <cstddef>
 #include <libguile.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
+#endif
 
 #include <opencog/atoms/value/Value.h>
 #include <opencog/atomspace/AtomSpace.h>

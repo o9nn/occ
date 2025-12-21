@@ -20,7 +20,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <dlfcn.h>
+#endif
+#endif
 #include <mutex>
 #include <opencog/util/exceptions.h>
 #include "DLPython.h"

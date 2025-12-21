@@ -24,7 +24,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef _WIN32
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#include <windows.h>
+#endif
+#else
+#ifdef _WIN32
+#include <windows.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
+#else
+#endif
 #include <dlfcn.h>
+#endif
+#endif
 #include <unistd.h>
 #include <algorithm>
 #include <chrono>

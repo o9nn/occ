@@ -22,7 +22,12 @@
  */
 
 #include <iomanip>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <opencog/util/oc_assert.h>
 #include <opencog/cogserver/server/CogServer.h>
