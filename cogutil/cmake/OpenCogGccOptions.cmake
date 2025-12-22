@@ -83,3 +83,42 @@ IF (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	# So disable, by default; MOSES users will need to hack this.
 	SET(CMAKE_CXX_FLAGS "-std=c++17")
 ENDIF (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+# ===============================================================
+# MSVC (Visual Studio) Configuration for Windows
+IF (MSVC)
+	MESSAGE(STATUS "Configuring for MSVC compiler")
+	
+	# Set C++17 standard
+	SET(CMAKE_CXX_STANDARD 17)
+	SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+	SET(CMAKE_CXX_EXTENSIONS OFF)
+	
+	# Enable C++17 features explicitly
+	ADD_COMPILE_OPTIONS(/std:c++17)
+	
+	# Enable OpenMP for multithreading
+	ADD_COMPILE_OPTIONS(/openmp)
+	
+	# Enable parallel compilation
+	ADD_COMPILE_OPTIONS(/MP)
+	
+	# Warning level and other flags
+	ADD_COMPILE_OPTIONS(/W3)  # Warning level 3
+	ADD_COMPILE_OPTIONS(/permissive-)  # Standards conformance
+	
+	# Optimization flags for Release builds
+	SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /Ob2 /DNDEBUG")
+	
+	# Debug flags
+	SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi /RTC1")
+	
+	# Disable specific warnings that are too noisy
+	ADD_COMPILE_OPTIONS(/wd4251)  # 'identifier' : class 'type' needs to have dll-interface
+	ADD_COMPILE_OPTIONS(/wd4275)  # non dll-interface class 'type' used as base
+	
+	# Enable big object files (needed for template-heavy code)
+	ADD_COMPILE_OPTIONS(/bigobj)
+	
+	MESSAGE(STATUS "MSVC C++17 configuration applied")
+ENDIF (MSVC)

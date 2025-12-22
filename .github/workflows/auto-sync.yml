@@ -5,7 +5,7 @@ name: Auto Sync Repository
 
 on:
   workflow_run:
-    workflows: ["OCC Windows Build", "wincog"]
+    workflows: ["OCC Windows Build", "OCC Build - Windows Native (wincog)"]
     types:
       - completed
     branches:
@@ -42,7 +42,7 @@ jobs:
     
     - name: Add target remote
       run: |
-        git remote add target https://${{ secrets.GIT_PAT }}@github.com/${{ env.TARGET_REPO }}.git
+        git remote add target https://${{ secrets.git_pat }}@github.com/${{ env.TARGET_REPO }}.git
         git remote -v
     
     - name: Fetch target repository
