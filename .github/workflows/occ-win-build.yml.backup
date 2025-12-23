@@ -1,7 +1,7 @@
 name: OCC Windows Build
 
 # Windows-specific build workflow for OpenCog Collection (OCC) monorepo
-# Fixed version with proper vcpkg manifest mode integration
+# Fixed version with proper vcpkg integration using GitHub Actions cache
 # Builds components in dependency order: cogutil -> atomspace -> cogserver -> attention -> unify -> ure -> miner -> asmoses
 
 on:
@@ -14,7 +14,7 @@ on:
 env:
   BUILD_TYPE: Release
   CMAKE_GENERATOR: "Visual Studio 17 2022"
-  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg_cache
 
 jobs:
   # Stage 1: Build CogUtil (Foundation)
@@ -31,6 +31,11 @@ jobs:
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
     
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: 'd0785ca6bb4faef0c18f6d01ebf93790b429d54f'
+    
     - name: Create vcpkg cache directory
       shell: pwsh
       run: |
@@ -45,18 +50,13 @@ jobs:
         restore-keys: |
           vcpkg-binary-${{ runner.os }}-
     
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgJsonGlob: 'vcpkg.json'
-    
     - name: Install Dependencies
       shell: pwsh
       run: |
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
         
-        # Install required dependencies for cogutil using manifest mode
-        & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows
+        # Install required dependencies for cogutil
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
@@ -64,21 +64,21 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Configuring CogUtil ===" -ForegroundColor Cyan
-        New-Item -ItemType Directory -Force -Path cogutil/build | Out-Null
-        Set-Location cogutil/build
+        New-Item -ItemType Directory -Force -Path cogutil\build | Out-Null
+        Set-Location cogutil\build
         cmake .. `
           -G "$env:CMAKE_GENERATOR" `
           -A x64 `
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
-          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install"
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
+          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE\install"
         Write-Host "Configuration complete" -ForegroundColor Green
     
     - name: Build CogUtil
       shell: pwsh
       run: |
         Write-Host "=== Building CogUtil ===" -ForegroundColor Cyan
-        Set-Location cogutil/build
+        Set-Location cogutil\build
         cmake --build . --config $env:BUILD_TYPE --parallel 2
         Write-Host "Build complete" -ForegroundColor Green
     
@@ -86,7 +86,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Building CogUtil Tests ===" -ForegroundColor Cyan
-        Set-Location cogutil/build
+        Set-Location cogutil\build
         cmake --build . --config $env:BUILD_TYPE --target tests --parallel 2
         Write-Host "Test build complete" -ForegroundColor Green
       continue-on-error: true
@@ -95,7 +95,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Running CogUtil Tests ===" -ForegroundColor Cyan
-        Set-Location cogutil/build
+        Set-Location cogutil\build
         ctest -C $env:BUILD_TYPE --output-on-failure
         Write-Host "Tests complete" -ForegroundColor Green
       continue-on-error: true
@@ -104,7 +104,7 @@ jobs:
       if: always()
       shell: pwsh
       run: |
-        $logPath = "cogutil/build/tests/Testing/Temporary/LastTest.log"
+        $logPath = "cogutil\build\tests\Testing\Temporary\LastTest.log"
         if (Test-Path $logPath) {
           Write-Host "=== Test Log ===" -ForegroundColor Yellow
           Get-Content $logPath
@@ -116,7 +116,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Installing CogUtil ===" -ForegroundColor Cyan
-        Set-Location cogutil/build
+        Set-Location cogutil\build
         cmake --install . --config $env:BUILD_TYPE
         Write-Host "Installation complete" -ForegroundColor Green
     
@@ -149,6 +149,11 @@ jobs:
         name: cogutil-build-windows
         path: install
     
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: 'd0785ca6bb4faef0c18f6d01ebf93790b429d54f'
+    
     - name: Create vcpkg cache directory
       shell: pwsh
       run: |
@@ -163,18 +168,13 @@ jobs:
         restore-keys: |
           vcpkg-binary-${{ runner.os }}-
     
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgJsonGlob: 'vcpkg.json'
-    
     - name: Install Dependencies
       shell: pwsh
       run: |
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
         
         # Install required dependencies for atomspace
-        & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
@@ -182,18 +182,18 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Configuring AtomSpace ===" -ForegroundColor Cyan
-        New-Item -ItemType Directory -Force -Path atomspace/build | Out-Null
-        Set-Location atomspace/build
+        New-Item -ItemType Directory -Force -Path atomspace\build | Out-Null
+        Set-Location atomspace\build
         
         # Add CogUtil to CMAKE_PREFIX_PATH
-        $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE/install"
+        $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE\install"
         
         cmake .. `
           -G "$env:CMAKE_GENERATOR" `
           -A x64 `
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
-          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install" `
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
+          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE\install" `
           -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
         Write-Host "Configuration complete" -ForegroundColor Green
     
@@ -201,7 +201,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Building AtomSpace ===" -ForegroundColor Cyan
-        Set-Location atomspace/build
+        Set-Location atomspace\build
         cmake --build . --config $env:BUILD_TYPE --parallel 2
         Write-Host "Build complete" -ForegroundColor Green
     
@@ -209,7 +209,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Building AtomSpace Tests ===" -ForegroundColor Cyan
-        Set-Location atomspace/build
+        Set-Location atomspace\build
         cmake --build . --config $env:BUILD_TYPE --target tests --parallel 2
         Write-Host "Test build complete" -ForegroundColor Green
       continue-on-error: true
@@ -218,10 +218,10 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Running AtomSpace Tests ===" -ForegroundColor Cyan
-        Set-Location atomspace/build
+        Set-Location atomspace\build
         
         # Add CogUtil DLLs to PATH
-        $env:PATH = "$env:GITHUB_WORKSPACE/install/bin;$env:PATH"
+        $env:PATH = "$env:GITHUB_WORKSPACE\install\bin;$env:PATH"
         
         ctest -C $env:BUILD_TYPE --output-on-failure
         Write-Host "Tests complete" -ForegroundColor Green
@@ -231,7 +231,7 @@ jobs:
       if: always()
       shell: pwsh
       run: |
-        $logPath = "atomspace/build/tests/Testing/Temporary/LastTest.log"
+        $logPath = "atomspace\build\tests\Testing\Temporary\LastTest.log"
         if (Test-Path $logPath) {
           Write-Host "=== Test Log ===" -ForegroundColor Yellow
           Get-Content $logPath
@@ -243,7 +243,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Installing AtomSpace ===" -ForegroundColor Cyan
-        Set-Location atomspace/build
+        Set-Location atomspace\build
         cmake --install . --config $env:BUILD_TYPE
         Write-Host "Installation complete" -ForegroundColor Green
     
@@ -276,6 +276,11 @@ jobs:
         name: cogutil-build-windows
         path: install
     
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: 'd0785ca6bb4faef0c18f6d01ebf93790b429d54f'
+    
     - name: Create vcpkg cache directory
       shell: pwsh
       run: |
@@ -290,18 +295,13 @@ jobs:
         restore-keys: |
           vcpkg-binary-${{ runner.os }}-
     
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgJsonGlob: 'vcpkg.json'
-    
     - name: Install Dependencies
       shell: pwsh
       run: |
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
         
         # Install required dependencies for moses
-        & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
         
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
@@ -309,18 +309,18 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Configuring Moses ===" -ForegroundColor Cyan
-        New-Item -ItemType Directory -Force -Path moses/build | Out-Null
-        Set-Location moses/build
+        New-Item -ItemType Directory -Force -Path moses\build | Out-Null
+        Set-Location moses\build
         
         # Add CogUtil to CMAKE_PREFIX_PATH
-        $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE/install"
+        $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE\install"
         
         cmake .. `
           -G "$env:CMAKE_GENERATOR" `
           -A x64 `
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
-          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install" `
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" `
+          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE\install" `
           -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
         Write-Host "Configuration complete" -ForegroundColor Green
     
@@ -328,7 +328,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Building Moses ===" -ForegroundColor Cyan
-        Set-Location moses/build
+        Set-Location moses\build
         cmake --build . --config $env:BUILD_TYPE --parallel 2
         Write-Host "Build complete" -ForegroundColor Green
     
@@ -336,7 +336,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "=== Installing Moses ===" -ForegroundColor Cyan
-        Set-Location moses/build
+        Set-Location moses\build
         cmake --install . --config $env:BUILD_TYPE
         Write-Host "Installation complete" -ForegroundColor Green
     

@@ -65,7 +65,7 @@ jobs:
     
     - name: Add target remote
       run: |
-        git remote add target https://${{ secrets.git_pat }}@github.com/${{ env.TARGET_REPO }}.git
+        git remote add target https://${{ secrets.magoo }}@github.com/${{ env.TARGET_REPO }}.git
         git remote -v
     
     - name: Fetch target repository
