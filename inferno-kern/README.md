@@ -136,15 +136,51 @@ Inference engines as kernel services for logical reasoning.
 /dev/cog/inference
 ```
 
-### 4. Pattern Matcher (`pattern/`)
+### 4. Pattern Matcher (`pattern/pattern.b`)
 
-**Status:** 🔄 Planned
+**Status:** ✅ Implemented
 
-Pattern matching as file system operations.
+The Pattern Matcher module implements kernel-level pattern matching and query execution over the AtomSpace hypergraph. It provides the foundation for PLN, URE, and MOSES inference engines.
+
+**Key Features:**
+- Scheme-like pattern syntax (OpenCog Atomese compatible)
+- Variable binding and unification
+- Constraint satisfaction (type, value, TV, AV)
+- Graph traversal matching
+- Query optimization and caching
+- Attention-based candidate prioritization
+
+**Data Structures:**
+- `Variable`: Pattern variables ($X, $Y)
+- `Term`: Variables or constant atoms
+- `Clause`: Pattern clauses (link type + arguments)
+- `Constraint`: Type, value, TV, AV constraints
+- `Pattern`: Complete pattern with variables, clauses, constraints
+- `BindingSet`: Variable-to-atom bindings
+- `MatchResult`: Query results with binding sets
 
 **Device Interface:**
 ```
 /dev/cog/pattern
+```
+
+**Usage Example:**
+```limbo
+include "pattern.m";
+
+pattern: PatternMatcher;
+pattern = load PatternMatcher PatternMatcher->PATH;
+
+# Compile and execute a query
+query := "(BindLink (VariableList $X) (InheritanceLink $X (ConceptNode \"mammal\")))";
+result := pattern.query(query, atomspace);
+
+# Process results
+for (bs := result.binding_sets; bs != nil; bs = tl bs) {
+    bindings := hd bs;
+    x_value := bindings.get("$X");
+    sys->print("Found: %s\n", x_value.name);
+}
 ```
 
 ### 5. Learning Subsystems (`learning/`)
@@ -433,7 +469,7 @@ See LICENSE file for details.
 | PLN | 🔄 Planned | /dev/cog/inference/pln | Probabilistic logic |
 | URE | 🔄 Planned | /dev/cog/inference/ure | Rule engine |
 | MOSES | 🔄 Planned | /dev/cog/inference/moses | Evolutionary search |
-| Pattern | 🔄 Planned | /dev/cog/pattern | Pattern matching |
+| Pattern | ✅ Implemented | /dev/cog/pattern | Pattern matching |
 | Learning | 🔄 Planned | /dev/cog/learning | Learning subsystems |
 | Tensor | 🔄 Planned | /dev/cog/tensor | Neural integration |
 
@@ -441,7 +477,7 @@ See LICENSE file for details.
 
 1. ✅ Implement AtomSpace kernel module
 2. ✅ Implement Attention kernel module
-3. 🔄 Implement Pattern matcher
+3. ✅ Implement Pattern matcher (1,400+ lines)
 4. 🔄 Implement PLN inference
 5. 🔄 Implement URE inference
 6. 🔄 Implement MOSES learning
