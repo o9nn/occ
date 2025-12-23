@@ -25,14 +25,12 @@
 #ifndef _OPENCOG_PLATFORM_H
 #define _OPENCOG_PLATFORM_H
 
-#ifdef WIN32
-
+#ifdef _WIN32
+#include "windows_compat.h"
 #pragma warning(disable:4290)
-
 #define strcasecmp _stricmp
-#define snprintf _snprintf
-
-#endif // WIN32
+// DO NOT define snprintf macro - use standard library function
+#endif // _WIN32
 
 #include <stdio.h>
 #include <string.h>
@@ -40,17 +38,13 @@
 #include <stdint.h>
 
 #ifdef WIN32_NOT_UNIX
-
-#define M_PI 3.14159265358979323846
-
+// These are now handled by windows_compat.h
 struct timezone {};
-
 int                round(float x);
 int                gettimeofday(struct timeval* tp, void* tzp);
 void               usleep(unsigned useconds);
 unsigned long long atoll(const char *str);
 unsigned int       sleep(unsigned seconds);
-
 #endif // ~WIN32_NOT_UNIX
 
 namespace opencog

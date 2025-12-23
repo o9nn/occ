@@ -25,6 +25,12 @@
 #include "Config.h"
 #include "Logger.h"
 
+#ifdef _WIN32
+#include "windows_compat.h"
+#else
+#include <unistd.h>
+#endif
+
 #include <iostream>
 #include <filesystem>
 #include <fstream>

@@ -1,0 +1,226 @@
+/**
+ * windows_compat.h
+ *
+ * Windows compatibility layer for OpenCog CogUtil
+ * Provides POSIX-like functionality on Windows/MSVC
+ *
+ * Copyright (C) 2025 OpenCog Foundation
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+#ifndef _OPENCOG_WINDOWS_COMPAT_H
+#define _OPENCOG_WINDOWS_COMPAT_H
+
+#ifdef _WIN32
+
+// ============================================================================
+// Math Constants
+// ============================================================================
+// Define _USE_MATH_DEFINES before including math headers to get M_PI, etc.
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+
+#include <cmath>
+
+// Ensure M_PI is defined even if _USE_MATH_DEFINES didn't work
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef M_E
+#define M_E 2.71828182845904523536
+#endif
+
+// ============================================================================
+// POSIX Function Replacements
+// ============================================================================
+
+// getcwd() → _getcwd()
+#include <direct.h>
+#ifndef getcwd
+#define getcwd _getcwd
+#endif
+
+// chdir() → _chdir()
+#ifndef chdir
+#define chdir _chdir
+#endif
+
+// mkdir() → _mkdir()
+#include <io.h>
+#ifndef mkdir
+#define mkdir(path, mode) _mkdir(path)
+#endif
+
+// access() → _access()
+#ifndef access
+#define access _access
+#endif
+
+// unlink() → _unlink()
+#ifndef unlink
+#define unlink _unlink
+#endif
+
+// rmdir() → _rmdir()
+#ifndef rmdir
+#define rmdir _rmdir
+#endif
+
+// fileno() → _fileno()
+#ifndef fileno
+#define fileno _fileno
+#endif
+
+// isatty() → _isatty()
+#ifndef isatty
+#define isatty _isatty
+#endif
+
+// ============================================================================
+// POSIX Constants
+// ============================================================================
+
+// File access modes for access()
+#ifndef F_OK
+#define F_OK 0  // File exists
+#endif
+
+#ifndef R_OK
+#define R_OK 4  // Read permission
+#endif
+
+#ifndef W_OK
+#define W_OK 2  // Write permission
+#endif
+
+#ifndef X_OK
+#define X_OK 1  // Execute permission (not supported on Windows)
+#endif
+
+// ============================================================================
+// Time Functions
+// ============================================================================
+
+#include <time.h>
+#include <sys/timeb.h>
+#include <windows.h>
+
+// gettimeofday() replacement for Windows
+#ifndef HAVE_GETTIMEOFDAY
+struct timezone {
+    int tz_minuteswest;
+    int tz_dsttime;
+};
+
+inline int gettimeofday(struct timeval* tv, struct timezone* tz) {
+    if (tv) {
+        FILETIME ft;
+        GetSystemTimeAsFileTime(&ft);
+        
+        // Convert FILETIME to Unix epoch time
+        unsigned __int64 tmpres = 0;
+        tmpres |= ft.dwHighDateTime;
+        tmpres <<= 32;
+        tmpres |= ft.dwLowDateTime;
+        
+        // FILETIME is in 100-nanosecond intervals since Jan 1, 1601
+        // Unix epoch is Jan 1, 1970
+        // Difference is 116444736000000000 * 100ns = 11644473600 seconds
+        tmpres -= 116444736000000000ULL;
+        tmpres /= 10;  // Convert to microseconds
+        
+        tv->tv_sec = (long)(tmpres / 1000000UL);
+        tv->tv_usec = (long)(tmpres % 1000000UL);
+    }
+    
+    if (tz) {
+        _tzset();
+        long timezone_seconds;
+        _get_timezone(&timezone_seconds);
+        tz->tz_minuteswest = timezone_seconds / 60;
+        
+        int daylight;
+        _get_daylight(&daylight);
+        tz->tz_dsttime = daylight;
+    }
+    
+    return 0;
+}
+#endif // HAVE_GETTIMEOFDAY
+
+// ============================================================================
+// String Functions
+// ============================================================================
+
+// Disable deprecated warnings for standard C functions
+#pragma warning(disable: 4996)
+
+// Remove any snprintf macro definitions that conflict with C++11
+#ifdef snprintf
+#undef snprintf
+#endif
+
+// Use standard library snprintf
+#include <cstdio>
+
+// ============================================================================
+// Threading Functions
+// ============================================================================
+
+#include <process.h>
+
+// getpid() → _getpid()
+#ifndef getpid
+#define getpid _getpid
+#endif
+
+// ============================================================================
+// DLL Export/Import
+// ============================================================================
+
+#ifdef COGUTIL_EXPORTS
+#define COGUTIL_API __declspec(dllexport)
+#else
+#define COGUTIL_API __declspec(dllimport)
+#endif
+
+// ============================================================================
+// Compiler-Specific Fixes
+// ============================================================================
+
+// MSVC doesn't support __attribute__
+#ifndef __attribute__
+#define __attribute__(x)
+#endif
+
+// MSVC doesn't support __builtin_expect
+#ifndef __builtin_expect
+#define __builtin_expect(expr, val) (expr)
+#endif
+
+// ============================================================================
+// Network Functions (if needed)
+// ============================================================================
+
+#ifdef NEED_WINSOCK
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+
+// Initialize Winsock (call once at program start)
+inline int init_winsock() {
+    WSADATA wsaData;
+    return WSAStartup(MAKEWORD(2, 2), &wsaData);
+}
+
+// Cleanup Winsock (call once at program end)
+inline void cleanup_winsock() {
+    WSACleanup();
+}
+#endif // NEED_WINSOCK
+
+#endif // _WIN32
+
+#endif // _OPENCOG_WINDOWS_COMPAT_H

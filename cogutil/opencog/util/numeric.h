@@ -23,6 +23,10 @@
 #ifndef _OPENCOG_NUMERIC_H
 #define _OPENCOG_NUMERIC_H
 
+#ifdef _WIN32
+#include "windows_compat.h"
+#endif
+
 #include <algorithm> // for std::max
 #include <cmath>
 #include <climits>
