@@ -17,9 +17,9 @@ jobs:
   build-windows:
     runs-on: windows-latest
     name: Build Windows Binaries
-    # This job is currently disabled - it should use the artifacts from wincog.yml or occ-win-build.yml
-    # Re-enable after Windows builds are stable
-    if: false
+    # This job now uses artifacts from wincog.yml workflow
+    # Triggered only on release or manual dispatch
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     
     steps:
     - name: Checkout Repository
