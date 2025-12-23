@@ -43,7 +43,7 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: '544a4c5c297e60e4ac4a5a1810df66748d908869'
+        vcpkgGitCommitId: 'd0785ca6bb4faef0c18f6d01ebf93790b429d54f'
     
     - name: Install Build Dependencies
       shell: pwsh
