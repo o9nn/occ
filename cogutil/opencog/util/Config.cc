@@ -22,14 +22,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "Config.h"
-#include "Logger.h"
-
+// Windows compatibility - must be included first before any other headers
 #ifdef _WIN32
 #include "windows_compat.h"
 #else
 #include <unistd.h>
 #endif
+
+#include "Config.h"
+#include "Logger.h"
 
 #include <iostream>
 #include <filesystem>

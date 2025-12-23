@@ -27,6 +27,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+// Windows compatibility - must be included first before any other headers
+#ifdef _WIN32
+#include "windows_compat.h"
+#endif
+
 #if defined(HAVE_GNU_BACKTRACE)
 #include <cxxabi.h>
 #include <execinfo.h>
@@ -40,13 +45,9 @@
 #include <time.h>
 
 #ifdef _WIN32
-#include "windows_compat.h"
 #include <string.h>
 #include <io.h>
 #include <process.h>
-#include <winsock2.h>
-#undef ERROR
-#undef DEBUG
 #else
 #include <strings.h>
 #include <unistd.h>

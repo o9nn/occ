@@ -1,3 +1,8 @@
+// Windows compatibility - must be included first before any other headers
+#ifdef _WIN32
+#include <opencog/util/windows_compat.h>
+#endif
+
 /*
  * opencog/util/exceptions.cc
  *

@@ -22,6 +22,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+// Windows compatibility - must be included first before any other headers
+#ifdef _WIN32
+#include "windows_compat.h"
+#endif
+
 #include "lazy_selector.h"
 #include "exceptions.h"
 #include "oc_assert.h"

@@ -20,6 +20,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+// Windows compatibility - must be included first before any other headers
+#ifdef _WIN32
+#include "windows_compat.h"
+#endif
 
 #include "mt19937ar.h"
 

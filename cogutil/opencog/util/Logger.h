@@ -27,6 +27,26 @@
 #ifndef _OPENCOG_LOGGER_H
 #define _OPENCOG_LOGGER_H
 
+// ============================================================================
+// Windows Macro Conflict Handling
+// Windows headers define ERROR, WARN, INFO, DEBUG as macros which conflict
+// with our Logger::Level enum values. We must undefine them here.
+// ============================================================================
+#ifdef _WIN32
+    #ifdef ERROR
+    #undef ERROR
+    #endif
+    #ifdef WARN
+    #undef WARN
+    #endif
+    #ifdef INFO
+    #undef INFO
+    #endif
+    #ifdef DEBUG
+    #undef DEBUG
+    #endif
+#endif
+
 #include <cstdarg>
 #include <map>
 #include <mutex>

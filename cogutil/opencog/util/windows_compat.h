@@ -14,6 +14,47 @@
 #ifdef _WIN32
 
 // ============================================================================
+// IMPORTANT: Include Order Matters!
+// winsock2.h MUST be included before windows.h to avoid conflicts
+// ============================================================================
+
+// Include winsock2.h first - it defines struct timeval
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+
+// Link with Winsock library
+#pragma comment(lib, "ws2_32.lib")
+
+// ============================================================================
+// Windows Macro Conflicts - MUST be handled before including other headers
+// ============================================================================
+
+// Windows headers define ERROR as a macro (value 0) which conflicts with
+// our Logger::Level::ERROR enum. We save and undefine it here.
+#ifdef ERROR
+#define _WINDOWS_ERROR_MACRO ERROR
+#undef ERROR
+#endif
+
+// Windows headers may also define these
+#ifdef WARN
+#undef WARN
+#endif
+
+#ifdef INFO
+#undef INFO
+#endif
+
+#ifdef DEBUG
+#undef DEBUG
+#endif
+
+// ============================================================================
 // Math Constants
 // ============================================================================
 // Define _USE_MATH_DEFINES before including math headers to get M_PI, etc.
@@ -30,6 +71,22 @@
 
 #ifndef M_E
 #define M_E 2.71828182845904523536
+#endif
+
+#ifndef M_LOG2E
+#define M_LOG2E 1.44269504088896340736
+#endif
+
+#ifndef M_LN2
+#define M_LN2 0.693147180559945309417
+#endif
+
+#ifndef M_LN10
+#define M_LN10 2.30258509299404568402
+#endif
+
+#ifndef M_SQRT2
+#define M_SQRT2 1.41421356237309504880
 #endif
 
 // ============================================================================
@@ -105,9 +162,9 @@
 
 #include <time.h>
 #include <sys/timeb.h>
-#include <windows.h>
 
 // gettimeofday() replacement for Windows
+// Note: struct timeval is now defined via winsock2.h
 #ifndef HAVE_GETTIMEOFDAY
 struct timezone {
     int tz_minuteswest;
@@ -201,13 +258,8 @@ inline int gettimeofday(struct timeval* tv, struct timezone* tz) {
 #endif
 
 // ============================================================================
-// Network Functions (if needed)
+// Network Functions Helper
 // ============================================================================
-
-#ifdef NEED_WINSOCK
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
 
 // Initialize Winsock (call once at program start)
 inline int init_winsock() {
@@ -219,7 +271,6 @@ inline int init_winsock() {
 inline void cleanup_winsock() {
     WSACleanup();
 }
-#endif // NEED_WINSOCK
 
 #endif // _WIN32
 
