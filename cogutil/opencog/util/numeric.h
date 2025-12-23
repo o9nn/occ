@@ -23,15 +23,16 @@
 #ifndef _OPENCOG_NUMERIC_H
 #define _OPENCOG_NUMERIC_H
 
-#ifdef _WIN32
 // Must define _USE_MATH_DEFINES before any math header includes
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif
-#include "windows_compat.h"
-#endif
 
 #include <cmath>  // Must come after _USE_MATH_DEFINES on Windows
+
+#ifdef _WIN32
+#include "windows_compat.h"
+#endif
 #include <algorithm> // for std::max
 #include <climits>
 #include <cstdlib>
