@@ -10,12 +10,13 @@ name: Auto Sync Repository (Enhanced)
 # - Rollback capability
 
 on:
-  workflow_run:
-    workflows: ["OCC Windows Build", "OCC Build - Windows Native (wincog)"]
-    types:
-      - completed
-    branches:
-      - main
+  # Temporarily disabled - only manual trigger allowed
+  # workflow_run:
+  #   workflows: ["OCC Windows Build", "OCC Build - Windows Native (wincog)"]
+  #   types:
+  #     - completed
+  #   branches:
+  #     - main
   workflow_dispatch:
     inputs:
       force_sync:
@@ -28,9 +29,10 @@ on:
         required: false
         type: boolean
         default: false
-  schedule:
-    # Run daily at 00:00 UTC
-    - cron: '0 0 * * *'
+  # Temporarily disabled scheduled runs
+  # schedule:
+  #   # Run daily at 00:00 UTC
+  #   - cron: '0 0 * * *'
 
 env:
   SOURCE_REPO: o9nn/occ

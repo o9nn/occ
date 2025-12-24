@@ -5,10 +5,11 @@ name: Build Debian Package
 # Supports multiple Ubuntu/Debian versions
 
 on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+  # Temporarily disabled - only manual and release triggers
+  # push:
+  #   branches: [ "main", "master" ]
+  # pull_request:
+  #   branches: [ "main", "master" ]
   release:
     types: [published]
   workflow_dispatch:
@@ -170,45 +171,93 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 	dh $@ --buildsystem=cmake
 
 override_dh_auto_configure:
-	# Build CogUtil first
-	mkdir -p cogutil/build && cd cogutil/build && \
-	cmake .. \
-		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DCMAKE_BUILD_TYPE=Release
-	
-	# Build AtomSpace
-	mkdir -p atomspace/build && cd atomspace/build && \
-	cmake .. \
-		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_PREFIX_PATH=/usr
-	
-	# Build Moses
-	mkdir -p moses/build && cd moses/build && \
-	cmake .. \
-		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_PREFIX_PATH=/usr
+		# Build CogUtil first
+		mkdir -p cogutil/build && cd cogutil/build && \
+		cmake .. \
+			-DCMAKE_INSTALL_PREFIX=/usr \
+			-DCMAKE_BUILD_TYPE=Release && \
+		cd $(CURDIR)
+		
+		# Build AtomSpace (depends on CogUtil)
+		mkdir -p atomspace/build && cd atomspace/build && \
+		cmake .. \
+			-DCMAKE_INSTALL_PREFIX=/usr \
+			-DCMAKE_BUILD_TYPE=Release \
+			-DCMAKE_PREFIX_PATH=/usr && \
+		cd $(CURDIR)
+		
+		# Build Moses (depends on CogUtil)
+		mkdir -p moses/build && cd moses/build && \
+		cmake .. \
+			-DCMAKE_INSTALL_PREFIX=/usr \
+			-DCMAKE_BUILD_TYPE=Release \
+			-DCMAKE_PREFIX_PATH=/usr && \
+		cd $(CURDIR)
+		
+		# Build CogServer (depends on AtomSpace) - if exists
+		if [ -d "cogserver" ]; then \
+			mkdir -p cogserver/build && cd cogserver/build && \
+			cmake .. \
+				-DCMAKE_INSTALL_PREFIX=/usr \
+				-DCMAKE_BUILD_TYPE=Release \
+				-DCMAKE_PREFIX_PATH=/usr && \
+			cd $(CURDIR); \
+		fi
+		
+		# Build URE (depends on AtomSpace) - if exists
+		if [ -d "ure" ]; then \
+			mkdir -p ure/build && cd ure/build && \
+			cmake .. \
+				-DCMAKE_INSTALL_PREFIX=/usr \
+				-DCMAKE_BUILD_TYPE=Release \
+				-DCMAKE_PREFIX_PATH=/usr && \
+			cd $(CURDIR); \
+		fi
 
 override_dh_auto_build:
-	# Build CogUtil
-	cd cogutil/build && $(MAKE) -j$(nproc)
-	
-	# Build AtomSpace
-	cd atomspace/build && $(MAKE) -j$(nproc)
-	
-	# Build Moses
-	cd moses/build && $(MAKE) -j$(nproc)
+		# Build CogUtil
+		cd cogutil/build && $(MAKE) -j$(nproc) && cd $(CURDIR)
+		
+		# Install CogUtil to temporary location for other builds
+		cd cogutil/build && $(MAKE) DESTDIR=$(CURDIR)/debian/tmp install && cd $(CURDIR)
+		
+		# Build AtomSpace
+		cd atomspace/build && \
+			CMAKE_PREFIX_PATH=$(CURDIR)/debian/tmp/usr $(MAKE) -j$(nproc) && \
+			cd $(CURDIR)
+		
+		# Build Moses
+		cd moses/build && \
+			CMAKE_PREFIX_PATH=$(CURDIR)/debian/tmp/usr $(MAKE) -j$(nproc) && \
+			cd $(CURDIR)
+		
+		# Build CogServer - if exists
+		if [ -d "cogserver/build" ]; then \
+			cd cogserver/build && \
+			CMAKE_PREFIX_PATH=$(CURDIR)/debian/tmp/usr $(MAKE) -j$(nproc) && \
+			cd $(CURDIR); \
+		fi
+		
+		# Build URE - if exists
+		if [ -d "ure/build" ]; then \
+			cd ure/build && \
+			CMAKE_PREFIX_PATH=$(CURDIR)/debian/tmp/usr $(MAKE) -j$(nproc) && \
+			cd $(CURDIR); \
+		fi
 
 override_dh_auto_install:
-	# Install CogUtil
-	cd cogutil/build && $(MAKE) DESTDIR=$(CURDIR)/debian/opencog-occ install
-	
-	# Install AtomSpace
-	cd atomspace/build && $(MAKE) DESTDIR=$(CURDIR)/debian/opencog-occ install
-	
-	# Install Moses
-	cd moses/build && $(MAKE) DESTDIR=$(CURDIR)/debian/opencog-occ install
+		# Install all components to package directory
+		cd cogutil/build && $(MAKE) DESTDIR=$(CURDIR)/debian/opencog-occ install && cd $(CURDIR)
+		cd atomspace/build && $(MAKE) DESTDIR=$(CURDIR)/debian/opencog-occ install && cd $(CURDIR)
+		cd moses/build && $(MAKE) DESTDIR=$(CURDIR)/debian/opencog-occ install && cd $(CURDIR)
+		
+		# Install optional components if they were built
+		if [ -d "cogserver/build" ]; then \
+			cd cogserver/build && $(MAKE) DESTDIR=$(CURDIR)/debian/opencog-occ install && cd $(CURDIR); \
+		fi
+		if [ -d "ure/build" ]; then \
+			cd ure/build && $(MAKE) DESTDIR=$(CURDIR)/debian/opencog-occ install && cd $(CURDIR); \
+		fi
 
 override_dh_auto_test:
 	# Skip tests for now

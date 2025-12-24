@@ -6,7 +6,7 @@ name: Build Chocolatey Package
 
 on:
   workflow_run:
-    workflows: ["OCC Windows Build - Complete Stack"]
+    workflows: ["OCC Windows Build - Complete Stack", "OCC Windows Build (Enhanced with Retry)"]
     types:
       - completed
     branches:
@@ -65,9 +65,27 @@ jobs:
     - name: Download Complete Build Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: occ-windows-complete-build
         path: build-artifacts
       continue-on-error: true
+    
+    - name: Consolidate Build Artifacts
+      shell: pwsh
+      run: |
+        Write-Host "=== Consolidating Build Artifacts ===" -ForegroundColor Cyan
+        
+        # Create consolidated directory
+        New-Item -ItemType Directory -Force -Path "consolidated" | Out-Null
+        
+        # Copy all artifacts to consolidated directory
+        if (Test-Path "build-artifacts") {
+          Get-ChildItem -Path "build-artifacts" -Recurse -File | ForEach-Object {
+            $dest = Join-Path "consolidated" $_.Name
+            Copy-Item -Path $_.FullName -Destination $dest -Force
+            Write-Host "  Copied: $($_.Name)" -ForegroundColor Green
+          }
+        }
+        
+        Write-Host "✓ Consolidation complete" -ForegroundColor Green
     
     - name: Verify Artifacts
       id: verify
@@ -75,8 +93,8 @@ jobs:
       run: |
         Write-Host "=== Verifying Build Artifacts ===" -ForegroundColor Cyan
         
-        if (Test-Path "build-artifacts") {
-          $files = Get-ChildItem -Path build-artifacts -Recurse -File
+        if (Test-Path "consolidated") {
+          $files = Get-ChildItem -Path consolidated -Recurse -File
           Write-Host "✓ Found $($files.Count) files in artifacts" -ForegroundColor Green
           echo "HAS_ARTIFACTS=true" >> $env:GITHUB_OUTPUT
         } else {
@@ -106,8 +124,8 @@ jobs:
         New-Item -ItemType Directory -Force -Path "choco-package/legal" | Out-Null
         
         # Copy build artifacts if available
-        if (Test-Path "build-artifacts") {
-          Copy-Item -Path "build-artifacts/*" -Destination "choco-package/tools" -Recurse -Force
+        if (Test-Path "consolidated") {
+          Copy-Item -Path "consolidated/*" -Destination "choco-package/tools" -Recurse -Force
           Write-Host "✓ Copied build artifacts" -ForegroundColor Green
         }
         
