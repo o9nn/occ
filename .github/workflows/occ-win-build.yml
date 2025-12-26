@@ -14,7 +14,8 @@ on:
 env:
   BUILD_TYPE: Release
   CMAKE_GENERATOR: "Visual Studio 17 2022"
-  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg_cache
+  # Enable vcpkg binary caching via GitHub Actions cache (native support)
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
 jobs:
   # Stage 1: Build CogUtil (Foundation)
@@ -27,39 +28,35 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: recursive
-    
+
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
-    
+
+    # Export GitHub Actions cache environment variables for vcpkg
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: '544a4c5c297e60e4ac4a5a1810df66748d908869'
-    
-    - name: Create vcpkg cache directory
-      shell: pwsh
-      run: |
-        New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
-        Write-Host "vcpkg cache directory created at $env:VCPKG_DEFAULT_BINARY_CACHE" -ForegroundColor Green
-    
-    - name: Cache vcpkg binary packages
-      uses: actions/cache@v4
-      with:
-        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
-        restore-keys: |
-          vcpkg-binary-${{ runner.os }}-
-    
+
     - name: Install Dependencies
       shell: pwsh
       run: |
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
-        
-        # Install required dependencies for cogutil
+
+        # Install required dependencies for cogutil using component-specific vcpkg.json
+        Set-Location cogutil
         & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
-        
+        Set-Location ..
+
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
-    
+
     - name: Configure CogUtil
       shell: pwsh
       run: |
@@ -142,42 +139,39 @@ jobs:
     
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
-    
+
     - name: Download CogUtil Build
       uses: actions/download-artifact@v4
       with:
         name: cogutil-build-windows
         path: install
-    
+
+    # Export GitHub Actions cache environment variables for vcpkg
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: '544a4c5c297e60e4ac4a5a1810df66748d908869'
-    
-    - name: Create vcpkg cache directory
-      shell: pwsh
-      run: |
-        New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
-        Write-Host "vcpkg cache directory created" -ForegroundColor Green
-    
-    - name: Cache vcpkg binary packages
-      uses: actions/cache@v4
-      with:
-        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
-        restore-keys: |
-          vcpkg-binary-${{ runner.os }}-
-    
+
     - name: Install Dependencies
       shell: pwsh
       run: |
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
-        
-        # Install required dependencies for atomspace
+
+        # Install required dependencies for atomspace using component-specific vcpkg.json
+        # Note: Not enabling rocksdb-storage or postgres-storage features for faster builds
+        Set-Location atomspace
         & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
-        
+        Set-Location ..
+
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
-    
+
     - name: Configure AtomSpace
       shell: pwsh
       run: |
@@ -269,42 +263,38 @@ jobs:
     
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
-    
+
     - name: Download CogUtil Build
       uses: actions/download-artifact@v4
       with:
         name: cogutil-build-windows
         path: install
-    
+
+    # Export GitHub Actions cache environment variables for vcpkg
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: '544a4c5c297e60e4ac4a5a1810df66748d908869'
-    
-    - name: Create vcpkg cache directory
-      shell: pwsh
-      run: |
-        New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
-        Write-Host "vcpkg cache directory created" -ForegroundColor Green
-    
-    - name: Cache vcpkg binary packages
-      uses: actions/cache@v4
-      with:
-        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
-        restore-keys: |
-          vcpkg-binary-${{ runner.os }}-
-    
+
     - name: Install Dependencies
       shell: pwsh
       run: |
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
-        
-        # Install required dependencies for moses
+
+        # Install required dependencies for moses using component-specific vcpkg.json
+        Set-Location moses
         & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
-        
+        Set-Location ..
+
         Write-Host "Dependencies installed successfully" -ForegroundColor Green
-    
+
     - name: Configure Moses
       shell: pwsh
       run: |
