@@ -88,6 +88,9 @@ static inline int fdatasync(int fd) {
     return FlushFileBuffers(h) ? 0 : -1;
 }
 
+// fileno is _fileno on Windows
+#define fileno _fileno
+
 #else
 // POSIX/Unix includes
 #include <strings.h>
@@ -688,6 +691,24 @@ Logger& opencog::logger()
 
 // Avoid shared-library crazy-making.
 static bool already_loaded = false;
+
+#ifdef _MSC_VER
+// MSVC doesn't support __attribute__((constructor))
+// Use a static class with constructor instead
+namespace {
+    struct InitChecker {
+        InitChecker() {
+            if (already_loaded) {
+                fprintf(stderr,
+                    "[FATAL ERROR] Cannot load shared lib more than once!\n");
+                exit(1);
+            }
+            already_loaded = true;
+        }
+    };
+    static InitChecker _init_checker;
+}
+#else
 static __attribute__ ((constructor)) void _init(void)
 {
     if (already_loaded)
@@ -698,3 +719,4 @@ static __attribute__ ((constructor)) void _init(void)
     }
     already_loaded = true;
 }
+#endif
