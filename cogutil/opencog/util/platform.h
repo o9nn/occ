@@ -25,23 +25,39 @@
 #ifndef _OPENCOG_PLATFORM_H
 #define _OPENCOG_PLATFORM_H
 
-#ifdef WIN32
+// Windows platform compatibility
+#if defined(_WIN32) || defined(WIN32)
 
 #pragma warning(disable:4290)
 
 #define strcasecmp _stricmp
-#define snprintf _snprintf
 
-#endif // WIN32
+// Only define snprintf as _snprintf for older MSVC versions
+// MSVC 2015 (v19.00) and later have proper snprintf
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#  define snprintf _snprintf
+#endif
+
+#endif // _WIN32 || WIN32
 
 #include <stdio.h>
 #include <string.h>
 #include <string>
 #include <stdint.h>
 
+// M_PI is not defined by default in MSVC; define for all Windows builds
+#if defined(_WIN32) || defined(WIN32)
+#  ifndef M_PI
+#    define M_PI 3.14159265358979323846
+#  endif
+#endif
+
 #ifdef WIN32_NOT_UNIX
 
+// Legacy definition kept for compatibility (already defined above)
+#ifndef M_PI
 #define M_PI 3.14159265358979323846
+#endif
 
 struct timezone {};
 
