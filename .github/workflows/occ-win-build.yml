@@ -14,15 +14,75 @@ on:
 env:
   BUILD_TYPE: Release
   CMAKE_GENERATOR: "Visual Studio 17 2022"
-  # Enable vcpkg binary caching via GitHub Actions cache (native support)
-  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  # Use vcpkg's default Azure binary cache (pre-built packages) + GitHub Actions cache
+  # IMPORTANT: Do NOT use "clear;" as it removes access to vcpkg's pre-built Azure binaries
+  # This allows downloading pre-compiled Boost (~45min saved) on first run
+  VCPKG_BINARY_SOURCES: "default,readwrite;x-gha,readwrite"
 
 jobs:
+  # Stage 0: Warm vcpkg binary cache
+  # This job runs first and ONLY installs vcpkg dependencies.
+  # It has a long timeout and minimal failure points, ensuring the GHA cache gets populated.
+  # Once cached, subsequent runs will be fast (minutes instead of hours).
+  vcpkg-cache-warmer:
+    runs-on: windows-latest
+    name: Warm vcpkg Cache
+    timeout-minutes: 180  # 3 hours - enough for first-time Boost compilation
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '544a4c5c297e60e4ac4a5a1810df66748d908869'
+
+    - name: Install ALL Dependencies (Cache Warming)
+      shell: pwsh
+      run: |
+        Write-Host "=== Warming vcpkg Binary Cache ===" -ForegroundColor Cyan
+        Write-Host "This installs ALL dependencies to populate the cache." -ForegroundColor Yellow
+        Write-Host "First run may take 1-2 hours. Subsequent runs: ~5 minutes." -ForegroundColor Yellow
+        Write-Host ""
+
+        # Install cogutil dependencies
+        Write-Host "Installing cogutil dependencies..." -ForegroundColor Cyan
+        Set-Location cogutil
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
+        Set-Location ..
+
+        # Install atomspace dependencies
+        Write-Host "Installing atomspace dependencies..." -ForegroundColor Cyan
+        Set-Location atomspace
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
+        Set-Location ..
+
+        # Install moses dependencies
+        Write-Host "Installing moses dependencies..." -ForegroundColor Cyan
+        Set-Location moses
+        & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x64-windows
+        Set-Location ..
+
+        Write-Host ""
+        Write-Host "=== Cache Warming Complete ===" -ForegroundColor Green
+        Write-Host "Binary cache is now populated. Future builds will be fast!" -ForegroundColor Green
+
   # Stage 1: Build CogUtil (Foundation)
   build-cogutil:
     runs-on: windows-latest
     name: Build CogUtil (Windows)
-    
+    needs: vcpkg-cache-warmer  # Wait for cache to be warm
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -342,9 +402,9 @@ jobs:
   build-summary:
     runs-on: windows-latest
     name: Build Summary (Windows)
-    needs: [build-cogutil, build-atomspace, build-moses]
+    needs: [vcpkg-cache-warmer, build-cogutil, build-atomspace, build-moses]
     if: always()
-    
+
     steps:
     - name: Summary
       shell: pwsh
@@ -352,15 +412,16 @@ jobs:
         Write-Host "=== OCC Windows Build Summary ===" -ForegroundColor Cyan
         Write-Host ""
         Write-Host "Build Status:" -ForegroundColor Yellow
+        Write-Host "  - vcpkg Cache: ${{ needs.vcpkg-cache-warmer.result }}" -ForegroundColor $(if ("${{ needs.vcpkg-cache-warmer.result }}" -eq "success") { "Green" } else { "Red" })
         Write-Host "  - CogUtil: ${{ needs.build-cogutil.result }}" -ForegroundColor $(if ("${{ needs.build-cogutil.result }}" -eq "success") { "Green" } else { "Red" })
         Write-Host "  - AtomSpace: ${{ needs.build-atomspace.result }}" -ForegroundColor $(if ("${{ needs.build-atomspace.result }}" -eq "success") { "Green" } else { "Red" })
         Write-Host "  - Moses: ${{ needs.build-moses.result }}" -ForegroundColor $(if ("${{ needs.build-moses.result }}" -eq "success") { "Green" } else { "Red" })
         Write-Host ""
-        
-        if ("${{ needs.build-cogutil.result }}" -eq "success" -and "${{ needs.build-atomspace.result }}" -eq "success" -and "${{ needs.build-moses.result }}" -eq "success") {
-          Write-Host "✅ All builds completed successfully!" -ForegroundColor Green
+
+        if ("${{ needs.vcpkg-cache-warmer.result }}" -eq "success" -and "${{ needs.build-cogutil.result }}" -eq "success" -and "${{ needs.build-atomspace.result }}" -eq "success" -and "${{ needs.build-moses.result }}" -eq "success") {
+          Write-Host "All builds completed successfully!" -ForegroundColor Green
           exit 0
         } else {
-          Write-Host "❌ Some builds failed. Check individual job logs for details." -ForegroundColor Red
+          Write-Host "Some builds failed. Check individual job logs for details." -ForegroundColor Red
           exit 1
         }
