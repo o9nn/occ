@@ -37,35 +37,64 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
-#ifdef _WIN32
 #include <string.h>
-#include <io.h>
-#include <process.h>
-#else
-#ifdef _WIN32
-#ifdef _WIN32
-#include <io.h>
-#include <process.h>
-#else
-#include <string.h>
-#endif
-#else
-#include <strings.h>
-#endif
-#include <unistd.h>
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-#endif
-#endif
 #include <time.h>
 
-
-#ifdef WIN32_NOT_UNIX
+#ifdef _WIN32
+// Windows-specific includes
+#include <io.h>
+#include <process.h>
 #include <winsock2.h>
+#include <windows.h>
 #undef ERROR
 #undef DEBUG
+
+// Windows compatibility for POSIX time functions
+struct timezone {
+    int tz_minuteswest;
+    int tz_dsttime;
+};
+
+static inline int gettimeofday(struct timeval* tv, struct timezone* tz) {
+    if (tv) {
+        FILETIME ft;
+        GetSystemTimeAsFileTime(&ft);
+        unsigned long long t = ft.dwHighDateTime;
+        t <<= 32;
+        t |= ft.dwLowDateTime;
+        // Convert from 100-nanosecond intervals to microseconds
+        t /= 10;
+        // Convert from Windows epoch (1601) to Unix epoch (1970)
+        t -= 11644473600000000ULL;
+        tv->tv_sec = (long)(t / 1000000UL);
+        tv->tv_usec = (long)(t % 1000000UL);
+    }
+    return 0;
+}
+
+static inline struct tm* gmtime_r(const time_t* timer, struct tm* result) {
+    if (gmtime_s(result, timer) == 0)
+        return result;
+    return NULL;
+}
+
+static inline void usleep(unsigned int useconds) {
+    Sleep(useconds / 1000);
+}
+
+static inline int fdatasync(int fd) {
+    HANDLE h = (HANDLE)_get_osfhandle(fd);
+    if (h == INVALID_HANDLE_VALUE) return -1;
+    return FlushFileBuffers(h) ? 0 : -1;
+}
+
+// fileno is _fileno on Windows
+#define fileno _fileno
+
 #else
+// POSIX/Unix includes
+#include <strings.h>
+#include <unistd.h>
 #include <sys/time.h>
 #endif
 
@@ -662,6 +691,24 @@ Logger& opencog::logger()
 
 // Avoid shared-library crazy-making.
 static bool already_loaded = false;
+
+#ifdef _MSC_VER
+// MSVC doesn't support __attribute__((constructor))
+// Use a static class with constructor instead
+namespace {
+    struct InitChecker {
+        InitChecker() {
+            if (already_loaded) {
+                fprintf(stderr,
+                    "[FATAL ERROR] Cannot load shared lib more than once!\n");
+                exit(1);
+            }
+            already_loaded = true;
+        }
+    };
+    static InitChecker _init_checker;
+}
+#else
 static __attribute__ ((constructor)) void _init(void)
 {
     if (already_loaded)
@@ -672,3 +719,4 @@ static __attribute__ ((constructor)) void _init(void)
     }
     already_loaded = true;
 }
+#endif

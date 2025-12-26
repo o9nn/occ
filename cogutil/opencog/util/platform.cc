@@ -78,12 +78,65 @@ unsigned long long atoll(const char *str)
 // ==========================================================
 
 #include <stdlib.h>
+
 #ifdef _WIN32
+// Windows implementation
 #include <io.h>
 #include <process.h>
-#else
-#include <unistd.h>   // for sbrk(), sysconf()
-#endif
+#include <windows.h>
+#include <psapi.h>
+
+// Return memory usage (Windows: working set size)
+size_t opencog::getMemUsage()
+{
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
+    {
+        return pmc.WorkingSetSize;
+    }
+    return 0;
+}
+
+uint64_t opencog::getTotalRAM()
+{
+    MEMORYSTATUSEX memInfo;
+    memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+    GlobalMemoryStatusEx(&memInfo);
+    return memInfo.ullTotalPhys;
+}
+
+uint64_t opencog::getFreeRAM()
+{
+    MEMORYSTATUSEX memInfo;
+    memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+    GlobalMemoryStatusEx(&memInfo);
+    return memInfo.ullAvailPhys;
+}
+
+void opencog::set_thread_name(const char* name)
+{
+    // Windows 10 version 1607+ and Windows Server 2016+
+    // For older Windows, this is a no-op
+    #if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0A00
+    // Convert char* to wchar_t*
+    int len = MultiByteToWideChar(CP_UTF8, 0, name, -1, NULL, 0);
+    if (len > 0) {
+        wchar_t* wname = new wchar_t[len];
+        MultiByteToWideChar(CP_UTF8, 0, name, -1, wname, len);
+        SetThreadDescription(GetCurrentThread(), wname);
+        delete[] wname;
+    }
+    #else
+    (void)name; // suppress unused parameter warning
+    #endif
+}
+
+#elif defined(__APPLE__)
+// macOS implementation
+#include <unistd.h>
+#include <sys/sysctl.h>
+#include <sys/types.h>
+#include <pthread.h>
 
 // Return memory usage per sbrk system call.
 size_t opencog::getMemUsage()
@@ -98,11 +151,6 @@ size_t opencog::getMemUsage()
     size_t diff = (size_t)p - (size_t)old_sbrk;
     return diff;
 }
-
-#ifdef __APPLE__
-#include <sys/sysctl.h>
-#include <sys/types.h>
-#include <pthread.h>
 
 uint64_t opencog::getTotalRAM()
 {
@@ -127,11 +175,25 @@ void opencog::set_thread_name(const char* name)
     pthread_setname_np(name);
 }
 
-#else // __APPLE__
-
-// If not Apple, then Linux.
+#else
+// Linux implementation
+#include <unistd.h>   // for sbrk(), sysconf()
 #include <sys/sysinfo.h>
 #include <sys/prctl.h>
+
+// Return memory usage per sbrk system call.
+size_t opencog::getMemUsage()
+{
+    static void *old_sbrk = 0;
+    void *p = sbrk(0);
+    if (old_sbrk == 0 || old_sbrk > p)
+    {
+        old_sbrk = p;
+        return 0;
+    }
+    size_t diff = (size_t)p - (size_t)old_sbrk;
+    return diff;
+}
 
 uint64_t opencog::getTotalRAM()
 {
@@ -149,4 +211,4 @@ void opencog::set_thread_name(const char* name)
 {
     prctl(PR_SET_NAME, name, 0, 0, 0);
 }
-#endif // __APPLE__
+#endif // platform selection

@@ -33,16 +33,16 @@
 #include <cstdlib>
 
 #include <errno.h>
+
 #ifdef _WIN32
+// Windows-specific includes
 #include <io.h>
 #include <process.h>
+#include <direct.h>
+#define getcwd _getcwd
 #else
-#ifdef _WIN32
-#include <io.h>
-#include <process.h>
-#else
+// POSIX/Unix includes
 #include <unistd.h>
-#endif
 #endif
 
 #include <opencog/util/platform.h>

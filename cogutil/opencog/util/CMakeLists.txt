@@ -30,6 +30,14 @@ ADD_LIBRARY(cogutil SHARED
 	${WIN32_GETOPT_FILES}
 )
 
+# Windows-specific library linking
+IF (WIN32)
+	TARGET_LINK_LIBRARIES(cogutil
+		psapi       # For GetProcessMemoryInfo
+		kernel32    # For GlobalMemoryStatusEx, etc.
+	)
+ENDIF (WIN32)
+
 IF (HAVE_BFD AND HAVE_IBERTY)
 	check_symbol_exists(bfd_get_section_flags "bfd.h" HAVE_DECL_BFD_GET_SECTION_FLAGS)
 	check_symbol_exists(bfd_section_flags "bfd.h" HAVE_DECL_BFD_SECTION_FLAGS)
