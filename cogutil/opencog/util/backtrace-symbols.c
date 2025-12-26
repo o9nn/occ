@@ -74,7 +74,11 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
+#ifdef _WIN32
+#include <windows.h>
+#else
     #include <dlfcn.h>
+#endif
 #endif
     #include <link.h>
     #include <pthread.h>

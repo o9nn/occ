@@ -18,7 +18,15 @@
 #include <winsock2.h>
 #endif
 #else
+#ifdef _WIN32
+#include <winsock2.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#else
+#endif
 #include <sys/socket.h>
+#endif
 #endif
 #include <sys/time.h>
 #include <sys/types.h>

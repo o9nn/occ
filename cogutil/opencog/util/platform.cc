@@ -133,7 +133,12 @@ void opencog::set_thread_name(const char* name)
 
 #elif defined(__APPLE__)
 // macOS implementation
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <pthread.h>
@@ -172,7 +177,12 @@ uint64_t opencog::getFreeRAM()
 
 void opencog::set_thread_name(const char* name)
 {
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
     pthread_setname_np(name);
+#endif
 }
 
 #else

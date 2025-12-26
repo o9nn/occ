@@ -40,7 +40,16 @@
 #else
 #else
 #endif
+#ifdef _WIN32
+#include <windows.h>
+#else
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <dlfcn.h>
+#endif
+#endif
 #endif
 #endif
 #include <unistd.h>

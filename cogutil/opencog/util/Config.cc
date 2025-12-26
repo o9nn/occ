@@ -42,7 +42,12 @@
 #define getcwd _getcwd
 #else
 // POSIX/Unix includes
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #endif
 
 #include <opencog/util/platform.h>
