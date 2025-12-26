@@ -93,7 +93,20 @@ static inline int fdatasync(int fd) {
 
 #else
 // POSIX/Unix includes
+#ifdef _WIN32
+#ifdef _WIN32
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <io.h>
+#endif
+#include <process.h>
+#else
+#include <string.h>
+#endif
+#else
 #include <strings.h>
+#endif
 #include <unistd.h>
 #include <sys/time.h>
 #endif

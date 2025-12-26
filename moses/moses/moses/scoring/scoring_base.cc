@@ -105,7 +105,7 @@ complexity_t bscore_base::get_complexity(const scored_combo_tree_set& ensemble) 
         norm += w;
     }
 
-    // XXX FIXME complexity_t should be a double not an int ...
+    // XXX FIXME complexity_t should be a double ! an int ...
     return (complexity_t) floor (cpxy / norm + 0.5);
 }
 
