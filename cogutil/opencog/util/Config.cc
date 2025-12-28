@@ -40,10 +40,15 @@
 #include <cstdlib>
 
 #include <errno.h>
+
 #ifdef _WIN32
+// Windows-specific includes
 #include <io.h>
 #include <process.h>
+#include <direct.h>
+#define getcwd _getcwd
 #else
+// POSIX/Unix includes
 #ifdef _WIN32
 #include <io.h>
 #include <process.h>

@@ -39,7 +39,16 @@
 #else
 #else
 #endif
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <sys/time.h>
+#endif
+#endif
 #endif
 #endif
 #include <unistd.h>

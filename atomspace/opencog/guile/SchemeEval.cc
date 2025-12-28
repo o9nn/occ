@@ -32,7 +32,12 @@
 #include <io.h>
 #include <process.h>
 #else
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #endif
 #endif
 #include <fcntl.h>

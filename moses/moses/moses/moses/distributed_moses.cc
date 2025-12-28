@@ -24,7 +24,12 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/types.h>
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <boost/program_options.hpp>
 #include <ext/stdio_filebuf.h>

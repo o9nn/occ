@@ -26,7 +26,12 @@
 #include <io.h>
 #include <process.h>
 #else
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #endif
 
 #include <opencog/atoms/core/NumberNode.h>

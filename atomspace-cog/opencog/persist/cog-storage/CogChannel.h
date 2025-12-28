@@ -36,7 +36,12 @@
 #include <io.h>
 #include <process.h>
 #else
+#ifdef _WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h> /* for close() */
+#endif
 #endif
 
 #include <opencog/util/async_buffer.h>

@@ -248,7 +248,7 @@ void polynomial_problem::run(option_base* ob)
     problem_params& pms = *dynamic_cast<problem_params*>(ob);
 
     if (pms.enable_feature_selection)
-        logger().warn("Feature selection is not supported for the polynomial problem");
+        logger().warn("Feature selection is ! supported for the polynomial problem");
 
     // If no exemplar has been provided in the options, use the
     // default contin_type exemplar (+)

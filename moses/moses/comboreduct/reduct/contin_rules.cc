@@ -973,7 +973,7 @@ void reduce_sin::operator()(combo_tree& tr, combo_tree::iterator it) const
     pre_it sin_child = it.begin();
     if (*sin_child == id::plus) {
         OC_ASSERT(!sin_child.is_childless(), 
-                  "combo_tree node id::plus should not be childless (reduce_sin).");
+                  "combo_tree node id::plus should ! be childless (reduce_sin).");
         for (sib_it sib = sin_child.begin(); sib != sin_child.end(); ) {
             if (is_contin(*sib)) {
                 if (c_it == tr.end()) {
