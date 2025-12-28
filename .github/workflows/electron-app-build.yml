@@ -6,7 +6,7 @@ name: Build Electron Desktop App
 
 on:
   workflow_run:
-    workflows: ["OCC Windows Build - Complete Stack"]
+    workflows: ["OCC Windows Build"]
     types:
       - completed
     branches:

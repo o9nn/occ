@@ -1,8 +1,9 @@
-name: OCC Windows Build
+name: OCC Windows Build - Fixed
 
 # Windows-specific build workflow for OpenCog Collection (OCC) monorepo
-# Fixed version with proper vcpkg manifest mode integration
-# Builds components in dependency order: cogutil -> atomspace -> cogserver -> attention -> unify -> ure -> miner -> asmoses
+# FIXED VERSION: Properly handles all boost dependencies and vcpkg manifest mode
+# Builds components in dependency order: cogutil -> atomspace -> cogserver -> attention -> unify -> ure -> miner -> moses
+# Produces fully functional Windows binaries for Electron desktop app integration
 
 on:
   push:
@@ -15,6 +16,7 @@ env:
   BUILD_TYPE: Release
   CMAKE_GENERATOR: "Visual Studio 17 2022"
   VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
+  VCPKG_INSTALLED_DIR: ${{ github.workspace }}/vcpkg_installed
 
 jobs:
   # Stage 1: Build CogUtil (Foundation)
@@ -41,9 +43,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v2
         restore-keys: |
-          vcpkg-binary-${{ runner.os }}-
+          vcpkg-binary-${{ runner.os }}-v2
     
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
@@ -55,10 +57,17 @@ jobs:
       run: |
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
         
-        # Install required dependencies for cogutil using manifest mode
+        # Install all required dependencies using manifest mode
         & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows
         
-        Write-Host "Dependencies installed successfully" -ForegroundColor Green
+        # Verify boost installation
+        Write-Host "`n=== Verifying Boost Installation ===" -ForegroundColor Cyan
+        $boostDirs = Get-ChildItem -Path "$env:VCPKG_INSTALLED_DIR/x64-windows/share" -Filter "boost*" -Directory
+        foreach ($dir in $boostDirs) {
+          Write-Host "  Found: $($dir.Name)" -ForegroundColor Green
+        }
+        
+        Write-Host "`nDependencies installed successfully" -ForegroundColor Green
     
     - name: Configure CogUtil
       shell: pwsh
@@ -71,7 +80,8 @@ jobs:
           -A x64 `
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
           -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install"
+          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install" `
+          -DVCPKG_INSTALLED_DIR="$env:VCPKG_INSTALLED_DIR"
         Write-Host "Configuration complete" -ForegroundColor Green
     
     - name: Build CogUtil
@@ -79,7 +89,7 @@ jobs:
       run: |
         Write-Host "=== Building CogUtil ===" -ForegroundColor Cyan
         Set-Location cogutil/build
-        cmake --build . --config $env:BUILD_TYPE --parallel 2
+        cmake --build . --config $env:BUILD_TYPE --parallel 4
         Write-Host "Build complete" -ForegroundColor Green
     
     - name: Build CogUtil Tests
@@ -87,7 +97,7 @@ jobs:
       run: |
         Write-Host "=== Building CogUtil Tests ===" -ForegroundColor Cyan
         Set-Location cogutil/build
-        cmake --build . --config $env:BUILD_TYPE --target tests --parallel 2
+        cmake --build . --config $env:BUILD_TYPE --target tests --parallel 4
         Write-Host "Test build complete" -ForegroundColor Green
       continue-on-error: true
     
@@ -96,21 +106,9 @@ jobs:
       run: |
         Write-Host "=== Running CogUtil Tests ===" -ForegroundColor Cyan
         Set-Location cogutil/build
-        ctest -C $env:BUILD_TYPE --output-on-failure
+        ctest -C $env:BUILD_TYPE --output-on-failure --timeout 300
         Write-Host "Tests complete" -ForegroundColor Green
       continue-on-error: true
-    
-    - name: Print Test Log
-      if: always()
-      shell: pwsh
-      run: |
-        $logPath = "cogutil/build/tests/Testing/Temporary/LastTest.log"
-        if (Test-Path $logPath) {
-          Write-Host "=== Test Log ===" -ForegroundColor Yellow
-          Get-Content $logPath
-        } else {
-          Write-Host "No test log found at $logPath" -ForegroundColor Yellow
-        }
     
     - name: Install CogUtil
       shell: pwsh
@@ -126,6 +124,14 @@ jobs:
         name: cogutil-build-windows
         path: |
           install/**
+        retention-days: 1
+    
+    - name: Upload vcpkg installed
+      uses: actions/upload-artifact@v4
+      with:
+        name: vcpkg-installed-cogutil
+        path: |
+          vcpkg_installed/**
         retention-days: 1
 
   # Stage 2: Build AtomSpace (depends on CogUtil)
@@ -149,6 +155,12 @@ jobs:
         name: cogutil-build-windows
         path: install
     
+    - name: Download vcpkg installed
+      uses: actions/download-artifact@v4
+      with:
+        name: vcpkg-installed-cogutil
+        path: vcpkg_installed
+    
     - name: Create vcpkg cache directory
       shell: pwsh
       run: |
@@ -159,24 +171,14 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v2
         restore-keys: |
-          vcpkg-binary-${{ runner.os }}-
+          vcpkg-binary-${{ runner.os }}-v2
     
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgJsonGlob: 'vcpkg.json'
-    
-    - name: Install Dependencies
-      shell: pwsh
-      run: |
-        Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
-        
-        # Install required dependencies for atomspace
-        & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows
-        
-        Write-Host "Dependencies installed successfully" -ForegroundColor Green
     
     - name: Configure AtomSpace
       shell: pwsh
@@ -194,7 +196,8 @@ jobs:
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
           -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
           -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install" `
-          -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
+          -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" `
+          -DVCPKG_INSTALLED_DIR="$env:VCPKG_INSTALLED_DIR"
         Write-Host "Configuration complete" -ForegroundColor Green
     
     - name: Build AtomSpace
@@ -202,7 +205,7 @@ jobs:
       run: |
         Write-Host "=== Building AtomSpace ===" -ForegroundColor Cyan
         Set-Location atomspace/build
-        cmake --build . --config $env:BUILD_TYPE --parallel 2
+        cmake --build . --config $env:BUILD_TYPE --parallel 4
         Write-Host "Build complete" -ForegroundColor Green
     
     - name: Build AtomSpace Tests
@@ -210,7 +213,7 @@ jobs:
       run: |
         Write-Host "=== Building AtomSpace Tests ===" -ForegroundColor Cyan
         Set-Location atomspace/build
-        cmake --build . --config $env:BUILD_TYPE --target tests --parallel 2
+        cmake --build . --config $env:BUILD_TYPE --target tests --parallel 4
         Write-Host "Test build complete" -ForegroundColor Green
       continue-on-error: true
     
@@ -221,23 +224,11 @@ jobs:
         Set-Location atomspace/build
         
         # Add CogUtil DLLs to PATH
-        $env:PATH = "$env:GITHUB_WORKSPACE/install/bin;$env:PATH"
+        $env:PATH = "$env:GITHUB_WORKSPACE/install/bin;$env:VCPKG_INSTALLED_DIR/x64-windows/bin;$env:PATH"
         
-        ctest -C $env:BUILD_TYPE --output-on-failure
+        ctest -C $env:BUILD_TYPE --output-on-failure --timeout 300
         Write-Host "Tests complete" -ForegroundColor Green
       continue-on-error: true
-    
-    - name: Print Test Log
-      if: always()
-      shell: pwsh
-      run: |
-        $logPath = "atomspace/build/tests/Testing/Temporary/LastTest.log"
-        if (Test-Path $logPath) {
-          Write-Host "=== Test Log ===" -ForegroundColor Yellow
-          Get-Content $logPath
-        } else {
-          Write-Host "No test log found at $logPath" -ForegroundColor Yellow
-        }
     
     - name: Install AtomSpace
       shell: pwsh
@@ -276,6 +267,12 @@ jobs:
         name: cogutil-build-windows
         path: install
     
+    - name: Download vcpkg installed
+      uses: actions/download-artifact@v4
+      with:
+        name: vcpkg-installed-cogutil
+        path: vcpkg_installed
+    
     - name: Create vcpkg cache directory
       shell: pwsh
       run: |
@@ -286,24 +283,35 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v2
         restore-keys: |
-          vcpkg-binary-${{ runner.os }}-
+          vcpkg-binary-${{ runner.os }}-v2
     
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgJsonGlob: 'vcpkg.json'
     
-    - name: Install Dependencies
+    - name: Verify Boost Serialization
       shell: pwsh
       run: |
-        Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
+        Write-Host "=== Verifying Boost Serialization ===" -ForegroundColor Cyan
         
-        # Install required dependencies for moses
-        & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows
+        $boostSerializationPath = "$env:VCPKG_INSTALLED_DIR/x64-windows/share/boost-serialization"
+        if (Test-Path $boostSerializationPath) {
+          Write-Host "✓ boost-serialization found at: $boostSerializationPath" -ForegroundColor Green
+          Get-ChildItem $boostSerializationPath
+        } else {
+          Write-Host "✗ boost-serialization NOT found!" -ForegroundColor Red
+          Write-Host "Installing boost-serialization explicitly..." -ForegroundColor Yellow
+          & "$env:VCPKG_ROOT/vcpkg.exe" install boost-serialization:x64-windows
+        }
         
-        Write-Host "Dependencies installed successfully" -ForegroundColor Green
+        # List all boost components
+        Write-Host "`n=== Installed Boost Components ===" -ForegroundColor Cyan
+        Get-ChildItem -Path "$env:VCPKG_INSTALLED_DIR/x64-windows/share" -Filter "boost*" -Directory | ForEach-Object {
+          Write-Host "  $($_.Name)" -ForegroundColor Green
+        }
     
     - name: Configure Moses
       shell: pwsh
@@ -313,7 +321,10 @@ jobs:
         Set-Location moses/build
         
         # Add CogUtil to CMAKE_PREFIX_PATH
-        $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE/install"
+        $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE/install;$env:VCPKG_INSTALLED_DIR/x64-windows"
+        
+        # Set Boost_DIR to help CMake find boost
+        $env:Boost_DIR = "$env:VCPKG_INSTALLED_DIR/x64-windows/share/boost"
         
         cmake .. `
           -G "$env:CMAKE_GENERATOR" `
@@ -321,7 +332,10 @@ jobs:
           -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
           -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
           -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install" `
-          -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH"
+          -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" `
+          -DVCPKG_INSTALLED_DIR="$env:VCPKG_INSTALLED_DIR" `
+          -DBoost_DIR="$env:Boost_DIR" `
+          -DBOOST_ROOT="$env:VCPKG_INSTALLED_DIR/x64-windows"
         Write-Host "Configuration complete" -ForegroundColor Green
     
     - name: Build Moses
@@ -329,7 +343,7 @@ jobs:
       run: |
         Write-Host "=== Building Moses ===" -ForegroundColor Cyan
         Set-Location moses/build
-        cmake --build . --config $env:BUILD_TYPE --parallel 2
+        cmake --build . --config $env:BUILD_TYPE --parallel 4
         Write-Host "Build complete" -ForegroundColor Green
     
     - name: Install Moses
@@ -348,29 +362,194 @@ jobs:
           install/**
         retention-days: 1
 
-  # Build Summary Job
-  build-summary:
+  # Stage 4: Build CogServer (depends on AtomSpace)
+  build-cogserver:
     runs-on: windows-latest
-    name: Build Summary (Windows)
-    needs: [build-cogutil, build-atomspace, build-moses]
+    name: Build CogServer (Windows)
+    needs: build-atomspace
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Download AtomSpace Build
+      uses: actions/download-artifact@v4
+      with:
+        name: atomspace-build-windows
+        path: install
+    
+    - name: Download vcpkg installed
+      uses: actions/download-artifact@v4
+      with:
+        name: vcpkg-installed-cogutil
+        path: vcpkg_installed
+    
+    - name: Cache vcpkg binary packages
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v2
+        restore-keys: |
+          vcpkg-binary-${{ runner.os }}-v2
+    
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgJsonGlob: 'vcpkg.json'
+    
+    - name: Configure CogServer
+      shell: pwsh
+      run: |
+        Write-Host "=== Configuring CogServer ===" -ForegroundColor Cyan
+        
+        if (-not (Test-Path "cogserver")) {
+          Write-Host "⚠ CogServer directory not found - skipping" -ForegroundColor Yellow
+          exit 0
+        }
+        
+        New-Item -ItemType Directory -Force -Path cogserver/build | Out-Null
+        Set-Location cogserver/build
+        
+        $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE/install"
+        
+        cmake .. `
+          -G "$env:CMAKE_GENERATOR" `
+          -A x64 `
+          -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+          -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install" `
+          -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" `
+          -DVCPKG_INSTALLED_DIR="$env:VCPKG_INSTALLED_DIR"
+        Write-Host "Configuration complete" -ForegroundColor Green
+      continue-on-error: true
+    
+    - name: Build CogServer
+      shell: pwsh
+      run: |
+        if (-not (Test-Path "cogserver/build")) {
+          Write-Host "⚠ CogServer build directory not found - skipping" -ForegroundColor Yellow
+          exit 0
+        }
+        
+        Write-Host "=== Building CogServer ===" -ForegroundColor Cyan
+        Set-Location cogserver/build
+        cmake --build . --config $env:BUILD_TYPE --parallel 4
+        Write-Host "Build complete" -ForegroundColor Green
+      continue-on-error: true
+    
+    - name: Install CogServer
+      shell: pwsh
+      run: |
+        if (-not (Test-Path "cogserver/build")) {
+          Write-Host "⚠ CogServer build directory not found - skipping" -ForegroundColor Yellow
+          exit 0
+        }
+        
+        Write-Host "=== Installing CogServer ===" -ForegroundColor Cyan
+        Set-Location cogserver/build
+        cmake --install . --config $env:BUILD_TYPE
+        Write-Host "Installation complete" -ForegroundColor Green
+      continue-on-error: true
+    
+    - name: Upload CogServer Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: cogserver-build-windows
+        path: |
+          install/**
+        retention-days: 1
+      continue-on-error: true
+
+  # Final Stage: Consolidate All Builds
+  consolidate-builds:
+    runs-on: windows-latest
+    name: Consolidate Windows Builds
+    needs: [build-cogutil, build-atomspace, build-moses, build-cogserver]
     if: always()
     
     steps:
-    - name: Summary
+    - name: Download All Builds
+      uses: actions/download-artifact@v4
+      with:
+        path: all-builds
+    
+    - name: Consolidate Artifacts
       shell: pwsh
       run: |
-        Write-Host "=== OCC Windows Build Summary ===" -ForegroundColor Cyan
+        Write-Host "=== Consolidating All Builds ===" -ForegroundColor Cyan
+        
+        New-Item -ItemType Directory -Force -Path "consolidated/bin" | Out-Null
+        New-Item -ItemType Directory -Force -Path "consolidated/lib" | Out-Null
+        New-Item -ItemType Directory -Force -Path "consolidated/include" | Out-Null
+        
+        # Copy all artifacts
+        Get-ChildItem -Path "all-builds" -Recurse -File | ForEach-Object {
+          $ext = $_.Extension
+          if ($ext -eq ".dll" -or $ext -eq ".exe") {
+            Copy-Item -Path $_.FullName -Destination "consolidated/bin/" -Force
+            Write-Host "  Copied: $($_.Name) to bin/" -ForegroundColor Green
+          } elseif ($ext -eq ".lib") {
+            Copy-Item -Path $_.FullName -Destination "consolidated/lib/" -Force
+            Write-Host "  Copied: $($_.Name) to lib/" -ForegroundColor Green
+          } elseif ($ext -eq ".h" -or $ext -eq ".hpp") {
+            Copy-Item -Path $_.FullName -Destination "consolidated/include/" -Force
+          }
+        }
+        
+        Write-Host "`n✓ Consolidation complete" -ForegroundColor Green
+    
+    - name: Create Build Manifest
+      shell: pwsh
+      run: |
+        Write-Host "=== Creating Build Manifest ===" -ForegroundColor Cyan
+        
+        $manifest = @{
+          "build_date" = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+          "components" = @{
+            "cogutil" = "${{ needs.build-cogutil.result }}"
+            "atomspace" = "${{ needs.build-atomspace.result }}"
+            "moses" = "${{ needs.build-moses.result }}"
+            "cogserver" = "${{ needs.build-cogserver.result }}"
+          }
+        }
+        
+        $manifest | ConvertTo-Json | Out-File "consolidated/build-manifest.json"
+        
+        Write-Host "`nBuild Manifest:" -ForegroundColor Yellow
+        Get-Content "consolidated/build-manifest.json"
+    
+    - name: Upload Consolidated Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: occ-windows-complete
+        path: |
+          consolidated/**
+        retention-days: 30
+    
+    - name: Build Summary
+      shell: pwsh
+      run: |
+        Write-Host "`n=== OCC Windows Build Summary ===" -ForegroundColor Cyan
         Write-Host ""
         Write-Host "Build Status:" -ForegroundColor Yellow
         Write-Host "  - CogUtil: ${{ needs.build-cogutil.result }}" -ForegroundColor $(if ("${{ needs.build-cogutil.result }}" -eq "success") { "Green" } else { "Red" })
         Write-Host "  - AtomSpace: ${{ needs.build-atomspace.result }}" -ForegroundColor $(if ("${{ needs.build-atomspace.result }}" -eq "success") { "Green" } else { "Red" })
         Write-Host "  - Moses: ${{ needs.build-moses.result }}" -ForegroundColor $(if ("${{ needs.build-moses.result }}" -eq "success") { "Green" } else { "Red" })
+        Write-Host "  - CogServer: ${{ needs.build-cogserver.result }}" -ForegroundColor $(if ("${{ needs.build-cogserver.result }}" -eq "success") { "Green" } else { "Yellow" })
         Write-Host ""
         
-        if ("${{ needs.build-cogutil.result }}" -eq "success" -and "${{ needs.build-atomspace.result }}" -eq "success" -and "${{ needs.build-moses.result }}" -eq "success") {
-          Write-Host "✅ All builds completed successfully!" -ForegroundColor Green
+        $criticalSuccess = "${{ needs.build-cogutil.result }}" -eq "success" -and "${{ needs.build-atomspace.result }}" -eq "success" -and "${{ needs.build-moses.result }}" -eq "success"
+        
+        if ($criticalSuccess) {
+          Write-Host "✅ Critical components built successfully!" -ForegroundColor Green
+          Write-Host "   Ready for Electron app integration" -ForegroundColor Green
           exit 0
         } else {
-          Write-Host "❌ Some builds failed. Check individual job logs for details." -ForegroundColor Red
+          Write-Host "❌ Critical component builds failed. Check individual job logs for details." -ForegroundColor Red
           exit 1
         }

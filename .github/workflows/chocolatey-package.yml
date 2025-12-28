@@ -6,7 +6,7 @@ name: Build Chocolatey Package
 
 on:
   workflow_run:
-    workflows: ["OCC Windows Build - Complete Stack", "OCC Windows Build (Enhanced with Retry)"]
+    workflows: ["OCC Windows Build"]
     types:
       - completed
     branches:
