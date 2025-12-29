@@ -338,8 +338,11 @@ jobs:
           -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/install" `
           -DCMAKE_PREFIX_PATH="$env:CMAKE_PREFIX_PATH" `
           -DVCPKG_INSTALLED_DIR="$env:VCPKG_INSTALLED_DIR" `
+          -DBoost_NO_BOOST_CMAKE=ON `
           -DBoost_DIR="$env:Boost_DIR" `
-          -DBOOST_ROOT="$env:VCPKG_INSTALLED_DIR/x64-windows"
+          -DBOOST_ROOT="$env:VCPKG_INSTALLED_DIR/x64-windows" `
+          -DBoost_INCLUDE_DIR="$env:VCPKG_INSTALLED_DIR/x64-windows/include" `
+          -DBoost_LIBRARY_DIR="$env:VCPKG_INSTALLED_DIR/x64-windows/lib"
         Write-Host "Configuration complete" -ForegroundColor Green
     
     - name: Build Moses
