@@ -207,6 +207,31 @@ inline int gettimeofday(struct timeval* tv, struct timezone* tz) {
 }
 #endif // HAVE_GETTIMEOFDAY
 
+// usleep() - sleep for microseconds
+// Windows Sleep() takes milliseconds, so convert
+inline int usleep(unsigned int usec) {
+    // Sleep takes milliseconds
+    Sleep((usec + 999) / 1000);  // Round up to avoid zero sleep
+    return 0;
+}
+
+// gmtime_r() - thread-safe version of gmtime
+// Windows has gmtime_s with reversed parameter order
+inline struct tm* gmtime_r(const time_t* timer, struct tm* buf) {
+    if (gmtime_s(buf, timer) == 0) {
+        return buf;
+    }
+    return nullptr;
+}
+
+// fdatasync() - sync file data to disk (not metadata)
+// Windows doesn't distinguish between data and metadata sync
+// Use _commit() which is similar to fsync()
+#include <io.h>
+inline int fdatasync(int fd) {
+    return _commit(fd);
+}
+
 // ============================================================================
 // String Functions
 // ============================================================================
