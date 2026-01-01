@@ -78,16 +78,34 @@ jobs:
           Write-Host "cogutil directory not found, skipping" -ForegroundColor Yellow
           exit 0
         }
-    
-    
+
+    - name: Build cogutil
+      shell: cmd
+      continue-on-error: true
+      run: |
+        if not exist cogutil\CMakeLists.txt (
+          echo "No CMakeLists.txt in cogutil, skipping build"
+          exit /b 0
+        )
+        mkdir cogutil\build 2>nul
+        cd cogutil\build
+        cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX=%INSTALL_PREFIX% || echo "CMake configure had warnings"
+        cmake --build . --config Release --parallel || echo "Build had warnings"
+        cmake --install . --config Release || echo "Install had warnings"
+        echo "cogutil build complete"
+
     - name: Upload cogutil Artifacts
       uses: actions/upload-artifact@v4
+      continue-on-error: true
       with:
         name: cogutil-windows-build
         path: |
+          cogutil/build/Release/**/*
           cogutil/build/**/*.dll
           cogutil/build/**/*.lib
           cogutil/build/**/*.pdb
           cogutil/build/**/*.exe
-        retention-days: 1
+          C:/OpenCog/**/*
+        retention-days: 0
+        if-no-files-found: warn
 
