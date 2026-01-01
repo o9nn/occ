@@ -205,22 +205,31 @@ jobs:
           $failed = @()
           $succeeded = @()
 
+          # Debug: Test first package with full output
+          Write-Host "`nDebug: Testing vcpkg install with full output..." -ForegroundColor Magenta
+          Write-Host "Working directory: $(Get-Location)" -ForegroundColor Gray
+          Write-Host "VCPKG_INSTALLED_DIR: $env:VCPKG_INSTALLED_DIR" -ForegroundColor Gray
+          & $vcpkgExe install "vcpkg-cmake:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR" 2>&1 | Tee-Object -Variable testOutput
+          Write-Host "Test exit code: $LASTEXITCODE" -ForegroundColor Gray
+
           foreach ($pkg in $tier1Packages) {
             $current++
             Write-Host "`n[$current/$total] Installing $pkg..." -ForegroundColor Yellow
 
-            # Run vcpkg and capture output properly
-            $process = Start-Process -FilePath $vcpkgExe -ArgumentList "install", "${pkg}:x64-windows", "--x-install-root=`"$env:VCPKG_INSTALLED_DIR`"" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "stdout.txt" -RedirectStandardError "stderr.txt"
+            # Use direct invocation to inherit environment variables
+            $output = & $vcpkgExe install "${pkg}:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR" 2>&1
+            $exitCode = $LASTEXITCODE
 
-            if ($process.ExitCode -eq 0) {
+            if ($exitCode -eq 0) {
               Write-Host "  OK: $pkg installed" -ForegroundColor Green
               $succeeded += $pkg
             } else {
-              Write-Host "  WARN: $pkg may have issues (exit code: $($process.ExitCode))" -ForegroundColor Yellow
-              # Show stderr for debugging
-              if (Test-Path "stderr.txt") {
-                $stderr = Get-Content "stderr.txt" -Raw
-                if ($stderr) { Write-Host "  Error: $stderr" -ForegroundColor Red }
+              Write-Host "  WARN: $pkg failed (exit code: $exitCode)" -ForegroundColor Yellow
+              # Show last few lines of output for debugging
+              $outputLines = ($output | Out-String).Trim()
+              if ($outputLines) {
+                $lastLines = ($outputLines -split "`n" | Select-Object -Last 5) -join "`n"
+                Write-Host "  Output: $lastLines" -ForegroundColor Red
               }
               $failed += $pkg
             }
@@ -402,14 +411,16 @@ jobs:
             Write-Host "`n[$current/$total] Installing $pkg..." -ForegroundColor Yellow
             $startTime = Get-Date
 
-            $process = Start-Process -FilePath $vcpkgExe -ArgumentList "install", "${pkg}:x64-windows", "--x-install-root=`"$env:VCPKG_INSTALLED_DIR`"" -Wait -NoNewWindow -PassThru
+            # Use direct invocation to inherit environment variables
+            $output = & $vcpkgExe install "${pkg}:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR" 2>&1
+            $exitCode = $LASTEXITCODE
 
             $elapsed = (Get-Date) - $startTime
-            if ($process.ExitCode -eq 0) {
+            if ($exitCode -eq 0) {
               Write-Host "  OK: $pkg ($([math]::Round($elapsed.TotalSeconds, 1))s)" -ForegroundColor Green
               $succeeded += $pkg
             } else {
-              Write-Host "  FAILED: $pkg (exit code: $($process.ExitCode))" -ForegroundColor Red
+              Write-Host "  FAILED: $pkg (exit code: $exitCode)" -ForegroundColor Red
               $failed += $pkg
             }
 
