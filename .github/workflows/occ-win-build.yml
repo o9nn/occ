@@ -1,9 +1,14 @@
 name: OCC Windows Build - Fixed
 
 # Windows-specific build workflow for OpenCog Collection (OCC) monorepo
-# FIXED VERSION: Properly handles all boost dependencies and vcpkg manifest mode
+# OPTIMIZED: Uses prebuilt vcpkg cache from vcpkg-prebuild.yml workflow
 # Builds components in dependency order: cogutil -> atomspace -> cogserver -> attention -> unify -> ure -> miner -> moses
 # Produces fully functional Windows binaries for Electron desktop app integration
+#
+# DEPENDENCY CACHING STRATEGY:
+# - Uses GitHub Actions native vcpkg binary caching (VCPKG_BINARY_SOURCES)
+# - Heavy packages (gRPC, RocksDB, Protobuf) are prebuilt by vcpkg-prebuild.yml
+# - First build after cache: ~2 hours, subsequent builds: ~5-10 minutes
 
 on:
   push:
@@ -11,6 +16,12 @@ on:
   pull_request:
     branches: [ "main", "master" ]
   workflow_dispatch:
+    inputs:
+      skip_cache:
+        description: 'Skip vcpkg cache (force rebuild)'
+        required: false
+        default: 'false'
+        type: boolean
 
 concurrency:
   group: windows-build-${{ github.ref }}
@@ -21,57 +32,121 @@ env:
   CMAKE_GENERATOR: "Visual Studio 17 2022"
   VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
   VCPKG_INSTALLED_DIR: ${{ github.workspace }}/vcpkg_installed
+  # Enable GitHub Actions native vcpkg binary caching
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
 jobs:
   # Stage 1: Build CogUtil (Foundation)
   build-cogutil:
     runs-on: windows-latest
     name: Build CogUtil (Windows)
-    
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
-    
+
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
-    
+
     - name: Create vcpkg cache directory
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
         Write-Host "vcpkg cache directory created at $env:VCPKG_DEFAULT_BINARY_CACHE" -ForegroundColor Green
-    
+
+    # CRITICAL: Export GitHub Actions cache variables for vcpkg binary caching
+    - name: Export GitHub Actions Cache Variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    # Try to download prebuilt vcpkg packages from prebuild workflow
+    - name: Try Download Prebuilt vcpkg Packages
+      id: download-prebuilt
+      continue-on-error: true
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: vcpkg-prebuild.yml
+        name: vcpkg-complete-x64-windows
+        path: ${{ env.VCPKG_INSTALLED_DIR }}
+        search_artifacts: true
+        if_no_artifact_found: warn
+
+    - name: Check Prebuilt Status
+      id: prebuilt-check
+      shell: pwsh
+      run: |
+        if (Test-Path "$env:VCPKG_INSTALLED_DIR/x64-windows/lib") {
+          $libCount = (Get-ChildItem -Path "$env:VCPKG_INSTALLED_DIR/x64-windows/lib" -Filter "*.lib" -ErrorAction SilentlyContinue).Count
+          Write-Host "Found $libCount prebuilt libraries" -ForegroundColor Green
+          if ($libCount -gt 50) {
+            Write-Host "Using prebuilt vcpkg packages!" -ForegroundColor Green
+            echo "has_prebuilt=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "has_prebuilt=false" >> $env:GITHUB_OUTPUT
+          }
+        } else {
+          Write-Host "No prebuilt packages found - will build from cache/source" -ForegroundColor Yellow
+          echo "has_prebuilt=false" >> $env:GITHUB_OUTPUT
+        }
+
     - name: Cache vcpkg binary packages
       uses: actions/cache@v4
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v2
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v3
         restore-keys: |
-          vcpkg-binary-${{ runner.os }}-v2
-    
+          vcpkg-binary-${{ runner.os }}-v3
+          vcpkg-binary-${{ runner.os }}-
+          vcpkg-tier3-heavy-
+          vcpkg-tier2-
+          vcpkg-tier1-
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgJsonGlob: 'vcpkg.json'
-    
+        vcpkgGitCommitId: '11bbc873e00e9e58d4e9dffb30b7a5493a030e0b'
+
     - name: Install Dependencies
+      if: steps.prebuilt-check.outputs.has_prebuilt != 'true'
       shell: pwsh
+      env:
+        VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
       run: |
         Write-Host "=== Installing Dependencies via vcpkg ===" -ForegroundColor Cyan
-        
+        Write-Host "Using GitHub Actions binary cache - prebuilt packages will restore instantly" -ForegroundColor Yellow
+
+        $startTime = Get-Date
+
         # Install all required dependencies using manifest mode
-        & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows
-        
+        & "$env:VCPKG_ROOT/vcpkg.exe" install --triplet x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
+
+        $elapsed = (Get-Date) - $startTime
+        Write-Host "`nDependency installation took $([math]::Round($elapsed.TotalMinutes, 1)) minutes" -ForegroundColor Cyan
+
         # Verify boost installation
         Write-Host "`n=== Verifying Boost Installation ===" -ForegroundColor Cyan
-        $boostDirs = Get-ChildItem -Path "$env:VCPKG_INSTALLED_DIR/x64-windows/share" -Filter "boost*" -Directory
+        $boostDirs = Get-ChildItem -Path "$env:VCPKG_INSTALLED_DIR/x64-windows/share" -Filter "boost*" -Directory -ErrorAction SilentlyContinue
         foreach ($dir in $boostDirs) {
           Write-Host "  Found: $($dir.Name)" -ForegroundColor Green
         }
-        
+
         Write-Host "`nDependencies installed successfully" -ForegroundColor Green
+
+    - name: Verify Dependencies (Prebuilt)
+      if: steps.prebuilt-check.outputs.has_prebuilt == 'true'
+      shell: pwsh
+      run: |
+        Write-Host "=== Using Prebuilt Dependencies ===" -ForegroundColor Green
+        Write-Host "Skipping vcpkg install - using artifacts from vcpkg-prebuild.yml" -ForegroundColor Yellow
+
+        $libs = Get-ChildItem -Path "$env:VCPKG_INSTALLED_DIR/x64-windows/lib" -Filter "*.lib" -ErrorAction SilentlyContinue
+        Write-Host "Available libraries: $($libs.Count)" -ForegroundColor Cyan
     
     - name: Configure CogUtil
       continue-on-error: true
@@ -148,46 +223,56 @@ jobs:
     runs-on: windows-latest
     name: Build AtomSpace (Windows)
     needs: build-cogutil
-    
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
-    
+
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
-    
+
     - name: Download CogUtil Build
       uses: actions/download-artifact@v4
       with:
         name: cogutil-build-windows
         path: install
-    
+
     - name: Download vcpkg installed
       uses: actions/download-artifact@v4
       with:
         name: vcpkg-installed-cogutil
         path: vcpkg_installed
-    
+
     - name: Create vcpkg cache directory
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
         Write-Host "vcpkg cache directory created" -ForegroundColor Green
-    
+
+    # CRITICAL: Export GitHub Actions cache variables for vcpkg binary caching
+    - name: Export GitHub Actions Cache Variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Cache vcpkg binary packages
       uses: actions/cache@v4
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v2
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v3
         restore-keys: |
-          vcpkg-binary-${{ runner.os }}-v2
-    
+          vcpkg-binary-${{ runner.os }}-v3
+          vcpkg-binary-${{ runner.os }}-
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgJsonGlob: 'vcpkg.json'
+        vcpkgGitCommitId: '11bbc873e00e9e58d4e9dffb30b7a5493a030e0b'
     
     - name: Configure AtomSpace
       continue-on-error: true
@@ -264,46 +349,56 @@ jobs:
     runs-on: windows-latest
     name: Build Moses (Windows)
     needs: build-cogutil
-    
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
-    
+
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
-    
+
     - name: Download CogUtil Build
       uses: actions/download-artifact@v4
       with:
         name: cogutil-build-windows
         path: install
-    
+
     - name: Download vcpkg installed
       uses: actions/download-artifact@v4
       with:
         name: vcpkg-installed-cogutil
         path: vcpkg_installed
-    
+
     - name: Create vcpkg cache directory
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
         Write-Host "vcpkg cache directory created" -ForegroundColor Green
-    
+
+    # CRITICAL: Export GitHub Actions cache variables for vcpkg binary caching
+    - name: Export GitHub Actions Cache Variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Cache vcpkg binary packages
       uses: actions/cache@v4
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v2
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v3
         restore-keys: |
-          vcpkg-binary-${{ runner.os }}-v2
-    
+          vcpkg-binary-${{ runner.os }}-v3
+          vcpkg-binary-${{ runner.os }}-
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgJsonGlob: 'vcpkg.json'
+        vcpkgGitCommitId: '11bbc873e00e9e58d4e9dffb30b7a5493a030e0b'
     
     - name: Verify Boost Serialization
       shell: pwsh
@@ -387,40 +482,55 @@ jobs:
     runs-on: windows-latest
     name: Build CogServer (Windows)
     needs: build-atomspace
-    
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
-    
+
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
-    
+
     - name: Download AtomSpace Build
       uses: actions/download-artifact@v4
       with:
         name: atomspace-build-windows
         path: install
-    
+
     - name: Download vcpkg installed
       uses: actions/download-artifact@v4
       with:
         name: vcpkg-installed-cogutil
         path: vcpkg_installed
-    
+
+    - name: Create vcpkg cache directory
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path "$env:VCPKG_DEFAULT_BINARY_CACHE" | Out-Null
+
+    # CRITICAL: Export GitHub Actions cache variables for vcpkg binary caching
+    - name: Export GitHub Actions Cache Variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - name: Cache vcpkg binary packages
       uses: actions/cache@v4
       with:
         path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v2
+        key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}-v3
         restore-keys: |
-          vcpkg-binary-${{ runner.os }}-v2
-    
+          vcpkg-binary-${{ runner.os }}-v3
+          vcpkg-binary-${{ runner.os }}-
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgJsonGlob: 'vcpkg.json'
+        vcpkgGitCommitId: '11bbc873e00e9e58d4e9dffb30b7a5493a030e0b'
     
     - name: Configure CogServer
       shell: pwsh
