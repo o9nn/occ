@@ -125,7 +125,7 @@ CAMLprim value execute(value vatom)
 
 	Instantiator inst(atomspace);
 	ValuePtr pap(inst.execute(h));
-	if (pap and pap->is_atom())
+	if (pap && pap->is_atom())
 	{
 		pap = atomspace->add_atom(HandleCast(pap));
 	}
@@ -176,7 +176,7 @@ static std::string tosnake(const std::string& camel)
 	for (size_t i=1; i<len; i++)
 	{
 		char c = camel[i];
-		if ('A' <= c and c <= 'Z')
+		if ('A' <= c && c <= 'Z')
 		{
 			snake += '_';
 			snake += c - ('A' - 'a');
@@ -228,14 +228,14 @@ std::string oc_to_caml_str(const Handle& h, const std::string& indent)
 	}
 
 	// Chop off the trailing _link .. unless its a reserved word.
-	if (not starts_with(snakecase, "list") and
-		 not starts_with(snakecase, "true") and
-		 not starts_with(snakecase, "false") and
-		 not starts_with(snakecase, "and") and
-		 not starts_with(snakecase, "or") and
-		 not starts_with(snakecase, "type") and
-		 not starts_with(snakecase, "virtual") and
-		 not starts_with(snakecase, "function"))
+	if (!starts_with(snakecase, "list") &&
+		 !starts_with(snakecase, "true") &&
+		 !starts_with(snakecase, "false") &&
+		 !starts_with(snakecase, "and") &&
+		 !starts_with(snakecase, "or") &&
+		 !starts_with(snakecase, "type") &&
+		 !starts_with(snakecase, "virtual") &&
+		 !starts_with(snakecase, "function"))
 	{
 		size_t un = snakecase.rfind("_link");
 		if (std::string::npos != un)
@@ -248,7 +248,7 @@ std::string oc_to_caml_str(const Handle& h, const std::string& indent)
 		lnk += "\n" + oc_to_caml_str(ho, indent + oc_to_string_indent) + " ;";
 	}
 	if (';' == lnk[lnk.size()-1]) lnk.pop_back();
-	if (' ' == lnk[lnk.size()-1] and ']' == lnk[lnk.size()-2]) lnk.pop_back();
+	if (' ' == lnk[lnk.size()-1] && ']' == lnk[lnk.size()-2]) lnk.pop_back();
 	lnk += "]";
 
 	return lnk;

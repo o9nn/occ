@@ -173,7 +173,7 @@ class zipf_distribution
 		 */
 		const RealType H(const RealType x)
 		{
-			if (not spole)
+			if (!spole)
 				return std::pow(x + _q, oms) / oms;
 
 			const RealType log_xpq = std::log(x + _q);
@@ -190,7 +190,7 @@ class zipf_distribution
 		 */
 		const RealType H_inv(const RealType y)
 		{
-			if (not spole)
+			if (!spole)
 				return std::pow(y * oms, rvs) - _q;
 
 			return std::exp(y * log1pxbx(oms * y)) - _q;
