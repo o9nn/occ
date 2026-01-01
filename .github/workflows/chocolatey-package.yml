@@ -136,44 +136,36 @@ jobs:
       run: |
         Write-Host "=== Creating Nuspec File ===" -ForegroundColor Cyan
         
+        $version = "${{ steps.version.outputs.VERSION }}"
+        $pkgName = $env:PACKAGE_NAME
+        $maintainer = $env:PACKAGE_MAINTAINER
+
         $nuspec = @"
-<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
-  <metadata>
-    <id>$env:PACKAGE_NAME</id>
-    <version>${{ steps.version.outputs.VERSION }}</version>
-    <title>OpenCog Collection (OCC)</title>
-    <authors>$env:PACKAGE_MAINTAINER</authors>
-    <owners>$env:PACKAGE_MAINTAINER</owners>
-    <licenseUrl>https://github.com/o9nn/occ/blob/main/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/o9nn/occ</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>
-OpenCog Collection (OCC) - A comprehensive monorepo of OpenCog cognitive architecture components.
-
-Includes:
-- CogUtil: Foundation utilities and data structures
-- AtomSpace: Hypergraph knowledge representation system
-- Moses: Meta-optimizing semantic evolutionary search
-- CogServer: Network server for AtomSpace
-- URE: Unified Rule Engine
-- And many more cognitive AI components
-
-This package provides pre-built Windows binaries for the OpenCog framework.
-    </description>
-    <summary>OpenCog cognitive architecture framework for Windows</summary>
-    <tags>opencog ai agi cognitive-architecture atomspace moses machine-learning</tags>
-    <copyright>Copyright © 2025 OpenCog Community</copyright>
-    <dependencies>
-      <dependency id="vcredist140" version="14.0" />
-    </dependencies>
-  </metadata>
-  <files>
-    <file src="tools\**" target="tools" />
-    <file src="legal\**" target="legal" />
-  </files>
-</package>
-"@
+        <?xml version="1.0" encoding="utf-8"?>
+        <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+          <metadata>
+            <id>$pkgName</id>
+            <version>$version</version>
+            <title>OpenCog Collection (OCC)</title>
+            <authors>$maintainer</authors>
+            <owners>$maintainer</owners>
+            <licenseUrl>https://github.com/o9nn/occ/blob/main/LICENSE</licenseUrl>
+            <projectUrl>https://github.com/o9nn/occ</projectUrl>
+            <requireLicenseAcceptance>false</requireLicenseAcceptance>
+            <description>OpenCog Collection (OCC) - A comprehensive monorepo of OpenCog cognitive architecture components. Includes CogUtil, AtomSpace, Moses, CogServer, URE, and more.</description>
+            <summary>OpenCog cognitive architecture framework for Windows</summary>
+            <tags>opencog ai agi cognitive-architecture atomspace moses machine-learning</tags>
+            <copyright>Copyright 2025 OpenCog Community</copyright>
+            <dependencies>
+              <dependency id="vcredist140" version="14.0" />
+            </dependencies>
+          </metadata>
+          <files>
+            <file src="tools\**" target="tools" />
+            <file src="legal\**" target="legal" />
+          </files>
+        </package>
+        "@
         
         Set-Content -Path "choco-package/$env:PACKAGE_NAME.nuspec" -Value $nuspec
         Write-Host "✓ Nuspec file created" -ForegroundColor Green
@@ -184,34 +176,22 @@ This package provides pre-built Windows binaries for the OpenCog framework.
         Write-Host "=== Creating Installation Script ===" -ForegroundColor Cyan
         
         $installScript = @'
-$ErrorActionPreference = 'Stop'
-$packageName = $env:ChocolateyPackageName
-$toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
-$installDir = Join-Path $env:ProgramFiles "OpenCog\OCC"
-
-Write-Host "Installing $packageName to $installDir" -ForegroundColor Cyan
-
-# Create installation directory
-New-Item -ItemType Directory -Force -Path $installDir | Out-Null
-
-# Copy all files from tools directory
-if (Test-Path "$toolsDir\bin") {
-    Copy-Item -Path "$toolsDir\*" -Destination $installDir -Recurse -Force
-    Write-Host "Installed OpenCog binaries to $installDir" -ForegroundColor Green
-    
-    # Add to PATH
-    Install-ChocolateyPath -PathToInstall "$installDir\bin" -PathType 'Machine'
-    
-    # Set environment variable
-    Install-ChocolateyEnvironmentVariable -VariableName 'OPENCOG_HOME' -VariableValue $installDir -VariableType 'Machine'
-    
-    Write-Host "OpenCog Collection installed successfully!" -ForegroundColor Green
-    Write-Host "OPENCOG_HOME set to: $installDir" -ForegroundColor Cyan
-    Write-Host "Added to PATH: $installDir\bin" -ForegroundColor Cyan
-} else {
-    Write-Host "No binaries found in package. This is a minimal installation." -ForegroundColor Yellow
-}
-'@
+          $ErrorActionPreference = 'Stop'
+          $packageName = $env:ChocolateyPackageName
+          $toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
+          $installDir = Join-Path $env:ProgramFiles "OpenCog\OCC"
+          Write-Host "Installing $packageName to $installDir" -ForegroundColor Cyan
+          New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+          if (Test-Path "$toolsDir\bin") {
+              Copy-Item -Path "$toolsDir\*" -Destination $installDir -Recurse -Force
+              Write-Host "Installed OpenCog binaries to $installDir" -ForegroundColor Green
+              Install-ChocolateyPath -PathToInstall "$installDir\bin" -PathType 'Machine'
+              Install-ChocolateyEnvironmentVariable -VariableName 'OPENCOG_HOME' -VariableValue $installDir -VariableType 'Machine'
+              Write-Host "OpenCog Collection installed successfully!" -ForegroundColor Green
+          } else {
+              Write-Host "No binaries found in package. This is a minimal installation." -ForegroundColor Yellow
+          }
+          '@
         
         Set-Content -Path "choco-package/tools/chocolateyinstall.ps1" -Value $installScript
         Write-Host "✓ Installation script created" -ForegroundColor Green
@@ -222,26 +202,18 @@ if (Test-Path "$toolsDir\bin") {
         Write-Host "=== Creating Uninstallation Script ===" -ForegroundColor Cyan
         
         $uninstallScript = @'
-$ErrorActionPreference = 'Stop'
-$packageName = $env:ChocolateyPackageName
-$installDir = Join-Path $env:ProgramFiles "OpenCog\OCC"
-
-Write-Host "Uninstalling $packageName" -ForegroundColor Cyan
-
-# Remove from PATH
-Uninstall-ChocolateyPath -PathToUninstall "$installDir\bin" -PathType 'Machine'
-
-# Remove environment variable
-Uninstall-ChocolateyEnvironmentVariable -VariableName 'OPENCOG_HOME' -VariableType 'Machine'
-
-# Remove installation directory
-if (Test-Path $installDir) {
-    Remove-Item -Path $installDir -Recurse -Force
-    Write-Host "Removed installation directory: $installDir" -ForegroundColor Green
-}
-
-Write-Host "OpenCog Collection uninstalled successfully!" -ForegroundColor Green
-'@
+          $ErrorActionPreference = 'Stop'
+          $packageName = $env:ChocolateyPackageName
+          $installDir = Join-Path $env:ProgramFiles "OpenCog\OCC"
+          Write-Host "Uninstalling $packageName" -ForegroundColor Cyan
+          Uninstall-ChocolateyPath -PathToUninstall "$installDir\bin" -PathType 'Machine'
+          Uninstall-ChocolateyEnvironmentVariable -VariableName 'OPENCOG_HOME' -VariableType 'Machine'
+          if (Test-Path $installDir) {
+              Remove-Item -Path $installDir -Recurse -Force
+              Write-Host "Removed installation directory: $installDir" -ForegroundColor Green
+          }
+          Write-Host "OpenCog Collection uninstalled successfully!" -ForegroundColor Green
+          '@
         
         Set-Content -Path "choco-package/tools/chocolateyuninstall.ps1" -Value $uninstallScript
         Write-Host "✓ Uninstallation script created" -ForegroundColor Green
@@ -254,13 +226,12 @@ Write-Host "OpenCog Collection uninstalled successfully!" -ForegroundColor Green
         if (Test-Path "LICENSE") {
           Copy-Item -Path "LICENSE" -Destination "choco-package/legal/LICENSE.txt"
         } else {
-          $license = @"
-OpenCog Collection (OCC)
-Copyright © 2025 OpenCog Community
-
-Licensed under the GNU Affero General Public License v3.0
-See: https://github.com/o9nn/occ/blob/main/LICENSE
-"@
+          $license = @'
+          OpenCog Collection (OCC)
+          Copyright 2025 OpenCog Community
+          Licensed under the GNU Affero General Public License v3.0
+          See: https://github.com/o9nn/occ/blob/main/LICENSE
+          '@
           Set-Content -Path "choco-package/legal/LICENSE.txt" -Value $license
         }
         
