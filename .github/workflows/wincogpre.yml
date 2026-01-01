@@ -75,19 +75,17 @@ jobs:
           Write-Host "✓ cogutil directory exists" -ForegroundColor Green
           Get-ChildItem "cogutil" | Select-Object -First 10
         } else {
-          Write-Host "cogutil directory not found, skipping" -ForegroundColor Yellow
-          exit 0
+          Write-Host "cogutil directory not found" -ForegroundColor Yellow
         }
-    
-    
-    - name: Upload cogutil Artifacts
+
+    - name: Upload vcpkg Installed Packages
       uses: actions/upload-artifact@v4
+      continue-on-error: true
       with:
-        name: cogutil-windows-build
+        name: vcpkg-installed-x64-windows
         path: |
-          cogutil/build/**/*.dll
-          cogutil/build/**/*.lib
-          cogutil/build/**/*.pdb
-          cogutil/build/**/*.exe
-        retention-days: 1
+          vcpkg_installed/**/*
+          ${{ github.workspace }}/vcpkg_installed/**/*
+        retention-days: 0
+        if-no-files-found: warn
 
