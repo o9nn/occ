@@ -1,0 +1,179 @@
+name: Build Heavy Dependencies
+
+# Builds grpc, rocksdb, protobuf from source and caches binaries
+# These take 100+ minutes combined, so we build them separately
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 0'  # Weekly on Sunday 3 AM
+
+env:
+  BUILD_TYPE: Release
+  INSTALL_DIR: ${{ github.workspace }}/heavy-deps
+
+jobs:
+  build-protobuf:
+    runs-on: windows-latest
+    name: "Build Protobuf (~13 min)"
+
+    steps:
+      - name: Restore Protobuf Cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/heavy-deps/protobuf
+          key: protobuf-v28.3-windows-x64
+
+      - name: Clone Protobuf
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch v28.3 https://github.com/protocolbuffers/protobuf.git
+
+      - name: Build Protobuf
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path protobuf/build | Out-Null
+          Set-Location protobuf/build
+
+          cmake .. -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_INSTALL_PREFIX="${{ env.INSTALL_DIR }}/protobuf" `
+            -Dprotobuf_BUILD_TESTS=OFF `
+            -Dprotobuf_BUILD_SHARED_LIBS=OFF
+
+          cmake --build . --config Release --parallel 4
+          cmake --install . --config Release
+
+      - name: Upload Protobuf
+        uses: actions/upload-artifact@v4
+        with:
+          name: protobuf-windows-x64
+          path: ${{ env.INSTALL_DIR }}/protobuf
+          retention-days: 0
+
+  build-rocksdb:
+    runs-on: windows-latest
+    name: "Build RocksDB (~28 min)"
+
+    steps:
+      - name: Restore RocksDB Cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/heavy-deps/rocksdb
+          key: rocksdb-v9.8.4-windows-x64
+
+      - name: Clone RocksDB
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch v9.8.4 https://github.com/facebook/rocksdb.git
+
+      - name: Build RocksDB
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path rocksdb/build | Out-Null
+          Set-Location rocksdb/build
+
+          cmake .. -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_INSTALL_PREFIX="${{ env.INSTALL_DIR }}/rocksdb" `
+            -DWITH_TESTS=OFF `
+            -DWITH_TOOLS=OFF `
+            -DWITH_BENCHMARK_TOOLS=OFF `
+            -DROCKSDB_BUILD_SHARED=OFF
+
+          cmake --build . --config Release --parallel 4
+          cmake --install . --config Release
+
+      - name: Upload RocksDB
+        uses: actions/upload-artifact@v4
+        with:
+          name: rocksdb-windows-x64
+          path: ${{ env.INSTALL_DIR }}/rocksdb
+          retention-days: 0
+
+  build-grpc:
+    runs-on: windows-latest
+    name: "Build gRPC (~60 min)"
+    timeout-minutes: 90
+
+    steps:
+      - name: Restore gRPC Cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/heavy-deps/grpc
+          key: grpc-v1.68.2-windows-x64
+
+      - name: Clone gRPC
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch v1.68.2 --recurse-submodules https://github.com/grpc/grpc.git
+
+      - name: Build gRPC
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path grpc/build | Out-Null
+          Set-Location grpc/build
+
+          # gRPC builds its own protobuf from submodules
+          cmake .. -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_INSTALL_PREFIX="${{ env.INSTALL_DIR }}/grpc" `
+            -DgRPC_BUILD_TESTS=OFF `
+            -DgRPC_BUILD_CSHARP_EXT=OFF `
+            -DgRPC_INSTALL=ON
+
+          cmake --build . --config Release --parallel 4
+          cmake --install . --config Release
+
+      - name: Upload gRPC
+        uses: actions/upload-artifact@v4
+        with:
+          name: grpc-windows-x64
+          path: ${{ env.INSTALL_DIR }}/grpc
+          retention-days: 0
+
+  consolidate:
+    runs-on: windows-latest
+    name: "Package All Heavy Deps"
+    needs: [build-protobuf, build-rocksdb, build-grpc]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: heavy-deps
+
+      - name: Create Combined Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "prebuilt/heavy" | Out-Null
+
+          # Copy all deps
+          Copy-Item -Path "heavy-deps/protobuf-windows-x64/*" -Destination "prebuilt/heavy/" -Recurse -Force
+          Copy-Item -Path "heavy-deps/rocksdb-windows-x64/*" -Destination "prebuilt/heavy/" -Recurse -Force
+          Copy-Item -Path "heavy-deps/grpc-windows-x64/*" -Destination "prebuilt/heavy/" -Recurse -Force
+
+          # Create manifest
+          @{
+            "generated" = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+            "packages" = @{
+              "protobuf" = "v28.3"
+              "rocksdb" = "v9.8.4"
+              "grpc" = "v1.68.2"
+            }
+          } | ConvertTo-Json | Out-File "prebuilt/heavy/manifest.json"
+
+      - name: Upload Combined Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: heavy-deps-windows-x64
+          path: prebuilt/heavy/
+          retention-days: 0
