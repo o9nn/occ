@@ -28,14 +28,15 @@ jobs:
       - name: Clone Protobuf
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          git clone --depth 1 --branch v28.3 https://github.com/protocolbuffers/protobuf.git
+          git clone --depth 1 --branch v28.3 --recurse-submodules https://github.com/protocolbuffers/protobuf.git
 
       - name: Build Protobuf
         if: steps.cache.outputs.cache-hit != 'true'
         shell: pwsh
+        working-directory: ${{ github.workspace }}
         run: |
-          New-Item -ItemType Directory -Force -Path protobuf/build | Out-Null
-          Set-Location protobuf/build
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\protobuf\build" | Out-Null
+          Set-Location "${{ github.workspace }}\protobuf\build"
 
           cmake .. -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_BUILD_TYPE=Release `
@@ -73,9 +74,10 @@ jobs:
       - name: Build RocksDB
         if: steps.cache.outputs.cache-hit != 'true'
         shell: pwsh
+        working-directory: ${{ github.workspace }}
         run: |
-          New-Item -ItemType Directory -Force -Path rocksdb/build | Out-Null
-          Set-Location rocksdb/build
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\rocksdb\build" | Out-Null
+          Set-Location "${{ github.workspace }}\rocksdb\build"
 
           cmake .. -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_BUILD_TYPE=Release `
@@ -116,9 +118,10 @@ jobs:
       - name: Build gRPC
         if: steps.cache.outputs.cache-hit != 'true'
         shell: pwsh
+        working-directory: ${{ github.workspace }}
         run: |
-          New-Item -ItemType Directory -Force -Path grpc/build | Out-Null
-          Set-Location grpc/build
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\grpc\build" | Out-Null
+          Set-Location "${{ github.workspace }}\grpc\build"
 
           # gRPC builds its own protobuf from submodules
           cmake .. -G "Visual Studio 17 2022" -A x64 `
