@@ -1,8 +1,13 @@
 name: Vendor Complete Builds to Repository
 
-# Builds AND vendors everything: vcpkg deps + cogutil + atomspace + moses
+# SMART INCREMENTAL VENDORING:
+# - Calculates source hash for each component
+# - Only rebuilds if source changed since last vendor
+# - Stores hashes in manifest for comparison
+# - Skips unchanged components entirely
+#
 # After running, the repo contains ALL prebuilt binaries.
-# Future builds can skip building these entirely.
+# Future runs only rebuild what actually changed.
 
 on:
   workflow_dispatch:
@@ -17,11 +22,22 @@ on:
           - deps-only
           - cogutil-only
           - atomspace-only
+          - moses-only
+          - cogserver-only
       force_rebuild:
-        description: 'Force rebuild (ignore existing)'
+        description: 'Force rebuild ALL (ignore source hashes)'
         required: false
         default: 'false'
         type: boolean
+  push:
+    paths:
+      - 'cogutil/**'
+      - 'atomspace/**'
+      - 'moses/**'
+      - 'cogserver/**'
+    branches:
+      - main
+      - master
   workflow_run:
     workflows: ["Vendor Dependencies to Repository"]
     types:
@@ -38,43 +54,119 @@ env:
 
 jobs:
   # =================================================================
-  # PHASE 1: Ensure vcpkg dependencies are vendored
+  # DETECT CHANGES - Calculate source hashes and determine what to build
   # =================================================================
-  ensure-deps:
+  detect-changes:
     runs-on: windows-latest
-    name: "Phase 1: Check/Build Dependencies"
+    name: "Detect Source Changes"
     outputs:
-      deps_ready: ${{ steps.check.outputs.ready }}
+      cogutil_changed: ${{ steps.detect.outputs.cogutil_changed }}
+      atomspace_changed: ${{ steps.detect.outputs.atomspace_changed }}
+      moses_changed: ${{ steps.detect.outputs.moses_changed }}
+      cogserver_changed: ${{ steps.detect.outputs.cogserver_changed }}
+      deps_ready: ${{ steps.detect.outputs.deps_ready }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check existing vendored deps
-        id: check
+      - name: Detect changes and check hashes
+        id: detect
         shell: pwsh
         run: |
+          # Function to calculate hash of a directory
+          function Get-DirectoryHash {
+            param([string]$Path)
+            if (-not (Test-Path $Path)) { return "missing" }
+
+            $files = Get-ChildItem -Path $Path -Recurse -File -Include "*.cpp","*.h","*.hpp","*.cc","*.cxx","CMakeLists.txt" -ErrorAction SilentlyContinue
+            if (-not $files) { return "empty" }
+
+            $hashes = $files | ForEach-Object {
+              (Get-FileHash $_.FullName -Algorithm SHA256).Hash
+            }
+            $combined = $hashes -join ""
+            return (Get-FileHash -InputStream ([System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($combined))) -Algorithm SHA256).Hash.Substring(0, 16)
+          }
+
+          # Load existing manifest
+          $manifestPath = "prebuilt/SOURCE_HASHES.json"
+          $oldHashes = @{}
+          if (Test-Path $manifestPath) {
+            $oldHashes = Get-Content $manifestPath -Raw | ConvertFrom-Json -AsHashtable
+            Write-Host "Loaded existing source hashes" -ForegroundColor Cyan
+          } else {
+            Write-Host "No existing hashes - will build all" -ForegroundColor Yellow
+          }
+
+          # Calculate current hashes
+          $components = @{
+            "cogutil" = "cogutil"
+            "atomspace" = "atomspace"
+            "moses" = "moses"
+            "cogserver" = "cogserver"
+          }
+
+          $currentHashes = @{}
+          $forceRebuild = "${{ github.event.inputs.force_rebuild }}" -eq "true"
+
+          foreach ($name in $components.Keys) {
+            $path = $components[$name]
+            $hash = Get-DirectoryHash -Path $path
+            $currentHashes[$name] = $hash
+
+            $oldHash = if ($oldHashes.ContainsKey($name)) { $oldHashes[$name] } else { "none" }
+            $vendoredExists = Test-Path "prebuilt/occ/include/opencog"
+
+            if ($forceRebuild) {
+              Write-Host "  $name : FORCE REBUILD" -ForegroundColor Magenta
+              echo "${name}_changed=true" >> $env:GITHUB_OUTPUT
+            } elseif ($hash -ne $oldHash) {
+              Write-Host "  $name : CHANGED ($oldHash -> $hash)" -ForegroundColor Yellow
+              echo "${name}_changed=true" >> $env:GITHUB_OUTPUT
+            } elseif (-not $vendoredExists) {
+              Write-Host "  $name : NOT VENDORED (hash: $hash)" -ForegroundColor Yellow
+              echo "${name}_changed=true" >> $env:GITHUB_OUTPUT
+            } else {
+              Write-Host "  $name : unchanged ($hash)" -ForegroundColor Green
+              echo "${name}_changed=false" >> $env:GITHUB_OUTPUT
+            }
+          }
+
+          # Save current hashes for next run comparison
+          $currentHashes | ConvertTo-Json | Out-File "prebuilt/SOURCE_HASHES_CURRENT.json" -Encoding UTF8
+
+          # Check if vcpkg deps are ready
           if (Test-Path "prebuilt/x64-windows/lib/grpc.lib") {
             $libCount = (Get-ChildItem -Path "prebuilt/x64-windows/lib" -Filter "*.lib").Count
             if ($libCount -gt 100) {
-              Write-Host "Found $libCount vendored libraries - deps ready!" -ForegroundColor Green
-              echo "ready=true" >> $env:GITHUB_OUTPUT
-              exit 0
+              Write-Host "`nvcpkg deps ready ($libCount libraries)" -ForegroundColor Green
+              echo "deps_ready=true" >> $env:GITHUB_OUTPUT
+            } else {
+              echo "deps_ready=false" >> $env:GITHUB_OUTPUT
             }
+          } else {
+            Write-Host "`nWARNING: vcpkg deps not vendored!" -ForegroundColor Red
+            Write-Host "Run vendor-dependencies.yml first" -ForegroundColor Yellow
+            echo "deps_ready=false" >> $env:GITHUB_OUTPUT
           }
-          Write-Host "Dependencies not vendored - need to build first" -ForegroundColor Yellow
-          Write-Host "Please run 'vendor-dependencies.yml' workflow first" -ForegroundColor Red
-          echo "ready=false" >> $env:GITHUB_OUTPUT
+
+      - name: Upload current hashes
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-hashes
+          path: prebuilt/SOURCE_HASHES_CURRENT.json
+          retention-days: 1
 
   # =================================================================
-  # PHASE 2: Build and Vendor CogUtil
+  # BUILD COGUTIL (if changed)
   # =================================================================
   vendor-cogutil:
     runs-on: windows-latest
-    name: "Phase 2: Build & Vendor CogUtil"
-    needs: ensure-deps
-    if: needs.ensure-deps.outputs.deps_ready == 'true'
+    name: "Build CogUtil"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deps_ready == 'true' && needs.detect-changes.outputs.cogutil_changed == 'true'
 
     steps:
       - uses: actions/checkout@v4
@@ -84,22 +176,10 @@ jobs:
 
       - uses: microsoft/setup-msbuild@v2
 
-      - name: Check existing CogUtil
-        id: check-cogutil
-        shell: pwsh
-        run: |
-          if ((Test-Path "prebuilt/occ/lib/cogutil.lib") -and ("${{ github.event.inputs.force_rebuild }}" -ne "true")) {
-            Write-Host "CogUtil already vendored - skipping" -ForegroundColor Green
-            echo "skip=true" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "skip=false" >> $env:GITHUB_OUTPUT
-          }
-
       - name: Build CogUtil
-        if: steps.check-cogutil.outputs.skip != 'true'
         shell: pwsh
         run: |
-          Write-Host "=== Building CogUtil ===" -ForegroundColor Cyan
+          Write-Host "=== Building CogUtil (source changed) ===" -ForegroundColor Cyan
 
           New-Item -ItemType Directory -Force -Path cogutil/build | Out-Null
           Set-Location cogutil/build
@@ -120,58 +200,46 @@ jobs:
 
           Write-Host "CogUtil build complete!" -ForegroundColor Green
 
-      - name: Verify CogUtil
-        if: steps.check-cogutil.outputs.skip != 'true'
+      - name: Download source hashes
+        uses: actions/download-artifact@v4
+        with:
+          name: source-hashes
+          path: prebuilt/
+
+      - name: Update hash manifest
         shell: pwsh
         run: |
-          $files = @(
-            "prebuilt/occ/lib/cogutil.lib",
-            "prebuilt/occ/include/opencog/util/Config.h"
-          )
+          # Update the hash manifest with cogutil's hash
+          $hashFile = "prebuilt/SOURCE_HASHES_CURRENT.json"
+          $manifestFile = "prebuilt/SOURCE_HASHES.json"
 
-          $allGood = $true
-          foreach ($f in $files) {
-            # Check with wildcards for lib files
-            $found = Get-ChildItem -Path (Split-Path $f) -Filter (Split-Path $f -Leaf) -ErrorAction SilentlyContinue
-            if ($found) {
-              Write-Host "  OK: $f" -ForegroundColor Green
-            } else {
-              Write-Host "  MISSING: $f" -ForegroundColor Yellow
-              # Not critical - patterns may vary
-            }
-          }
-
-          if (Test-Path "prebuilt/occ/lib") {
-            $libCount = (Get-ChildItem -Path "prebuilt/occ/lib" -Filter "*.lib" -ErrorAction SilentlyContinue).Count
-            Write-Host "CogUtil libraries: $libCount" -ForegroundColor Cyan
+          if (Test-Path $hashFile) {
+            Copy-Item $hashFile $manifestFile -Force
           }
 
       - name: Commit CogUtil
-        if: steps.check-cogutil.outputs.skip != 'true'
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add prebuilt/occ/
+          git add prebuilt/occ/ prebuilt/SOURCE_HASHES.json
 
-          $changes = git status --porcelain prebuilt/occ/
+          $changes = git status --porcelain prebuilt/
           if ($changes) {
-            git commit -m "chore: Vendor prebuilt CogUtil for Windows x64
+            # Get source hash for commit message
+            $hash = "unknown"
+            if (Test-Path "prebuilt/SOURCE_HASHES.json") {
+              $hashes = Get-Content "prebuilt/SOURCE_HASHES.json" -Raw | ConvertFrom-Json
+              $hash = $hashes.cogutil
+            }
 
-Pre-compiled CogUtil libraries and headers.
-Eliminates CogUtil build time for downstream components."
+            git commit -m "chore: Vendor CogUtil (source hash: $hash)
 
+Rebuilt due to source changes in cogutil/"
+            git push origin HEAD:${{ github.ref_name }}
             Write-Host "Committed CogUtil" -ForegroundColor Green
-          } else {
-            Write-Host "No CogUtil changes to commit" -ForegroundColor Yellow
           }
-
-      - name: Push CogUtil
-        if: steps.check-cogutil.outputs.skip != 'true'
-        shell: pwsh
-        run: |
-          git push origin HEAD:${{ github.ref_name }} || Write-Host "Push will be done at end" -ForegroundColor Yellow
 
       - name: Upload CogUtil artifact
         uses: actions/upload-artifact@v4
@@ -181,12 +249,16 @@ Eliminates CogUtil build time for downstream components."
           retention-days: 7
 
   # =================================================================
-  # PHASE 3: Build and Vendor AtomSpace
+  # BUILD ATOMSPACE (if changed OR cogutil changed)
   # =================================================================
   vendor-atomspace:
     runs-on: windows-latest
-    name: "Phase 3: Build & Vendor AtomSpace"
-    needs: vendor-cogutil
+    name: "Build AtomSpace"
+    needs: [detect-changes, vendor-cogutil]
+    if: |
+      always() &&
+      needs.detect-changes.outputs.deps_ready == 'true' &&
+      (needs.detect-changes.outputs.atomspace_changed == 'true' || needs.detect-changes.outputs.cogutil_changed == 'true')
 
     steps:
       - uses: actions/checkout@v4
@@ -196,39 +268,26 @@ Eliminates CogUtil build time for downstream components."
 
       - uses: microsoft/setup-msbuild@v2
 
-      - name: Pull latest (get CogUtil)
+      - name: Pull latest
         shell: pwsh
-        run: |
-          git pull origin ${{ github.ref_name }} || true
+        run: git pull origin ${{ github.ref_name }} || true
 
-      - name: Download CogUtil if needed
+      - name: Download CogUtil if rebuilt
+        if: needs.vendor-cogutil.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: vendored-cogutil
           path: prebuilt/occ/
         continue-on-error: true
 
-      - name: Check existing AtomSpace
-        id: check-atomspace
-        shell: pwsh
-        run: |
-          if ((Test-Path "prebuilt/occ/lib/atomspace.lib") -and ("${{ github.event.inputs.force_rebuild }}" -ne "true")) {
-            Write-Host "AtomSpace already vendored - skipping" -ForegroundColor Green
-            echo "skip=true" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "skip=false" >> $env:GITHUB_OUTPUT
-          }
-
       - name: Build AtomSpace
-        if: steps.check-atomspace.outputs.skip != 'true'
         shell: pwsh
         run: |
-          Write-Host "=== Building AtomSpace ===" -ForegroundColor Cyan
+          Write-Host "=== Building AtomSpace (source or dependency changed) ===" -ForegroundColor Cyan
 
           New-Item -ItemType Directory -Force -Path atomspace/build | Out-Null
           Set-Location atomspace/build
 
-          # Both vendored vcpkg deps and vendored cogutil
           $prefixPath = "$env:PREBUILT_DIR;$env:GITHUB_WORKSPACE/prebuilt/occ"
 
           cmake .. `
@@ -245,10 +304,7 @@ Eliminates CogUtil build time for downstream components."
           cmake --build . --config $env:BUILD_TYPE --parallel 4
           cmake --install . --config $env:BUILD_TYPE
 
-          Write-Host "AtomSpace build complete!" -ForegroundColor Green
-
       - name: Commit AtomSpace
-        if: steps.check-atomspace.outputs.skip != 'true'
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"
@@ -258,13 +314,8 @@ Eliminates CogUtil build time for downstream components."
 
           $changes = git status --porcelain prebuilt/occ/
           if ($changes) {
-            git commit -m "chore: Vendor prebuilt AtomSpace for Windows x64
-
-Pre-compiled AtomSpace libraries and headers.
-Eliminates AtomSpace build time for downstream components."
-
+            git commit -m "chore: Vendor AtomSpace (rebuilt due to changes)"
             git push origin HEAD:${{ github.ref_name }}
-            Write-Host "Committed and pushed AtomSpace" -ForegroundColor Green
           }
 
       - name: Upload AtomSpace artifact
@@ -275,12 +326,16 @@ Eliminates AtomSpace build time for downstream components."
           retention-days: 7
 
   # =================================================================
-  # PHASE 4: Build and Vendor Moses
+  # BUILD MOSES (if changed OR cogutil changed)
   # =================================================================
   vendor-moses:
     runs-on: windows-latest
-    name: "Phase 4: Build & Vendor Moses"
-    needs: vendor-cogutil  # Only needs CogUtil, not AtomSpace
+    name: "Build Moses"
+    needs: [detect-changes, vendor-cogutil]
+    if: |
+      always() &&
+      needs.detect-changes.outputs.deps_ready == 'true' &&
+      (needs.detect-changes.outputs.moses_changed == 'true' || needs.detect-changes.outputs.cogutil_changed == 'true')
 
     steps:
       - uses: actions/checkout@v4
@@ -294,26 +349,15 @@ Eliminates AtomSpace build time for downstream components."
         shell: pwsh
         run: git pull origin ${{ github.ref_name }} || true
 
-      - name: Download CogUtil
+      - name: Download CogUtil if rebuilt
+        if: needs.vendor-cogutil.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: vendored-cogutil
           path: prebuilt/occ/
         continue-on-error: true
 
-      - name: Check existing Moses
-        id: check-moses
-        shell: pwsh
-        run: |
-          if ((Test-Path "prebuilt/occ/lib/moses.lib") -and ("${{ github.event.inputs.force_rebuild }}" -ne "true")) {
-            Write-Host "Moses already vendored - skipping" -ForegroundColor Green
-            echo "skip=true" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "skip=false" >> $env:GITHUB_OUTPUT
-          }
-
       - name: Build Moses
-        if: steps.check-moses.outputs.skip != 'true'
         shell: pwsh
         run: |
           Write-Host "=== Building Moses ===" -ForegroundColor Cyan
@@ -337,10 +381,7 @@ Eliminates AtomSpace build time for downstream components."
           cmake --build . --config $env:BUILD_TYPE --parallel 4
           cmake --install . --config $env:BUILD_TYPE
 
-          Write-Host "Moses build complete!" -ForegroundColor Green
-
       - name: Commit Moses
-        if: steps.check-moses.outputs.skip != 'true'
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"
@@ -350,18 +391,23 @@ Eliminates AtomSpace build time for downstream components."
 
           $changes = git status --porcelain prebuilt/occ/
           if ($changes) {
-            git commit -m "chore: Vendor prebuilt Moses for Windows x64"
+            git commit -m "chore: Vendor Moses (rebuilt due to changes)"
             git push origin HEAD:${{ github.ref_name }}
-            Write-Host "Committed and pushed Moses" -ForegroundColor Green
           }
 
   # =================================================================
-  # PHASE 5: Build and Vendor CogServer
+  # BUILD COGSERVER (if changed OR atomspace changed)
   # =================================================================
   vendor-cogserver:
     runs-on: windows-latest
-    name: "Phase 5: Build & Vendor CogServer"
-    needs: vendor-atomspace
+    name: "Build CogServer"
+    needs: [detect-changes, vendor-atomspace]
+    if: |
+      always() &&
+      needs.detect-changes.outputs.deps_ready == 'true' &&
+      (needs.detect-changes.outputs.cogserver_changed == 'true' ||
+       needs.detect-changes.outputs.atomspace_changed == 'true' ||
+       needs.detect-changes.outputs.cogutil_changed == 'true')
 
     steps:
       - uses: actions/checkout@v4
@@ -375,7 +421,8 @@ Eliminates AtomSpace build time for downstream components."
         shell: pwsh
         run: git pull origin ${{ github.ref_name }} || true
 
-      - name: Download AtomSpace
+      - name: Download AtomSpace if rebuilt
+        if: needs.vendor-atomspace.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: vendored-atomspace
@@ -422,18 +469,18 @@ Eliminates AtomSpace build time for downstream components."
 
           $changes = git status --porcelain prebuilt/occ/
           if ($changes) {
-            git commit -m "chore: Vendor prebuilt CogServer for Windows x64"
+            git commit -m "chore: Vendor CogServer (rebuilt due to changes)"
             git push origin HEAD:${{ github.ref_name }}
           }
         continue-on-error: true
 
   # =================================================================
-  # FINAL: Create manifest and summary
+  # FINALIZE - Update manifest with all hashes
   # =================================================================
   finalize:
     runs-on: windows-latest
-    name: "Finalize Vendoring"
-    needs: [vendor-cogutil, vendor-atomspace, vendor-moses, vendor-cogserver]
+    name: "Finalize & Update Manifest"
+    needs: [detect-changes, vendor-cogutil, vendor-atomspace, vendor-moses, vendor-cogserver]
     if: always()
 
     steps:
@@ -446,40 +493,67 @@ Eliminates AtomSpace build time for downstream components."
         shell: pwsh
         run: git pull origin ${{ github.ref_name }} || true
 
-      - name: Create complete manifest
+      - name: Download source hashes
+        uses: actions/download-artifact@v4
+        with:
+          name: source-hashes
+          path: prebuilt/
+        continue-on-error: true
+
+      - name: Update final manifest
         shell: pwsh
         run: |
+          # Copy current hashes to permanent manifest
+          $currentFile = "prebuilt/SOURCE_HASHES_CURRENT.json"
+          $manifestFile = "prebuilt/SOURCE_HASHES.json"
+
+          if (Test-Path $currentFile) {
+            Copy-Item $currentFile $manifestFile -Force
+            Write-Host "Updated source hashes manifest" -ForegroundColor Green
+          }
+
+          # Create complete manifest
           $manifest = @{
             "generated" = (Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
             "platform" = "windows-x64"
             "build_type" = "Release"
-            "vcpkg_deps" = @{
-              "status" = if (Test-Path "prebuilt/x64-windows/lib/grpc.lib") { "vendored" } else { "missing" }
-              "path" = "prebuilt/x64-windows"
+            "source_hashes" = @{}
+            "rebuild_triggers" = @{
+              "cogutil" = "cogutil/ changes"
+              "atomspace" = "atomspace/ or cogutil/ changes"
+              "moses" = "moses/ or cogutil/ changes"
+              "cogserver" = "cogserver/, atomspace/, or cogutil/ changes"
             }
-            "occ_builds" = @{
-              "cogutil" = if (Test-Path "prebuilt/occ/include/opencog") { "vendored" } else { "missing" }
-              "atomspace" = if (Test-Path "prebuilt/occ/lib/*atomspace*") { "vendored" } else { "check" }
-              "moses" = if (Test-Path "prebuilt/occ/lib/*moses*") { "vendored" } else { "check" }
-              "cogserver" = if (Test-Path "prebuilt/occ/lib/*cogserver*") { "vendored" } else { "check" }
-              "path" = "prebuilt/occ"
-            }
+          }
+
+          # Load source hashes
+          if (Test-Path $manifestFile) {
+            $manifest.source_hashes = Get-Content $manifestFile -Raw | ConvertFrom-Json -AsHashtable
+          }
+
+          # Add status
+          $manifest["status"] = @{
+            "cogutil" = if (Test-Path "prebuilt/occ/include/opencog") { "vendored" } else { "missing" }
+            "atomspace" = if ((Get-ChildItem "prebuilt/occ/lib/*atomspace*" -ErrorAction SilentlyContinue)) { "vendored" } else { "check" }
+            "moses" = if ((Get-ChildItem "prebuilt/occ/lib/*moses*" -ErrorAction SilentlyContinue)) { "vendored" } else { "check" }
+            "cogserver" = if ((Get-ChildItem "prebuilt/occ/lib/*cogserver*" -ErrorAction SilentlyContinue)) { "vendored" } else { "check" }
+            "vcpkg_deps" = if (Test-Path "prebuilt/x64-windows/lib/grpc.lib") { "vendored" } else { "missing" }
           }
 
           New-Item -ItemType Directory -Force -Path "prebuilt" | Out-Null
           $manifest | ConvertTo-Json -Depth 4 | Out-File "prebuilt/COMPLETE_MANIFEST.json" -Encoding UTF8
 
-      - name: Commit manifest
+      - name: Commit final manifest
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add prebuilt/COMPLETE_MANIFEST.json
+          git add prebuilt/SOURCE_HASHES.json prebuilt/COMPLETE_MANIFEST.json
 
           $changes = git status --porcelain
           if ($changes) {
-            git commit -m "chore: Update vendored builds manifest"
+            git commit -m "chore: Update vendored builds manifest with source hashes"
             git push origin HEAD:${{ github.ref_name }}
           }
 
@@ -488,27 +562,19 @@ Eliminates AtomSpace build time for downstream components."
         run: |
           Write-Host ""
           Write-Host "================================================" -ForegroundColor Green
-          Write-Host "     COMPLETE VENDORING FINISHED" -ForegroundColor Green
+          Write-Host "     SMART INCREMENTAL VENDORING COMPLETE" -ForegroundColor Green
           Write-Host "================================================" -ForegroundColor Green
           Write-Host ""
-          Write-Host "Vendored Components:" -ForegroundColor Yellow
+          Write-Host "Changes Detected:" -ForegroundColor Yellow
+          Write-Host "  - CogUtil:   ${{ needs.detect-changes.outputs.cogutil_changed }}"
+          Write-Host "  - AtomSpace: ${{ needs.detect-changes.outputs.atomspace_changed }}"
+          Write-Host "  - Moses:     ${{ needs.detect-changes.outputs.moses_changed }}"
+          Write-Host "  - CogServer: ${{ needs.detect-changes.outputs.cogserver_changed }}"
+          Write-Host ""
+          Write-Host "Build Results:" -ForegroundColor Yellow
           Write-Host "  - CogUtil:   ${{ needs.vendor-cogutil.result }}"
           Write-Host "  - AtomSpace: ${{ needs.vendor-atomspace.result }}"
           Write-Host "  - Moses:     ${{ needs.vendor-moses.result }}"
           Write-Host "  - CogServer: ${{ needs.vendor-cogserver.result }}"
           Write-Host ""
-
-          # Calculate sizes
-          if (Test-Path "prebuilt/x64-windows") {
-            $depsSize = [math]::Round((Get-ChildItem -Path "prebuilt/x64-windows" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB)
-            Write-Host "vcpkg deps size: ${depsSize} MB" -ForegroundColor Cyan
-          }
-
-          if (Test-Path "prebuilt/occ") {
-            $occSize = [math]::Round((Get-ChildItem -Path "prebuilt/occ" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB)
-            Write-Host "OCC builds size: ${occSize} MB" -ForegroundColor Cyan
-          }
-
-          Write-Host ""
-          Write-Host "Your repo now contains ALL prebuilt binaries!" -ForegroundColor Magenta
-          Write-Host "Future builds will be INSTANT - no compilation needed!" -ForegroundColor Magenta
+          Write-Host "Next run will only rebuild components with source changes!" -ForegroundColor Magenta
