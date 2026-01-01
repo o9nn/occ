@@ -77,7 +77,7 @@ public:
         : the_stack(), the_mutex(), the_cond(), is_canceled(false)
     {}
     ~concurrent_stack()
-    { if (not is_canceled) cancel(); }
+    { if (!is_canceled) cancel(); }
 
     struct Canceled : public std::exception
     {
@@ -154,7 +154,7 @@ public:
         // on an empty stack is undefined and/or throws ick.
         do
         {
-            while (the_stack.empty() and not is_canceled)
+            while (the_stack.empty() && !is_canceled)
             {
                 the_cond.wait(lock);
             }
@@ -182,7 +182,7 @@ public:
         // wakes up, and yet the stack is empty.
         do
         {
-            while (the_stack.empty() and not is_canceled)
+            while (the_stack.empty() && !is_canceled)
             {
                 the_cond.wait(lock);
             }
@@ -206,7 +206,7 @@ public:
     {
         std::unique_lock<std::mutex> lock(the_mutex);
 
-        while (the_stack.empty() and not is_canceled)
+        while (the_stack.empty() && !is_canceled)
         {
             the_cond.wait(lock);
         }

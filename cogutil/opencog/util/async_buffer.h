@@ -34,12 +34,7 @@
 #include <io.h>
 #include <process.h>
 #else
-#ifdef _WIN32
-#include <io.h>
-#include <process.h>
-#else
 #include <unistd.h> /* for usleep() */
-#endif
 #endif
 
 #include <opencog/util/concurrent_set.h>

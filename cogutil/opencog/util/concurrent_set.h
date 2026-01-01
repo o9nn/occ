@@ -251,7 +251,7 @@ public:
         // wakes up, && yet the set is empty.
         do
         {
-            while (the_set.empty() and not is_canceled)
+            while (the_set.empty() && !is_canceled)
             {
                 the_cond.wait(lock);
             }
@@ -280,7 +280,7 @@ public:
         // wakes up, and yet the set is empty.
         do
         {
-            while (the_set.empty() and not is_canceled)
+            while (the_set.empty() && !is_canceled)
             {
                 the_cond.wait(lock);
             }
@@ -304,7 +304,7 @@ public:
     {
         std::unique_lock<std::mutex> lock(the_mutex);
 
-        while (the_set.empty() and not is_canceled)
+        while (the_set.empty() && !is_canceled)
         {
             the_cond.wait(lock);
         }
