@@ -234,9 +234,7 @@ jobs:
               $hash = $hashes.cogutil
             }
 
-            git commit -m "chore: Vendor CogUtil (source hash: $hash)
-
-Rebuilt due to source changes in cogutil/"
+            git commit -m "chore: Vendor CogUtil (source hash: $hash) - rebuilt due to source changes"
             git push origin HEAD:${{ github.ref_name }}
             Write-Host "Committed CogUtil" -ForegroundColor Green
           }

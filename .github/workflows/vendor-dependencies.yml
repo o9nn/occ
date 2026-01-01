@@ -302,57 +302,49 @@ jobs:
           $manifest | ConvertTo-Json -Depth 4 | Out-File "prebuilt/MANIFEST.json" -Encoding UTF8
 
           # Also create a simple README
-          @"
-# Prebuilt Windows Dependencies
+          $readmeContent = @'
+          # Prebuilt Windows Dependencies
 
-This directory contains prebuilt vcpkg packages for Windows x64.
+          This directory contains prebuilt vcpkg packages for Windows x64.
 
-**Generated:** $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-**Triplet:** x64-windows
-**vcpkg Baseline:** 11bbc873e00e9e58d4e9dffb30b7a5493a030e0b
+          **Triplet:** x64-windows
+          **vcpkg Baseline:** 11bbc873e00e9e58d4e9dffb30b7a5493a030e0b
 
-## Usage in CMake
+          ## Usage in CMake
 
-```cmake
-set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/prebuilt/x64-windows")
-```
+          set(CMAKE_PREFIX_PATH "prebuilt/x64-windows")
 
-## Contents
+          ## Contents
 
-- ``include/`` - Header files
-- ``lib/`` - Static libraries (.lib)
-- ``bin/`` - Dynamic libraries (.dll) and tools
-- ``share/`` - CMake config files
-- ``tools/`` - Build tools (protoc, grpc_cpp_plugin, etc.)
+          - include/ - Header files
+          - lib/ - Static libraries (.lib)
+          - bin/ - Dynamic libraries (.dll) and tools
+          - share/ - CMake config files
+          - tools/ - Build tools (protoc, grpc_cpp_plugin, etc.)
 
-## Major Packages Included
+          ## Major Packages Included
 
-- gRPC (with codegen)
-- RocksDB
-- Protobuf
-- OpenSSL
-- Boost (all components)
-- fmt, spdlog, catch2
-- TBB, hwloc
-- PostgreSQL client (libpq)
-- ZeroMQ
-- And 90+ more...
+          - gRPC (with codegen), RocksDB, Protobuf, OpenSSL
+          - Boost (all components), fmt, spdlog, catch2
+          - TBB, hwloc, PostgreSQL client (libpq), ZeroMQ
+          - And 90+ more...
 
-**DO NOT EDIT MANUALLY** - Regenerate with vendor-dependencies.yml workflow
-"@ | Out-File "prebuilt/README.md" -Encoding UTF8
+          DO NOT EDIT MANUALLY - Regenerate with vendor-dependencies.yml workflow
+          '@
+          $readmeContent | Out-File "prebuilt/README.md" -Encoding UTF8
 
       - name: Configure Git LFS for large files
         if: steps.check-existing.outputs.skip_build != 'true'
         shell: pwsh
         run: |
           # Create .gitattributes for LFS if not exists
-          $lfsPatterns = @"
-# Git LFS for prebuilt binaries
-prebuilt/**/*.lib filter=lfs diff=lfs merge=lfs -text
-prebuilt/**/*.dll filter=lfs diff=lfs merge=lfs -text
-prebuilt/**/*.exe filter=lfs diff=lfs merge=lfs -text
-prebuilt/**/*.pdb filter=lfs diff=lfs merge=lfs -text
-"@
+          $lfsPatterns = @'
+          # Git LFS for prebuilt binaries
+          prebuilt/**/*.lib filter=lfs diff=lfs merge=lfs -text
+          prebuilt/**/*.dll filter=lfs diff=lfs merge=lfs -text
+          prebuilt/**/*.exe filter=lfs diff=lfs merge=lfs -text
+          prebuilt/**/*.pdb filter=lfs diff=lfs merge=lfs -text
+          '@
 
           if (Test-Path ".gitattributes") {
             $existing = Get-Content ".gitattributes" -Raw
@@ -396,13 +388,7 @@ prebuilt/**/*.pdb filter=lfs diff=lfs merge=lfs -text
           if ($changes) {
             $size = (Get-ChildItem -Path "prebuilt" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
 
-            git commit -m "chore: Vendor Windows x64 dependencies ($([math]::Round($size))MB)
-
-Prebuilt vcpkg packages for instant Windows builds.
-No more 2+ hour dependency builds!
-
-Includes: gRPC, RocksDB, Protobuf, OpenSSL, Boost, and 90+ packages.
-Generated from vcpkg baseline: 11bbc873e00e9e58d4e9dffb30b7a5493a030e0b"
+            git commit -m "chore: Vendor Windows x64 dependencies ($([math]::Round($size))MB) - prebuilt vcpkg packages"
 
             Write-Host "Committed vendored dependencies" -ForegroundColor Green
           } else {

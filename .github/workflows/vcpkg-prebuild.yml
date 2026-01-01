@@ -89,9 +89,35 @@ jobs:
             vcpkg-tier1-x64-windows-
 
       - name: Setup vcpkg
+        id: vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: '11bbc873e00e9e58d4e9dffb30b7a5493a030e0b'
+
+      - name: Verify vcpkg Setup
+        shell: pwsh
+        run: |
+          # Determine vcpkg root - action stores it in VCPKG_ROOT or github workspace
+          $vcpkgRoot = $env:VCPKG_ROOT
+          if (-not $vcpkgRoot) {
+            $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          }
+
+          Write-Host "VCPKG_ROOT: $vcpkgRoot" -ForegroundColor Cyan
+
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+          if (Test-Path $vcpkgExe) {
+            Write-Host "vcpkg.exe found at: $vcpkgExe" -ForegroundColor Green
+            & $vcpkgExe --version
+          } else {
+            Write-Host "ERROR: vcpkg.exe not found at $vcpkgExe" -ForegroundColor Red
+            Write-Host "Searching for vcpkg.exe..." -ForegroundColor Yellow
+            Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "vcpkg.exe" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Found: $($_.FullName)" }
+            exit 1
+          }
+
+          # Export for subsequent steps
+          echo "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
 
       - name: Build Tier 1 Packages
         if: steps.restore-cache.outputs.cache-hit != 'true' || github.event.inputs.force_rebuild == 'true'
@@ -101,6 +127,15 @@ jobs:
         run: |
           Write-Host "=== Building Tier 1: Quick Packages ===" -ForegroundColor Cyan
           Write-Host "These are header-only and quick-to-build packages" -ForegroundColor Gray
+
+          # Ensure VCPKG_ROOT is set
+          $vcpkgRoot = $env:VCPKG_ROOT
+          if (-not $vcpkgRoot) {
+            $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+
+          Write-Host "Using vcpkg at: $vcpkgExe" -ForegroundColor Cyan
 
           $tier1Packages = @(
             "vcpkg-cmake",
@@ -168,25 +203,38 @@ jobs:
           $total = $tier1Packages.Count
           $current = 0
           $failed = @()
+          $succeeded = @()
 
           foreach ($pkg in $tier1Packages) {
             $current++
             Write-Host "`n[$current/$total] Installing $pkg..." -ForegroundColor Yellow
 
-            $result = & "$env:VCPKG_ROOT/vcpkg.exe" install "${pkg}:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR" 2>&1
+            # Run vcpkg and capture output properly
+            $process = Start-Process -FilePath $vcpkgExe -ArgumentList "install", "${pkg}:x64-windows", "--x-install-root=`"$env:VCPKG_INSTALLED_DIR`"" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "stdout.txt" -RedirectStandardError "stderr.txt"
 
-            if ($LASTEXITCODE -eq 0) {
+            if ($process.ExitCode -eq 0) {
               Write-Host "  OK: $pkg installed" -ForegroundColor Green
+              $succeeded += $pkg
             } else {
-              Write-Host "  WARN: $pkg may have issues" -ForegroundColor Yellow
+              Write-Host "  WARN: $pkg may have issues (exit code: $($process.ExitCode))" -ForegroundColor Yellow
+              # Show stderr for debugging
+              if (Test-Path "stderr.txt") {
+                $stderr = Get-Content "stderr.txt" -Raw
+                if ($stderr) { Write-Host "  Error: $stderr" -ForegroundColor Red }
+              }
               $failed += $pkg
             }
           }
 
           Write-Host "`n=== Tier 1 Summary ===" -ForegroundColor Cyan
-          Write-Host "Installed: $($total - $failed.Count)/$total packages" -ForegroundColor Green
+          Write-Host "Installed: $($succeeded.Count)/$total packages" -ForegroundColor Green
           if ($failed.Count -gt 0) {
             Write-Host "Issues with: $($failed -join ', ')" -ForegroundColor Yellow
+            # Exit with error if critical packages failed
+            if ($failed -contains "vcpkg-cmake" -or $failed -contains "vcpkg-cmake-config") {
+              Write-Host "Critical package failed - exiting" -ForegroundColor Red
+              exit 1
+            }
           }
 
       - name: Verify Tier 1 Installation
@@ -288,9 +336,24 @@ jobs:
             vcpkg-tier1-x64-windows-
 
       - name: Setup vcpkg
+        id: vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: '11bbc873e00e9e58d4e9dffb30b7a5493a030e0b'
+
+      - name: Verify vcpkg Setup
+        shell: pwsh
+        run: |
+          $vcpkgRoot = $env:VCPKG_ROOT
+          if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+          if (Test-Path $vcpkgExe) {
+            Write-Host "vcpkg.exe found: $vcpkgExe" -ForegroundColor Green
+            echo "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
+          } else {
+            Write-Host "ERROR: vcpkg.exe not found" -ForegroundColor Red
+            exit 1
+          }
 
       - name: Build Tier 2 Packages
         if: steps.restore-cache.outputs.cache-hit != 'true' || github.event.inputs.force_rebuild == 'true'
@@ -299,6 +362,10 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building Tier 2: Medium Packages ===" -ForegroundColor Cyan
+
+          $vcpkgRoot = $env:VCPKG_ROOT
+          if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
 
           # Build in order of dependency/time
           $tier2Packages = @(
@@ -327,25 +394,35 @@ jobs:
 
           $total = $tier2Packages.Count
           $current = 0
+          $failed = @()
+          $succeeded = @()
 
           foreach ($pkg in $tier2Packages) {
             $current++
             Write-Host "`n[$current/$total] Installing $pkg..." -ForegroundColor Yellow
             $startTime = Get-Date
 
-            & "$env:VCPKG_ROOT/vcpkg.exe" install "${pkg}:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR"
+            $process = Start-Process -FilePath $vcpkgExe -ArgumentList "install", "${pkg}:x64-windows", "--x-install-root=`"$env:VCPKG_INSTALLED_DIR`"" -Wait -NoNewWindow -PassThru
 
             $elapsed = (Get-Date) - $startTime
-            if ($LASTEXITCODE -eq 0) {
+            if ($process.ExitCode -eq 0) {
               Write-Host "  OK: $pkg ($([math]::Round($elapsed.TotalSeconds, 1))s)" -ForegroundColor Green
+              $succeeded += $pkg
             } else {
-              Write-Host "  FAILED: $pkg" -ForegroundColor Red
+              Write-Host "  FAILED: $pkg (exit code: $($process.ExitCode))" -ForegroundColor Red
+              $failed += $pkg
             }
 
             # Save checkpoint every 5 packages
             if ($current % 5 -eq 0) {
               Write-Host "`n  [Checkpoint at $current packages]" -ForegroundColor Magenta
             }
+          }
+
+          Write-Host "`n=== Tier 2 Summary ===" -ForegroundColor Cyan
+          Write-Host "Installed: $($succeeded.Count)/$total packages" -ForegroundColor Green
+          if ($failed.Count -gt 0) {
+            Write-Host "Issues with: $($failed -join ', ')" -ForegroundColor Yellow
           }
 
       - name: Verify Tier 2 Installation
@@ -437,9 +514,24 @@ jobs:
             vcpkg-tier1-
 
       - name: Setup vcpkg
+        id: vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: '11bbc873e00e9e58d4e9dffb30b7a5493a030e0b'
+
+      - name: Verify vcpkg Setup
+        shell: pwsh
+        run: |
+          $vcpkgRoot = $env:VCPKG_ROOT
+          if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+          if (Test-Path $vcpkgExe) {
+            Write-Host "vcpkg.exe found: $vcpkgExe" -ForegroundColor Green
+            echo "VCPKG_ROOT=$vcpkgRoot" >> $env:GITHUB_ENV
+          } else {
+            Write-Host "ERROR: vcpkg.exe not found" -ForegroundColor Red
+            exit 1
+          }
 
       # =========== OPENSSL (~8 min) ===========
       - name: "Build: OpenSSL"
@@ -449,9 +541,11 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building OpenSSL (~8 min) ===" -ForegroundColor Cyan
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
           $startTime = Get-Date
 
-          & "$env:VCPKG_ROOT/vcpkg.exe" install openssl:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          & $vcpkgExe install openssl:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
           $elapsed = (Get-Date) - $startTime
           Write-Host "OpenSSL completed in $([math]::Round($elapsed.TotalMinutes, 1)) minutes" -ForegroundColor Green
@@ -480,9 +574,11 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building Abseil (~2 min) ===" -ForegroundColor Cyan
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
           $startTime = Get-Date
 
-          & "$env:VCPKG_ROOT/vcpkg.exe" install abseil:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          & $vcpkgExe install abseil:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
           $elapsed = (Get-Date) - $startTime
           Write-Host "Abseil completed in $([math]::Round($elapsed.TotalMinutes, 1)) minutes" -ForegroundColor Green
@@ -494,7 +590,9 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building RE2 ===" -ForegroundColor Cyan
-          & "$env:VCPKG_ROOT/vcpkg.exe" install re2:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+          & $vcpkgExe install re2:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
       # =========== C-ARES (~1.5 min) ===========
       - name: "Build: c-ares"
@@ -503,7 +601,9 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building c-ares ===" -ForegroundColor Cyan
-          & "$env:VCPKG_ROOT/vcpkg.exe" install c-ares:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+          & $vcpkgExe install c-ares:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
       # =========== PROTOBUF (~13 min) ===========
       - name: "Build: Protobuf"
@@ -513,9 +613,11 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building Protobuf (~13 min) ===" -ForegroundColor Cyan
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
           $startTime = Get-Date
 
-          & "$env:VCPKG_ROOT/vcpkg.exe" install protobuf:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          & $vcpkgExe install protobuf:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
           $elapsed = (Get-Date) - $startTime
           Write-Host "Protobuf completed in $([math]::Round($elapsed.TotalMinutes, 1)) minutes" -ForegroundColor Green
@@ -544,9 +646,11 @@ jobs:
         run: |
           Write-Host "=== Building gRPC (~60 min) ===" -ForegroundColor Cyan
           Write-Host "This is the longest package - go grab a coffee!" -ForegroundColor Yellow
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
           $startTime = Get-Date
 
-          & "$env:VCPKG_ROOT/vcpkg.exe" install "grpc[codegen,core]:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          & $vcpkgExe install "grpc[codegen,core]:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
           $elapsed = (Get-Date) - $startTime
           Write-Host "gRPC completed in $([math]::Round($elapsed.TotalMinutes, 1)) minutes" -ForegroundColor Green
@@ -574,7 +678,9 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building hwloc (~7 min) ===" -ForegroundColor Cyan
-          & "$env:VCPKG_ROOT/vcpkg.exe" install hwloc:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+          & $vcpkgExe install hwloc:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
       # =========== LIBPQ (~1.5 min) ===========
       - name: "Build: libpq (PostgreSQL)"
@@ -583,7 +689,9 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building libpq ===" -ForegroundColor Cyan
-          & "$env:VCPKG_ROOT/vcpkg.exe" install "libpq[core,lz4,openssl,zlib]:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+          & $vcpkgExe install "libpq[core,lz4,openssl,zlib]:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
       # =========== LZ4 (for RocksDB) ===========
       - name: "Build: lz4"
@@ -592,7 +700,9 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building lz4 ===" -ForegroundColor Cyan
-          & "$env:VCPKG_ROOT/vcpkg.exe" install lz4:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
+          & $vcpkgExe install lz4:x64-windows --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
       # =========== ROCKSDB (~28 min) ===========
       - name: "Build: RocksDB"
@@ -602,9 +712,11 @@ jobs:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: |
           Write-Host "=== Building RocksDB (~28 min) ===" -ForegroundColor Cyan
+          $vcpkgRoot = $env:VCPKG_ROOT; if (-not $vcpkgRoot) { $vcpkgRoot = "${{ github.workspace }}/vcpkg" }
+          $vcpkgExe = Join-Path $vcpkgRoot "vcpkg.exe"
           $startTime = Get-Date
 
-          & "$env:VCPKG_ROOT/vcpkg.exe" install "rocksdb[core,zlib]:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR"
+          & $vcpkgExe install "rocksdb[core,zlib]:x64-windows" --x-install-root="$env:VCPKG_INSTALLED_DIR"
 
           $elapsed = (Get-Date) - $startTime
           Write-Host "RocksDB completed in $([math]::Round($elapsed.TotalMinutes, 1)) minutes" -ForegroundColor Green
