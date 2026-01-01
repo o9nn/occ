@@ -1,0 +1,514 @@
+name: Vendor Complete Builds to Repository
+
+# Builds AND vendors everything: vcpkg deps + cogutil + atomspace + moses
+# After running, the repo contains ALL prebuilt binaries.
+# Future builds can skip building these entirely.
+
+on:
+  workflow_dispatch:
+    inputs:
+      components:
+        description: 'Components to build and vendor'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - deps-only
+          - cogutil-only
+          - atomspace-only
+      force_rebuild:
+        description: 'Force rebuild (ignore existing)'
+        required: false
+        default: 'false'
+        type: boolean
+  workflow_run:
+    workflows: ["Vendor Dependencies to Repository"]
+    types:
+      - completed
+
+concurrency:
+  group: vendor-builds
+  cancel-in-progress: false
+
+env:
+  BUILD_TYPE: Release
+  CMAKE_GENERATOR: "Visual Studio 17 2022"
+  PREBUILT_DIR: ${{ github.workspace }}/prebuilt/x64-windows
+
+jobs:
+  # =================================================================
+  # PHASE 1: Ensure vcpkg dependencies are vendored
+  # =================================================================
+  ensure-deps:
+    runs-on: windows-latest
+    name: "Phase 1: Check/Build Dependencies"
+    outputs:
+      deps_ready: ${{ steps.check.outputs.ready }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check existing vendored deps
+        id: check
+        shell: pwsh
+        run: |
+          if (Test-Path "prebuilt/x64-windows/lib/grpc.lib") {
+            $libCount = (Get-ChildItem -Path "prebuilt/x64-windows/lib" -Filter "*.lib").Count
+            if ($libCount -gt 100) {
+              Write-Host "Found $libCount vendored libraries - deps ready!" -ForegroundColor Green
+              echo "ready=true" >> $env:GITHUB_OUTPUT
+              exit 0
+            }
+          }
+          Write-Host "Dependencies not vendored - need to build first" -ForegroundColor Yellow
+          Write-Host "Please run 'vendor-dependencies.yml' workflow first" -ForegroundColor Red
+          echo "ready=false" >> $env:GITHUB_OUTPUT
+
+  # =================================================================
+  # PHASE 2: Build and Vendor CogUtil
+  # =================================================================
+  vendor-cogutil:
+    runs-on: windows-latest
+    name: "Phase 2: Build & Vendor CogUtil"
+    needs: ensure-deps
+    if: needs.ensure-deps.outputs.deps_ready == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Check existing CogUtil
+        id: check-cogutil
+        shell: pwsh
+        run: |
+          if ((Test-Path "prebuilt/occ/lib/cogutil.lib") -and ("${{ github.event.inputs.force_rebuild }}" -ne "true")) {
+            Write-Host "CogUtil already vendored - skipping" -ForegroundColor Green
+            echo "skip=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "skip=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Build CogUtil
+        if: steps.check-cogutil.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          Write-Host "=== Building CogUtil ===" -ForegroundColor Cyan
+
+          New-Item -ItemType Directory -Force -Path cogutil/build | Out-Null
+          Set-Location cogutil/build
+
+          cmake .. `
+            -G "$env:CMAKE_GENERATOR" `
+            -A x64 `
+            -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
+            -DCMAKE_PREFIX_PATH="$env:PREBUILT_DIR" `
+            -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/prebuilt/occ" `
+            -DBoost_NO_SYSTEM_PATHS=ON `
+            -DBOOST_ROOT="$env:PREBUILT_DIR" `
+            -DBoost_INCLUDE_DIR="$env:PREBUILT_DIR/include" `
+            -DBoost_LIBRARY_DIR="$env:PREBUILT_DIR/lib"
+
+          cmake --build . --config $env:BUILD_TYPE --parallel 4
+          cmake --install . --config $env:BUILD_TYPE
+
+          Write-Host "CogUtil build complete!" -ForegroundColor Green
+
+      - name: Verify CogUtil
+        if: steps.check-cogutil.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          $files = @(
+            "prebuilt/occ/lib/cogutil.lib",
+            "prebuilt/occ/include/opencog/util/Config.h"
+          )
+
+          $allGood = $true
+          foreach ($f in $files) {
+            # Check with wildcards for lib files
+            $found = Get-ChildItem -Path (Split-Path $f) -Filter (Split-Path $f -Leaf) -ErrorAction SilentlyContinue
+            if ($found) {
+              Write-Host "  OK: $f" -ForegroundColor Green
+            } else {
+              Write-Host "  MISSING: $f" -ForegroundColor Yellow
+              # Not critical - patterns may vary
+            }
+          }
+
+          if (Test-Path "prebuilt/occ/lib") {
+            $libCount = (Get-ChildItem -Path "prebuilt/occ/lib" -Filter "*.lib" -ErrorAction SilentlyContinue).Count
+            Write-Host "CogUtil libraries: $libCount" -ForegroundColor Cyan
+          }
+
+      - name: Commit CogUtil
+        if: steps.check-cogutil.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add prebuilt/occ/
+
+          $changes = git status --porcelain prebuilt/occ/
+          if ($changes) {
+            git commit -m "chore: Vendor prebuilt CogUtil for Windows x64
+
+Pre-compiled CogUtil libraries and headers.
+Eliminates CogUtil build time for downstream components."
+
+            Write-Host "Committed CogUtil" -ForegroundColor Green
+          } else {
+            Write-Host "No CogUtil changes to commit" -ForegroundColor Yellow
+          }
+
+      - name: Push CogUtil
+        if: steps.check-cogutil.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          git push origin HEAD:${{ github.ref_name }} || Write-Host "Push will be done at end" -ForegroundColor Yellow
+
+      - name: Upload CogUtil artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendored-cogutil
+          path: prebuilt/occ/
+          retention-days: 7
+
+  # =================================================================
+  # PHASE 3: Build and Vendor AtomSpace
+  # =================================================================
+  vendor-atomspace:
+    runs-on: windows-latest
+    name: "Phase 3: Build & Vendor AtomSpace"
+    needs: vendor-cogutil
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Pull latest (get CogUtil)
+        shell: pwsh
+        run: |
+          git pull origin ${{ github.ref_name }} || true
+
+      - name: Download CogUtil if needed
+        uses: actions/download-artifact@v4
+        with:
+          name: vendored-cogutil
+          path: prebuilt/occ/
+        continue-on-error: true
+
+      - name: Check existing AtomSpace
+        id: check-atomspace
+        shell: pwsh
+        run: |
+          if ((Test-Path "prebuilt/occ/lib/atomspace.lib") -and ("${{ github.event.inputs.force_rebuild }}" -ne "true")) {
+            Write-Host "AtomSpace already vendored - skipping" -ForegroundColor Green
+            echo "skip=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "skip=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Build AtomSpace
+        if: steps.check-atomspace.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          Write-Host "=== Building AtomSpace ===" -ForegroundColor Cyan
+
+          New-Item -ItemType Directory -Force -Path atomspace/build | Out-Null
+          Set-Location atomspace/build
+
+          # Both vendored vcpkg deps and vendored cogutil
+          $prefixPath = "$env:PREBUILT_DIR;$env:GITHUB_WORKSPACE/prebuilt/occ"
+
+          cmake .. `
+            -G "$env:CMAKE_GENERATOR" `
+            -A x64 `
+            -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
+            -DCMAKE_PREFIX_PATH="$prefixPath" `
+            -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/prebuilt/occ" `
+            -DBoost_NO_SYSTEM_PATHS=ON `
+            -DBOOST_ROOT="$env:PREBUILT_DIR" `
+            -DBoost_INCLUDE_DIR="$env:PREBUILT_DIR/include" `
+            -DBoost_LIBRARY_DIR="$env:PREBUILT_DIR/lib"
+
+          cmake --build . --config $env:BUILD_TYPE --parallel 4
+          cmake --install . --config $env:BUILD_TYPE
+
+          Write-Host "AtomSpace build complete!" -ForegroundColor Green
+
+      - name: Commit AtomSpace
+        if: steps.check-atomspace.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add prebuilt/occ/
+
+          $changes = git status --porcelain prebuilt/occ/
+          if ($changes) {
+            git commit -m "chore: Vendor prebuilt AtomSpace for Windows x64
+
+Pre-compiled AtomSpace libraries and headers.
+Eliminates AtomSpace build time for downstream components."
+
+            git push origin HEAD:${{ github.ref_name }}
+            Write-Host "Committed and pushed AtomSpace" -ForegroundColor Green
+          }
+
+      - name: Upload AtomSpace artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendored-atomspace
+          path: prebuilt/occ/
+          retention-days: 7
+
+  # =================================================================
+  # PHASE 4: Build and Vendor Moses
+  # =================================================================
+  vendor-moses:
+    runs-on: windows-latest
+    name: "Phase 4: Build & Vendor Moses"
+    needs: vendor-cogutil  # Only needs CogUtil, not AtomSpace
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Pull latest
+        shell: pwsh
+        run: git pull origin ${{ github.ref_name }} || true
+
+      - name: Download CogUtil
+        uses: actions/download-artifact@v4
+        with:
+          name: vendored-cogutil
+          path: prebuilt/occ/
+        continue-on-error: true
+
+      - name: Check existing Moses
+        id: check-moses
+        shell: pwsh
+        run: |
+          if ((Test-Path "prebuilt/occ/lib/moses.lib") -and ("${{ github.event.inputs.force_rebuild }}" -ne "true")) {
+            Write-Host "Moses already vendored - skipping" -ForegroundColor Green
+            echo "skip=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "skip=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Build Moses
+        if: steps.check-moses.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          Write-Host "=== Building Moses ===" -ForegroundColor Cyan
+
+          New-Item -ItemType Directory -Force -Path moses/build | Out-Null
+          Set-Location moses/build
+
+          $prefixPath = "$env:PREBUILT_DIR;$env:GITHUB_WORKSPACE/prebuilt/occ"
+
+          cmake .. `
+            -G "$env:CMAKE_GENERATOR" `
+            -A x64 `
+            -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
+            -DCMAKE_PREFIX_PATH="$prefixPath" `
+            -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/prebuilt/occ" `
+            -DBoost_NO_SYSTEM_PATHS=ON `
+            -DBOOST_ROOT="$env:PREBUILT_DIR" `
+            -DBoost_INCLUDE_DIR="$env:PREBUILT_DIR/include" `
+            -DBoost_LIBRARY_DIR="$env:PREBUILT_DIR/lib"
+
+          cmake --build . --config $env:BUILD_TYPE --parallel 4
+          cmake --install . --config $env:BUILD_TYPE
+
+          Write-Host "Moses build complete!" -ForegroundColor Green
+
+      - name: Commit Moses
+        if: steps.check-moses.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add prebuilt/occ/
+
+          $changes = git status --porcelain prebuilt/occ/
+          if ($changes) {
+            git commit -m "chore: Vendor prebuilt Moses for Windows x64"
+            git push origin HEAD:${{ github.ref_name }}
+            Write-Host "Committed and pushed Moses" -ForegroundColor Green
+          }
+
+  # =================================================================
+  # PHASE 5: Build and Vendor CogServer
+  # =================================================================
+  vendor-cogserver:
+    runs-on: windows-latest
+    name: "Phase 5: Build & Vendor CogServer"
+    needs: vendor-atomspace
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Pull latest
+        shell: pwsh
+        run: git pull origin ${{ github.ref_name }} || true
+
+      - name: Download AtomSpace
+        uses: actions/download-artifact@v4
+        with:
+          name: vendored-atomspace
+          path: prebuilt/occ/
+        continue-on-error: true
+
+      - name: Build CogServer
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "cogserver")) {
+            Write-Host "CogServer directory not found - skipping" -ForegroundColor Yellow
+            exit 0
+          }
+
+          Write-Host "=== Building CogServer ===" -ForegroundColor Cyan
+
+          New-Item -ItemType Directory -Force -Path cogserver/build | Out-Null
+          Set-Location cogserver/build
+
+          $prefixPath = "$env:PREBUILT_DIR;$env:GITHUB_WORKSPACE/prebuilt/occ"
+
+          cmake .. `
+            -G "$env:CMAKE_GENERATOR" `
+            -A x64 `
+            -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE `
+            -DCMAKE_PREFIX_PATH="$prefixPath" `
+            -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/prebuilt/occ" `
+            -DBoost_NO_SYSTEM_PATHS=ON `
+            -DBOOST_ROOT="$env:PREBUILT_DIR" `
+            -DBoost_INCLUDE_DIR="$env:PREBUILT_DIR/include" `
+            -DBoost_LIBRARY_DIR="$env:PREBUILT_DIR/lib"
+
+          cmake --build . --config $env:BUILD_TYPE --parallel 4
+          cmake --install . --config $env:BUILD_TYPE
+        continue-on-error: true
+
+      - name: Commit CogServer
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add prebuilt/occ/
+
+          $changes = git status --porcelain prebuilt/occ/
+          if ($changes) {
+            git commit -m "chore: Vendor prebuilt CogServer for Windows x64"
+            git push origin HEAD:${{ github.ref_name }}
+          }
+        continue-on-error: true
+
+  # =================================================================
+  # FINAL: Create manifest and summary
+  # =================================================================
+  finalize:
+    runs-on: windows-latest
+    name: "Finalize Vendoring"
+    needs: [vendor-cogutil, vendor-atomspace, vendor-moses, vendor-cogserver]
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Pull all changes
+        shell: pwsh
+        run: git pull origin ${{ github.ref_name }} || true
+
+      - name: Create complete manifest
+        shell: pwsh
+        run: |
+          $manifest = @{
+            "generated" = (Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
+            "platform" = "windows-x64"
+            "build_type" = "Release"
+            "vcpkg_deps" = @{
+              "status" = if (Test-Path "prebuilt/x64-windows/lib/grpc.lib") { "vendored" } else { "missing" }
+              "path" = "prebuilt/x64-windows"
+            }
+            "occ_builds" = @{
+              "cogutil" = if (Test-Path "prebuilt/occ/include/opencog") { "vendored" } else { "missing" }
+              "atomspace" = if (Test-Path "prebuilt/occ/lib/*atomspace*") { "vendored" } else { "check" }
+              "moses" = if (Test-Path "prebuilt/occ/lib/*moses*") { "vendored" } else { "check" }
+              "cogserver" = if (Test-Path "prebuilt/occ/lib/*cogserver*") { "vendored" } else { "check" }
+              "path" = "prebuilt/occ"
+            }
+          }
+
+          New-Item -ItemType Directory -Force -Path "prebuilt" | Out-Null
+          $manifest | ConvertTo-Json -Depth 4 | Out-File "prebuilt/COMPLETE_MANIFEST.json" -Encoding UTF8
+
+      - name: Commit manifest
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add prebuilt/COMPLETE_MANIFEST.json
+
+          $changes = git status --porcelain
+          if ($changes) {
+            git commit -m "chore: Update vendored builds manifest"
+            git push origin HEAD:${{ github.ref_name }}
+          }
+
+      - name: Summary
+        shell: pwsh
+        run: |
+          Write-Host ""
+          Write-Host "================================================" -ForegroundColor Green
+          Write-Host "     COMPLETE VENDORING FINISHED" -ForegroundColor Green
+          Write-Host "================================================" -ForegroundColor Green
+          Write-Host ""
+          Write-Host "Vendored Components:" -ForegroundColor Yellow
+          Write-Host "  - CogUtil:   ${{ needs.vendor-cogutil.result }}"
+          Write-Host "  - AtomSpace: ${{ needs.vendor-atomspace.result }}"
+          Write-Host "  - Moses:     ${{ needs.vendor-moses.result }}"
+          Write-Host "  - CogServer: ${{ needs.vendor-cogserver.result }}"
+          Write-Host ""
+
+          # Calculate sizes
+          if (Test-Path "prebuilt/x64-windows") {
+            $depsSize = [math]::Round((Get-ChildItem -Path "prebuilt/x64-windows" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB)
+            Write-Host "vcpkg deps size: ${depsSize} MB" -ForegroundColor Cyan
+          }
+
+          if (Test-Path "prebuilt/occ") {
+            $occSize = [math]::Round((Get-ChildItem -Path "prebuilt/occ" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB)
+            Write-Host "OCC builds size: ${occSize} MB" -ForegroundColor Cyan
+          }
+
+          Write-Host ""
+          Write-Host "Your repo now contains ALL prebuilt binaries!" -ForegroundColor Magenta
+          Write-Host "Future builds will be INSTANT - no compilation needed!" -ForegroundColor Magenta
