@@ -58,9 +58,14 @@ occ/
 │
 ├── CI/CD
 │   └── .github/workflows/
-│       ├── occ-build.yml  # Complete stack build
-│       ├── debian-packages.yml
-│       └── cogci.yml
+│       ├── occ-win-build.yml       # Windows build with vcpkg caching
+│       ├── occ-win-build-fast.yml  # Fast Windows build (vendored deps)
+│       ├── vcpkg-prebuild.yml      # Tiered vcpkg dependency pre-building
+│       ├── heavy-deps-build.yml    # Heavy deps (protobuf, grpc, rocksdb)
+│       ├── vendor-builds.yml       # Smart incremental vendoring
+│       ├── vendor-dependencies.yml # Vendor vcpkg dependencies
+│       ├── electron-app-build.yml  # Electron desktop app build
+│       └── wincogpre.yml           # Windows cogutil pre-build
 │
 └── Documentation
     ├── docs/              # Architecture and guides
@@ -96,13 +101,36 @@ occ/
 
 Components must be built in this order due to dependencies:
 
-1. `cogutil` - Foundation utilities
+**Foundation Layer:**
+1. `cogutil` - Foundation utilities (build first, no dependencies)
+
+**Core Layer:**
 2. `atomspace` - Hypergraph database (requires cogutil)
-3. `atomspace-storage` - Storage API (requires atomspace)
-4. `cogserver` - Networking (requires atomspace)
-5. `unify` - Unification (requires atomspace)
-6. `ure` - Rule Engine (requires unify)
-7. Higher-level components (miner, pln, attention, etc.)
+3. `coggml` - CogGML self-aware microkernel (requires cogutil)
+4. `atomspace-accelerator` - Inference engine (can build independently)
+
+**Storage Layer:**
+5. `atomspace-storage` - Base storage API (requires atomspace)
+6. `atomspace-rocks` - RocksDB backend (requires atomspace-storage)
+7. `atomspace-cog` - Network storage (requires atomspace-storage)
+
+**Networking & Framework:**
+8. `cogserver` - Networking/IPC (requires atomspace + atomspace-storage)
+9. `matrix` - Sparse matrix support (requires atomspace)
+10. `learn` - Symbolic learning (requires atomspace)
+11. `agents` - Interactive agents (requires atomspace)
+12. `sensory` - Dataflow system (requires atomspace)
+
+**Reasoning Layer:**
+13. `unify` - Unification algorithms (requires atomspace)
+14. `ure` - Unified Rule Engine (requires unify)
+15. `miner` - Pattern mining (requires ure)
+16. `pln` - Probabilistic Logic Networks (requires ure)
+17. `attention` - Attention allocation (requires atomspace)
+
+**Cognitive Integration:**
+18. `cogself` - AGI synergy framework (requires coggml)
+19. `agentic-chatbots` - Conversational AI (can build independently)
 
 ### CMake Build Options
 
@@ -190,10 +218,36 @@ make test-integration
 
 ### CI/CD Pipeline
 
-The GitHub Actions workflow (`occ-build.yml`) runs:
-1. Build each component in dependency order
-2. Run unit tests (allowed to fail with `continue-on-error`)
-3. Generate build report
+The repository uses multiple GitHub Actions workflows for comprehensive CI/CD:
+
+#### Windows Build Workflows
+- **`occ-win-build.yml`**: Full Windows build using vcpkg with GitHub Actions binary caching
+  - Builds: cogutil → atomspace → moses (parallel) → cogserver
+  - Uses prebuilt vcpkg packages from `vcpkg-prebuild.yml`
+  - First build: ~2 hours, subsequent: ~5-10 minutes
+
+- **`occ-win-build-fast.yml`**: Fast Windows build using vendored dependencies
+  - Requires `vendor-dependencies.yml` to run first
+  - Build time: ~5-10 minutes (no vcpkg rebuild)
+
+- **`vcpkg-prebuild.yml`**: Tiered vcpkg dependency pre-building
+  - Tier 1: Quick packages (Boost headers, header-only libs) ~5-10 min
+  - Tier 2: Medium packages (Boost compiled, fmt, spdlog) ~15-20 min
+  - Tier 3: Heavy packages (gRPC, RocksDB, Protobuf) ~100 min
+  - Runs weekly or on vcpkg.json changes
+
+#### Vendoring Workflows
+- **`vendor-builds.yml`**: Smart incremental vendoring
+  - Calculates source hashes to detect changes
+  - Only rebuilds components with modified source
+  - Commits prebuilt binaries to repository
+
+- **`vendor-dependencies.yml`**: Vendors vcpkg dependencies
+
+#### Electron App
+- **`electron-app-build.yml`**: Builds desktop app for Windows/Linux
+  - Triggered after successful Windows build
+  - Creates installers (.exe, .msi, .AppImage, .deb)
 
 ## Key Files for AI Assistants
 
@@ -203,9 +257,12 @@ When working on this codebase, pay attention to:
 |------|---------|
 | `CMakeLists.txt` | Root build configuration |
 | `guix.scm` | Guix package definition |
-| `Makefile` | AGI-OS unified build |
+| `Makefile` | AGI-OS unified build interface |
+| `Makefile.build-sequences` | CMake build sequences |
+| `vcpkg.json` | Windows vcpkg dependencies |
 | `synergy.sh` | Integration verification |
-| `.github/workflows/occ-build.yml` | CI pipeline |
+| `.github/workflows/occ-win-build.yml` | Windows CI pipeline |
+| `.github/workflows/vcpkg-prebuild.yml` | vcpkg dependency pre-building |
 | `docs/architecture.md` | Architecture overview |
 | `CONTRIBUTING.md` | Contribution guidelines |
 
@@ -263,6 +320,45 @@ Located in `synergy/`:
 4. **Update documentation** when changing interfaces
 5. **Use reproducible builds** via Guix when possible
 
+## Windows Build System
+
+The repository includes comprehensive Windows build support using vcpkg for dependency management.
+
+### vcpkg Dependencies (`vcpkg.json`)
+
+Core dependencies for Windows builds:
+- **Boost**: system, filesystem, program-options, regex, thread, date-time, serialization, random
+- **Networking**: asio, cppzmq, curl (with SSL)
+- **Serialization**: nlohmann-json, yaml-cpp
+- **Database**: libpq (PostgreSQL)
+- **Utilities**: cxxopts, catch2, spdlog, fmt, tbb, eigen3, openssl
+
+### Windows Build Commands
+
+```powershell
+# Using vcpkg (recommended for Windows)
+mkdir build && cd build
+cmake .. -G "Visual Studio 17 2022" -A x64 `
+  -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release --parallel 4
+```
+
+### Build Order on Windows
+
+The Windows CI builds components in this order:
+1. **CogUtil** (foundation, no dependencies)
+2. **AtomSpace** (requires CogUtil)
+3. **Moses** (requires CogUtil, parallel with AtomSpace)
+4. **CogServer** (requires AtomSpace, sequential after it)
+
+### Electron Desktop App
+
+The `electron-app/` directory contains an Electron-based desktop application:
+- Native Node.js addon for OpenCog integration
+- Cross-platform builds (Windows, Linux, macOS)
+- Triggered automatically after successful Windows builds
+
 ## External Integrations (Optional)
 
 These are disabled by default:
@@ -272,9 +368,31 @@ These are disabled by default:
 
 Enable with CMake flags: `-DBUILD_GNUCASH=ON`, etc.
 
+## Troubleshooting
+
+### Windows Build Issues
+
+1. **vcpkg cache issues**: Clear cache with `rmdir /s /q vcpkg_cache`
+2. **Missing Boost components**: Run `vcpkg install boost-serialization:x64-windows` explicitly
+3. **Long build times**: Use `occ-win-build-fast.yml` with vendored dependencies
+4. **CMake configuration fails**: Ensure `VCPKG_ROOT` environment variable is set
+
+### Linux Build Issues
+
+1. **Missing Guile**: Install with `sudo apt-get install guile-3.0-dev`
+2. **Boost not found**: Install with `sudo apt-get install libboost-all-dev`
+3. **CxxTest failures**: Tests use `continue-on-error` - check logs for details
+
+### CI/CD Issues
+
+1. **Workflow timeouts**: vcpkg-prebuild.yml has 180-minute timeout for heavy packages
+2. **Artifact download fails**: Use `dawidd6/action-download-artifact@v3` for cross-workflow artifacts
+3. **Cache misses**: Check cache key patterns in workflow files
+
 ## Resources
 
 - [OpenCog Wiki](https://wiki.opencog.org/)
 - [AtomSpace Documentation](https://wiki.opencog.org/w/AtomSpace)
 - [GNU Guix Manual](https://guix.gnu.org/manual/)
-- [Project Discussions](https://github.com/opencog/occ/discussions)
+- [vcpkg Documentation](https://vcpkg.io/en/docs/)
+- [Project Repository](https://github.com/o9nn/occ)
