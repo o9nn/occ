@@ -44,6 +44,11 @@ occ/
 │   ├── agentic-chatbots/  # Conversational AI integration
 │   └── synergy/           # Cognitive synergy modules (Scheme)
 │
+├── Tensor Logic Components
+│   ├── aten/              # ATen C++11 tensor library
+│   ├── atenspace/         # ATenSpace: AtomSpace + neural tensor embeddings
+│   └── tensor-logic/      # Tensor Logic integration layer
+│
 ├── AGI-OS Layers
 │   ├── cognumach/         # Layer 1: Cognitive microkernel
 │   ├── hurdcog/           # Layer 2: Cognitive OS services
@@ -358,6 +363,86 @@ The `electron-app/` directory contains an Electron-based desktop application:
 - Native Node.js addon for OpenCog integration
 - Cross-platform builds (Windows, Linux, macOS)
 - Triggered automatically after successful Windows builds
+
+## Tensor Logic - Neural-Symbolic Integration
+
+Tensor Logic provides Multi-Entity Network-Aware Tensor-Enhanced Cognitive Synergy by integrating ATen tensors with AtomSpace.
+
+### Components
+
+| Component | Description |
+|-----------|-------------|
+| `aten/` | ATen C++11 tensor library (from PyTorch) |
+| `atenspace/` | ATenSpace bridges symbolic AI with neural tensor embeddings |
+| `tensor-logic/` | Integration layer for cognitive synergy |
+
+### Features
+
+1. **Multi-Entity AtomSpace**: Tensor representations across multiple cognitive entities
+   - Entity state management with tensor embeddings
+   - Entity synchronization and consensus computation
+   - Cross-entity attention propagation
+
+2. **Multi-Scale Analysis**: Time-series tensors at different granularities
+   - Wavelet-like multi-scale decomposition
+   - Pattern detection at multiple temporal scales
+   - Trend and noise extraction
+
+3. **Network-Aware DAS**: Flow tensors capturing Distributed AtomSpace movement patterns
+   - Flow recording and history tracking
+   - Optimal routing prediction
+   - Node placement optimization based on tensor similarity
+
+4. **ESN Reservoir Computing**: Echo State Networks for temporal processing
+   - Reservoir transformation of inputs
+   - Sequence prediction
+   - Trainable output weights
+
+5. **Tensor-Enhanced AtomSpace**: Mathematical operations on atomspace structures
+   - Atom-to-tensor conversion
+   - Tensor-based truth value computation
+   - Similarity search using embeddings
+
+### CMake Build Options
+
+```cmake
+OPTION(BUILD_ATEN "Build ATen tensor library" ON)
+OPTION(BUILD_ATENSPACE "Build ATenSpace (AtomSpace + Tensor embeddings)" ON)
+OPTION(BUILD_TENSOR_LOGIC "Build Tensor Logic integration layer" ON)
+```
+
+### Usage Example
+
+```cpp
+#include <opencog/tensor-logic/TensorLogic.h>
+
+using namespace opencog::tensor_logic;
+
+// Create tensor logic instance
+TensorLogic::TensorConfig config;
+config.embedding_dim = 128;
+config.reservoir_size = 1000;
+
+TensorLogic tl(config);
+tl.initialize();
+
+// Create cognitive entities
+auto entity1 = tl.createEntity("agent1");
+auto entity2 = tl.createEntity("agent2");
+
+// Compute entity similarity
+auto similarity = tl.computeEntitySimilarity(entity1, entity2);
+
+// Multi-scale analysis
+std::vector<float> signal = /* time series data */;
+auto scales = tl.multiScaleDecomposition(signal);
+
+// ESN temporal processing
+auto reservoir_state = tl.reservoirTransform(signal);
+
+// Compute cognitive synergy
+auto synergy = tl.computeCognitiveSynergy({entity1, entity2}, scales);
+```
 
 ## External Integrations (Optional)
 

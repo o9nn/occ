@@ -46,6 +46,11 @@ OPTION(BUILD_COGSELF "Build CogSelf AGI synergy framework" ON)
 OPTION(BUILD_ATOMSPACE_ACCELERATOR "Build AtomSpace accelerator inference engine" ON)
 OPTION(BUILD_AGENTIC_CHATBOTS "Build agentic chatbots integration" ON)
 
+# Tensor Logic components
+OPTION(BUILD_ATEN "Build ATen tensor library" ON)
+OPTION(BUILD_ATENSPACE "Build ATenSpace (AtomSpace + Tensor embeddings)" ON)
+OPTION(BUILD_TENSOR_LOGIC "Build Tensor Logic integration layer" ON)
+
 # External integration packages
 OPTION(BUILD_GNUCASH "Build Gnucash cognitive accounting integration" OFF)
 OPTION(BUILD_KOBOLDCPP "Build KoboldCpp story/world modeling integration" OFF)
@@ -115,6 +120,45 @@ ENDIF()
 IF(BUILD_ATOMSPACE_ACCELERATOR)
     MESSAGE(STATUS "Building AtomSpace Accelerator Inference Engine...")
     add_subdirectory(atomspace-accelerator)
+ENDIF()
+
+# ============================================================================
+# Tensor Logic Components - Multi-Entity Network-Aware Tensor-Enhanced Synergy
+# ============================================================================
+# ATen: C++11 tensor library (foundational)
+IF(BUILD_ATEN)
+    MESSAGE(STATUS "Building ATen Tensor Library...")
+    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/aten/CMakeLists.txt")
+        add_subdirectory(aten)
+    ELSEIF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/aten/aten/CMakeLists.txt")
+        add_subdirectory(aten/aten)
+    ELSE()
+        MESSAGE(WARNING "ATen CMakeLists.txt not found - skipping ATen build")
+    ENDIF()
+ENDIF()
+
+# ATenSpace: Bridge symbolic AI (AtomSpace) with neural tensor embeddings
+IF(BUILD_ATENSPACE AND BUILD_ATEN)
+    MESSAGE(STATUS "Building ATenSpace (AtomSpace + Tensor Embeddings)...")
+    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/atenspace/CMakeLists.txt")
+        add_subdirectory(atenspace)
+    ELSEIF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/atenspace/aten/CMakeLists.txt")
+        add_subdirectory(atenspace/aten)
+    ELSE()
+        MESSAGE(WARNING "ATenSpace CMakeLists.txt not found - skipping ATenSpace build")
+    ENDIF()
+ENDIF()
+
+# Tensor Logic Integration Layer
+IF(BUILD_TENSOR_LOGIC AND BUILD_ATENSPACE AND BUILD_ATOMSPACE)
+    MESSAGE(STATUS "Building Tensor Logic Integration Layer...")
+    MESSAGE(STATUS "  Features: Multi-Entity AtomSpace, Multi-Scale Analysis,")
+    MESSAGE(STATUS "            Network-Aware DAS, ESN Reservoir Computing")
+    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tensor-logic/CMakeLists.txt")
+        add_subdirectory(tensor-logic)
+    ELSE()
+        MESSAGE(STATUS "  tensor-logic/ directory will be created for integration")
+    ENDIF()
 ENDIF()
 
 # AtomSpace Storage - MUST be built before CogServer ⚠️ CRITICAL
@@ -240,6 +284,11 @@ MESSAGE(STATUS "CogGML Microkernel (self-aware shards): ${BUILD_COGGML}")
 MESSAGE(STATUS "CogSelf AGI Framework: ${BUILD_COGSELF}")
 MESSAGE(STATUS "AtomSpace Accelerator (inference engine): ${BUILD_ATOMSPACE_ACCELERATOR}")
 MESSAGE(STATUS "Agentic Chatbots: ${BUILD_AGENTIC_CHATBOTS}")
+MESSAGE(STATUS "")
+MESSAGE(STATUS "Tensor Logic Components:")
+MESSAGE(STATUS "ATen Tensor Library: ${BUILD_ATEN}")
+MESSAGE(STATUS "ATenSpace (AtomSpace + Tensors): ${BUILD_ATENSPACE}")
+MESSAGE(STATUS "Tensor Logic Integration: ${BUILD_TENSOR_LOGIC}")
 MESSAGE(STATUS "")
 MESSAGE(STATUS "Extended Components:")
 MESSAGE(STATUS "AtomSpace Storage: ${BUILD_ATOMSPACE_STORAGE}")
