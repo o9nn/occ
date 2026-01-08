@@ -46,7 +46,7 @@ jobs:
           path: |
             prebuilt/protobuf
             D:/prebuilt/protobuf
-          retention-days: 0
+          retention-days: 90
           if-no-files-found: warn
 
   build-rocksdb:
@@ -89,7 +89,7 @@ jobs:
           path: |
             prebuilt/rocksdb
             D:/prebuilt/rocksdb
-          retention-days: 0
+          retention-days: 90
           if-no-files-found: warn
 
   build-grpc:
@@ -133,5 +133,5 @@ jobs:
           path: |
             prebuilt/grpc
             D:/prebuilt/grpc
-          retention-days: 0
+          retention-days: 90
           if-no-files-found: warn

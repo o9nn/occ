@@ -29,10 +29,15 @@
     "tbb",
     "eigen3",
     "cppzmq",
+    "zeromq",
     {
       "name": "curl",
       "features": ["ssl"]
     },
-    "openssl"
+    "openssl",
+    "zlib",
+    "lz4",
+    "rocksdb",
+    "hwloc"
   ]
 }
