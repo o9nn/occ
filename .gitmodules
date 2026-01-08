@@ -1,6 +1,0 @@
-[submodule "aten"]
-	path = aten
-	url = https://github.com/o9nn/ATen.git
-[submodule "atenspace"]
-	path = atenspace
-	url = https://github.com/o9nn/ATenSpace.git

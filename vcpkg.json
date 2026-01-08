@@ -37,12 +37,7 @@
     "openssl",
     "zlib",
     "lz4",
-    "abseil",
-    "protobuf",
-    "grpc",
     "rocksdb",
-    "hwloc",
-    "re2",
-    "c-ares"
+    "hwloc"
   ]
 }

@@ -333,10 +333,12 @@ The repository includes comprehensive Windows build support using vcpkg for depe
 
 Core dependencies for Windows builds:
 - **Boost**: system, filesystem, program-options, regex, thread, date-time, serialization, random
-- **Networking**: asio, cppzmq, zeromq, curl (with SSL), grpc, c-ares
-- **Serialization**: nlohmann-json, yaml-cpp, protobuf
+- **Networking**: asio, cppzmq, zeromq, curl (with SSL)
+- **Serialization**: nlohmann-json, yaml-cpp
 - **Database**: libpq (PostgreSQL), rocksdb
-- **Utilities**: cxxopts, catch2, spdlog, fmt, tbb, eigen3, openssl, zlib, lz4, hwloc, abseil, re2
+- **Utilities**: cxxopts, catch2, spdlog, fmt, tbb, eigen3, openssl, zlib, lz4, hwloc
+
+**Note**: gRPC, Protobuf, and related dependencies (abseil, re2, c-ares) are installed separately.
 
 ### Windows Build Commands
 
