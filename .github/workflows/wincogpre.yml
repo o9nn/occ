@@ -86,6 +86,6 @@ jobs:
         path: |
           vcpkg_installed/**/*
           ${{ github.workspace }}/vcpkg_installed/**/*
-        retention-days: 7
+        retention-days: 90
         if-no-files-found: warn
 
