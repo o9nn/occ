@@ -47,7 +47,7 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: '544a4c5c297e60e4ac4a5a1810df66748d908869'
+        vcpkgGitCommitId: '11bbc873e00e9e58d4e9dffb30b7a5493a030e0b'
     
     - name: Create vcpkg cache directory
       shell: pwsh
@@ -86,6 +86,6 @@ jobs:
         path: |
           vcpkg_installed/**/*
           ${{ github.workspace }}/vcpkg_installed/**/*
-        retention-days: 0
+        retention-days: 7
         if-no-files-found: warn
 
