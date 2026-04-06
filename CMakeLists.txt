@@ -104,6 +104,8 @@ MESSAGE(STATUS "Building Layer 3: OpenCog Collection (OCC)...")
 IF(BUILD_COGUTIL)
     MESSAGE(STATUS "Building CogUtil...")
     add_subdirectory(cogutil)
+    set(CogUtil_DIR "${CMAKE_BINARY_DIR}/cogutil/cmake" CACHE PATH "In-tree CogUtil package config" FORCE)
+    list(APPEND CMAKE_PREFIX_PATH "${CogUtil_DIR}")
 ENDIF()
 
 # CogGML Microkernel - foundational for cognitive architecture
@@ -115,6 +117,8 @@ ENDIF()
 IF(BUILD_ATOMSPACE AND BUILD_COGUTIL)
     MESSAGE(STATUS "Building AtomSpace...")
     add_subdirectory(atomspace)
+    set(AtomSpace_DIR "${CMAKE_BINARY_DIR}/atomspace/lib" CACHE PATH "In-tree AtomSpace package config" FORCE)
+    list(APPEND CMAKE_PREFIX_PATH "${AtomSpace_DIR}")
 ENDIF()
 
 # AtomSpace Accelerator - can build independently for cognitive architecture

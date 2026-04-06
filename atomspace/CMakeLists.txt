@@ -75,27 +75,30 @@ ENDIF (CMAKE_BUILD_TYPE STREQUAL "Profile")
 # Listed in alphabetical order, more or less.
 # CogUtil must come first, because it supplies various FindXXX macros.
 
-# Add the 'lib' dir to cmake's module search path
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lib/")
+# Add the module dirs needed for monorepo and standalone builds.
+list(APPEND CMAKE_MODULE_PATH
+	"${CMAKE_CURRENT_SOURCE_DIR}/lib/"
+	"${CMAKE_SOURCE_DIR}/cogutil/cmake")
 
 # Cogutil
-FIND_PACKAGE(CogUtil CONFIG)
-IF (COGUTIL_FOUND)
-	MESSAGE(STATUS "CogUtil version ${COGUTIL_VERSION} found.")
-	ADD_DEFINITIONS(-DHAVE_COGUTIL)
-	SET(HAVE_COGUTIL 1)
-ELSEIF(TARGET cogutil)
-	# CogUtil is being built as part of the same project
+IF(TARGET cogutil)
+	# Prefer the in-tree target when building as part of the monorepo.
 	MESSAGE(STATUS "CogUtil being built in-tree as subdirectory.")
 	ADD_DEFINITIONS(-DHAVE_COGUTIL)
 	SET(HAVE_COGUTIL 1)
-	# Set variables that would normally come from the CogUtil package
 	SET(COGUTIL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/cogutil")
 	SET(COGUTIL_DATA_DIR "${CMAKE_SOURCE_DIR}/cogutil")
 	SET(COGUTIL_LIBRARIES cogutil)
-ELSE ()
-	MESSAGE(FATAL_ERROR "CogUtil missing: it is needed!")
-ENDIF ()
+ELSE()
+	FIND_PACKAGE(CogUtil CONFIG)
+	IF (COGUTIL_FOUND)
+		MESSAGE(STATUS "CogUtil version ${COGUTIL_VERSION} found.")
+		ADD_DEFINITIONS(-DHAVE_COGUTIL)
+		SET(HAVE_COGUTIL 1)
+	ELSE ()
+		MESSAGE(FATAL_ERROR "CogUtil missing: it is needed!")
+	ENDIF ()
+ENDIF()
 
 # add the 'cmake' directory from cogutil to search path
 list(APPEND CMAKE_MODULE_PATH  ${COGUTIL_DATA_DIR}/cmake)
@@ -253,11 +256,14 @@ ADD_SUBDIRECTORY(opencog)
 ADD_SUBDIRECTORY(lib)
 
 IF (CXXTEST_FOUND)
-	ADD_CUSTOM_TARGET(tests)
+	IF (NOT TARGET tests)
+		ADD_CUSTOM_TARGET(tests)
+	ENDIF (NOT TARGET tests)
 	ADD_SUBDIRECTORY(tests EXCLUDE_FROM_ALL)
 	IF (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 		# doing coverage stuff while running tests if this is the Coverage build
-		ADD_CUSTOM_TARGET(covtest
+		IF (NOT TARGET covtest)
+			ADD_CUSTOM_TARGET(covtest
 			# TODO lcov should be found by cmake first
 			# TODO set it up so that we can pick to run coverage per test, or
 			# combined across all tests (the latter is MUCH faster). Use a define?
@@ -266,8 +272,10 @@ IF (CXXTEST_FOUND)
 			WORKING_DIRECTORY tests
 			COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process $(ARGS)
 			COMMENT "Running tests with coverage..."
-		)
-		ADD_CUSTOM_TARGET(check
+			)
+		ENDIF (NOT TARGET covtest)
+		IF (NOT TARGET check)
+			ADD_CUSTOM_TARGET(check
 			DEPENDS covtest
 			WORKING_DIRECTORY ./
 			# This script combines the coverage analysis of each test,
@@ -275,16 +283,19 @@ IF (CXXTEST_FOUND)
 			# COMMAND genhtml -o ../lcov -t "All AtomSpace unit tests" *.info
 			COMMAND ${PROJECT_SOURCE_DIR}/scripts/combine_lcov.sh
 			COMMENT "Generating lcov report..."
-		)
+			)
+		ENDIF (NOT TARGET check)
 	ELSE (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 		# Coverage is disabled; test normally
-		ADD_CUSTOM_TARGET(check
+		IF (NOT TARGET check)
+			ADD_CUSTOM_TARGET(check
 			DEPENDS tests
 			WORKING_DIRECTORY tests
 			# COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process $(ARGS)
 			COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure $(ARGS)
 			COMMENT "Running tests..."
-		)
+			)
+		ENDIF (NOT TARGET check)
 	ENDIF (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 
 	ADD_CUSTOM_TARGET(test_atomese

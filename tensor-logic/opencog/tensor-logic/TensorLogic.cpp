@@ -337,7 +337,15 @@ void TensorLogic::recordFlow(const FlowTensor& flow) {
     }
 
     if (network_das_) {
-        network_das_->recordFlow(flow);
+        NetworkAwareDAS::FlowRecord flow_record{
+            flow.source_node,
+            flow.target_node,
+            flow.flow_vector,
+            flow.bandwidth,
+            flow.latency,
+            flow.timestamp
+        };
+        network_das_->recordFlow(flow_record);
     }
 }
 
@@ -533,7 +541,8 @@ std::vector<float> TensorLogic::computeTensorTruthValue(const std::vector<float>
 
     // Map to [0, 1] range
     strength = (std::tanh(strength) + 1.0f) / 2.0f;
-    float confidence = std::min(1.0f, magnitude / std::sqrt(tensor.size()));
+    float tensor_scale = tensor.empty() ? 1.0f : static_cast<float>(std::sqrt(static_cast<double>(tensor.size())));
+    float confidence = std::min(1.0f, magnitude / tensor_scale);
 
     return {strength, confidence};
 }

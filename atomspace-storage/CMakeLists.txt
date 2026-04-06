@@ -58,10 +58,16 @@ ADD_DEFINITIONS(-DPROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 # Listed in alphabetical order, more or less.
 # CogUtil must come first, because it supplies various FindXXX macros.
 
-# Add the 'lib' dir to cmake's module search path
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/lib/")
+# Add the module dirs needed for monorepo and standalone builds.
+list(APPEND CMAKE_MODULE_PATH
+	"${CMAKE_SOURCE_DIR}/cogutil/cmake"
+	"${CMAKE_SOURCE_DIR}/atomspace/cmake"
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Cogutil
+IF (NOT CogUtil_DIR AND EXISTS "${CMAKE_BINARY_DIR}/cogutil/cmake/CogUtilConfig.cmake")
+	SET(CogUtil_DIR "${CMAKE_BINARY_DIR}/cogutil/cmake")
+ENDIF (NOT CogUtil_DIR AND EXISTS "${CMAKE_BINARY_DIR}/cogutil/cmake/CogUtilConfig.cmake")
 FIND_PACKAGE(CogUtil 2.1.0 CONFIG REQUIRED)
 IF (COGUTIL_FOUND)
 	MESSAGE(STATUS "CogUtil version ${COGUTIL_VERSION} found.")
@@ -102,6 +108,9 @@ include(OpenCogFindPython)
 # incorrectly
 
 # AtomSpace
+IF (NOT AtomSpace_DIR AND EXISTS "${CMAKE_BINARY_DIR}/atomspace/lib/AtomSpaceConfig.cmake")
+	SET(AtomSpace_DIR "${CMAKE_BINARY_DIR}/atomspace/lib")
+ENDIF (NOT AtomSpace_DIR AND EXISTS "${CMAKE_BINARY_DIR}/atomspace/lib/AtomSpaceConfig.cmake")
 FIND_PACKAGE(AtomSpace CONFIG REQUIRED)
 IF (ATOMSPACE_FOUND)
 	MESSAGE(STATUS "AtomSpace found.")
@@ -129,11 +138,14 @@ ADD_SUBDIRECTORY(cmake)
 ADD_SUBDIRECTORY(opencog)
 
 IF (CXXTEST_FOUND)
-	ADD_CUSTOM_TARGET(tests)
+	IF (NOT TARGET tests)
+		ADD_CUSTOM_TARGET(tests)
+	ENDIF (NOT TARGET tests)
 	ADD_SUBDIRECTORY(tests EXCLUDE_FROM_ALL)
 	IF (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 		# doing coverage stuff while running tests if this is the Coverage build
-		ADD_CUSTOM_TARGET(check
+		IF (NOT TARGET check)
+			ADD_CUSTOM_TARGET(check
 			# TODO lcov should be found by cmake first
 			# TODO set it up so that we can pick to run coverage per test, or
 			# combined across all tests (the latter is MUCH faster). Use a define?
@@ -146,22 +158,25 @@ IF (CXXTEST_FOUND)
 			# Note: this should now be run separately...
 			#COMMAND ${PROJECT_SOURCE_DIR}/scripts/combine_lcov.sh
 			COMMENT "Running tests with coverage..."
-		)
+			)
+		ENDIF (NOT TARGET check)
 	ELSE (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 		# Coverage is disabled; test normally
-		ADD_CUSTOM_TARGET(check
+		IF (NOT TARGET check)
+			ADD_CUSTOM_TARGET(check
 			DEPENDS tests
 			WORKING_DIRECTORY tests
 			COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure $(ARGS)
 			COMMENT "Running tests..."
-		)
+			)
+		ENDIF (NOT TARGET check)
 	ENDIF (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 
 ENDIF (CXXTEST_FOUND)
 
-ADD_CUSTOM_TARGET(cscope
-	COMMAND find opencog examples tests -name '*.cc' -o -name '*.h' -o -name '*.cxxtest' -o -name '*.scm' > ${CMAKE_SOURCE_DIR}/cscope.files
-	COMMAND cscope -b
+ADD_CUSTOM_TARGET(cscope-atomspace-storage
+	COMMAND find opencog examples tests -name '*.cc' -o -name '*.h' -o -name '*.cxxtest' -o -name '*.scm' > ${CMAKE_SOURCE_DIR}/cscope-atomspace-storage.files
+	COMMAND cscope -b -i cscope-atomspace-storage.files -f cscope-atomspace-storage.out
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	COMMENT "Generating CScope database"
 )

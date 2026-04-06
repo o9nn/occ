@@ -157,11 +157,14 @@ ADD_SUBDIRECTORY(cmake)
 ADD_SUBDIRECTORY(opencog)
 
 IF (CXXTEST_FOUND)
-	ADD_CUSTOM_TARGET(tests)
+	IF (NOT TARGET tests)
+		ADD_CUSTOM_TARGET(tests)
+	ENDIF (NOT TARGET tests)
 	ADD_SUBDIRECTORY(tests EXCLUDE_FROM_ALL)
 	IF (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 		# doing coverage stuff while running tests if this is the Coverage build
-		ADD_CUSTOM_TARGET(check
+		IF (NOT TARGET check)
+			ADD_CUSTOM_TARGET(check
 			# TODO lcov should be found by cmake first
 			# TODO set it up so that we can pick to run coverage per test, or
 			# combined across all tests (the latter is MUCH faster). Use a define?
@@ -174,15 +177,18 @@ IF (CXXTEST_FOUND)
 			# Note: this should now be run separately...
 			#COMMAND ${PROJECT_SOURCE_DIR}/scripts/combine_lcov.sh
 			COMMENT "Running tests with coverage..."
-		)
+			)
+		ENDIF (NOT TARGET check)
 	ELSE (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 		# Coverage is disabled; test normally
-		ADD_CUSTOM_TARGET(check
+		IF (NOT TARGET check)
+			ADD_CUSTOM_TARGET(check
 			DEPENDS tests
 			WORKING_DIRECTORY tests
 			COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure $(ARGS)
 			COMMENT "Running tests..."
-		)
+			)
+		ENDIF (NOT TARGET check)
 	ENDIF (CMAKE_BUILD_TYPE STREQUAL "Coverage")
 
 	ADD_CUSTOM_TARGET(test_mono
@@ -201,9 +207,9 @@ IF (CXXTEST_FOUND)
 
 ENDIF (CXXTEST_FOUND)
 
-ADD_CUSTOM_TARGET(cscope
-	COMMAND find opencog examples tests -name '*.cc' -o -name '*.h' -o -name '*.cxxtest' -o -name '*.scm' > ${CMAKE_SOURCE_DIR}/cscope.files
-	COMMAND cscope -b
+ADD_CUSTOM_TARGET(cscope-atomspace-rocks
+	COMMAND find opencog examples tests -name '*.cc' -o -name '*.h' -o -name '*.cxxtest' -o -name '*.scm' > ${CMAKE_SOURCE_DIR}/cscope-atomspace-rocks.files
+	COMMAND cscope -b -i cscope-atomspace-rocks.files -f cscope-atomspace-rocks.out
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	COMMENT "Generating CScope database"
 )

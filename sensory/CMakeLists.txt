@@ -50,20 +50,26 @@ ADD_SUBDIRECTORY (opencog)
 ADD_SUBDIRECTORY (cmake)
 
 # Unit tests
-ADD_CUSTOM_TARGET(tests)
+IF (NOT TARGET tests)
+	ADD_CUSTOM_TARGET(tests)
+ENDIF (NOT TARGET tests)
 ADD_SUBDIRECTORY (tests EXCLUDE_FROM_ALL)
-ADD_CUSTOM_TARGET(test
-	DEPENDS tests
-	WORKING_DIRECTORY tests
-	COMMAND ${CMAKE_CTEST_COMMAND} $(ARGS)
-	COMMENT "Running tests..."
-)
-ADD_CUSTOM_TARGET(check
-	DEPENDS tests
-	WORKING_DIRECTORY tests
-	COMMAND ${CMAKE_CTEST_COMMAND} $(ARGS)
-	COMMENT "Running tests..."
-)
+IF (NOT TARGET test)
+	ADD_CUSTOM_TARGET(test
+		DEPENDS tests
+		WORKING_DIRECTORY tests
+		COMMAND ${CMAKE_CTEST_COMMAND} $(ARGS)
+		COMMENT "Running tests..."
+	)
+ENDIF (NOT TARGET test)
+IF (NOT TARGET check)
+	ADD_CUSTOM_TARGET(check
+		DEPENDS tests
+		WORKING_DIRECTORY tests
+		COMMAND ${CMAKE_CTEST_COMMAND} $(ARGS)
+		COMMENT "Running tests..."
+	)
+ENDIF (NOT TARGET check)
 
 # ===================================================================
 # Show a summary of what we found, what we will do.
