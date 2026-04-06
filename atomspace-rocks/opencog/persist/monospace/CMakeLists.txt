@@ -9,7 +9,7 @@ ADD_LIBRARY (persist-monospace SHARED
 )
 
 # The atom_types.h file is written to the build directory
-TARGET_INCLUDE_DIRECTORIES(persist-monospace PRIVATE ${CMAKE_BINARY_DIR})
+TARGET_INCLUDE_DIRECTORIES(persist-monospace PRIVATE ${PROJECT_BINARY_DIR})
 
 TARGET_LINK_LIBRARIES(persist-monospace
 	persist-rocks-types

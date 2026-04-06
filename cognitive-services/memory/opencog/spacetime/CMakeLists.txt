@@ -1,6 +1,6 @@
 
 # The atom_types.h file is written to the build directory
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 # Unit-test boilerplate.
 DECLARE_GUILE_CONFIG_TARGET(SCM_CONFIG "opencog sp-config" "OPENCOG_TEST")

@@ -9,7 +9,7 @@ OPENCOG_ADD_ATOM_TYPES(unify_types.script
 ADD_CUSTOM_TARGET(unify_atom_types DEPENDS atom_types.h)
 
 # The atom_types.h file is written to the build directory
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 ADD_LIBRARY (unify-types SHARED
 	unify_types_init.cc

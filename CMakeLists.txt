@@ -106,6 +106,16 @@ IF(BUILD_COGUTIL)
     add_subdirectory(cogutil)
     set(CogUtil_DIR "${CMAKE_BINARY_DIR}/cogutil/cmake" CACHE PATH "In-tree CogUtil package config" FORCE)
     list(APPEND CMAKE_PREFIX_PATH "${CogUtil_DIR}")
+
+    # For in-tree monorepo builds: set CogUtil variables so downstream
+    # components can find cmake modules and headers without installation
+    set(COGUTIL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cogutil" CACHE PATH "CogUtil include dir" FORCE)
+    set(COGUTIL_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cogutil" CACHE PATH "CogUtil data dir" FORCE)
+    set(COGUTIL_FOUND 1 CACHE BOOL "CogUtil found" FORCE)
+    set(COGUTIL_VERSION "2.1.0" CACHE STRING "CogUtil version" FORCE)
+    # Make cogutil cmake modules available to all components
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cogutil/cmake")
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/atomspace/cmake")
 ENDIF()
 
 # CogGML Microkernel - foundational for cognitive architecture
@@ -119,6 +129,14 @@ IF(BUILD_ATOMSPACE AND BUILD_COGUTIL)
     add_subdirectory(atomspace)
     set(AtomSpace_DIR "${CMAKE_BINARY_DIR}/atomspace/lib" CACHE PATH "In-tree AtomSpace package config" FORCE)
     list(APPEND CMAKE_PREFIX_PATH "${AtomSpace_DIR}")
+
+    # For in-tree monorepo builds: set AtomSpace variables so downstream
+    # components (storage, cogserver, etc.) can find headers and data
+    set(ATOMSPACE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/atomspace" CACHE PATH "AtomSpace include dir" FORCE)
+    set(ATOMSPACE_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/atomspace" CACHE PATH "AtomSpace data dir" FORCE)
+    set(ATOMSPACE_FOUND 1 CACHE BOOL "AtomSpace found" FORCE)
+    # Mark that we're doing an in-tree build so configs can skip target imports
+    set(ATOMSPACE_IN_TREE_BUILD TRUE CACHE BOOL "AtomSpace is built in-tree" FORCE)
 ENDIF()
 
 # AtomSpace Accelerator - can build independently for cognitive architecture
@@ -172,20 +190,39 @@ IF(BUILD_ATOMSPACE_STORAGE AND BUILD_ATOMSPACE)
     MESSAGE(STATUS "Building AtomSpace Storage (CRITICAL: required by CogServer)...")
     IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/atomspace-storage/CMakeLists.txt")
         add_subdirectory(atomspace-storage)
+        # Set up in-tree AtomSpaceStorage for downstream components
+        set(AtomSpaceStorage_DIR "${CMAKE_BINARY_DIR}/atomspace-storage/cmake" CACHE PATH "In-tree AtomSpaceStorage config" FORCE)
+        list(APPEND CMAKE_PREFIX_PATH "${AtomSpaceStorage_DIR}")
+        set(ATOMSPACE_STORAGE_FOUND 1 CACHE BOOL "AtomSpaceStorage found" FORCE)
+        set(ATOMSPACE_STORAGE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/atomspace-storage" CACHE PATH "AtomSpaceStorage include dir" FORCE)
     ELSE()
         MESSAGE(WARNING "atomspace-storage not found - CogServer build will fail!")
     ENDIF()
-    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/atomspace-rocks/CMakeLists.txt")
+    # atomspace-rocks requires RocksDB - check before adding
+    find_package(RocksDB QUIET)
+    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/atomspace-rocks/CMakeLists.txt" AND ROCKSDB_FOUND)
         add_subdirectory(atomspace-rocks)
+    ELSEIF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/atomspace-rocks/CMakeLists.txt")
+        MESSAGE(STATUS "RocksDB not found - skipping atomspace-rocks build")
     ENDIF()
-    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/atomspace-cog/CMakeLists.txt")
-        add_subdirectory(atomspace-cog)
-    ENDIF()
+    # atomspace-cog needs CogServer - built after cogserver below
 ENDIF()
 
 IF(BUILD_COGSERVER AND BUILD_ATOMSPACE AND BUILD_ATOMSPACE_STORAGE)
     MESSAGE(STATUS "Building CogServer...")
     add_subdirectory(cogserver)
+    # Set up in-tree CogServer for downstream components
+    set(CogServer_DIR "${CMAKE_BINARY_DIR}/cogserver/lib" CACHE PATH "In-tree CogServer config" FORCE)
+    list(APPEND CMAKE_PREFIX_PATH "${CogServer_DIR}")
+    set(COGSERVER_FOUND 1 CACHE BOOL "CogServer found" FORCE)
+ENDIF()
+
+# atomspace-cog - needs CogServer and AtomSpaceStorage (built after both)
+IF(BUILD_ATOMSPACE_STORAGE AND BUILD_COGSERVER AND BUILD_ATOMSPACE)
+    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/atomspace-cog/CMakeLists.txt")
+        MESSAGE(STATUS "Building AtomSpace-Cog...")
+        add_subdirectory(atomspace-cog)
+    ENDIF()
 ENDIF()
 
 IF(BUILD_MATRIX AND BUILD_ATOMSPACE)

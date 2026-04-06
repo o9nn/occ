@@ -27,7 +27,7 @@ TARGET_LINK_LIBRARIES(persist-proxy
 # Arghhhh. I hate this stuff. This sets up a file-load path that the
 # `(opencog persist)` module will use.  There is no `(opencog persist-proxy)`
 # module.
-ADD_GUILE_EXTENSION(SCM_CONFIG persist-proxy "opencog-ext-path-persist-proxy")
+ADD_GUILE_EXTENSION(STORAGE_SCM_CONFIG persist-proxy "opencog-ext-path-persist-proxy")
 
 INSTALL (TARGETS persist-proxy EXPORT AtomSpaceStorageTargets
 	DESTINATION "lib${LIB_DIR_SUFFIX}/opencog"

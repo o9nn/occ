@@ -37,7 +37,7 @@ TARGET_LINK_LIBRARIES(persist-file
 	smob
 )
 
-ADD_GUILE_EXTENSION(SCM_CONFIG persist-file "opencog-ext-path-persist-file")
+ADD_GUILE_EXTENSION(STORAGE_SCM_CONFIG persist-file "opencog-ext-path-persist-file")
 
 ADD_GUILE_MODULE (FILES
    opencog/persist-file.scm

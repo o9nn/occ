@@ -45,6 +45,10 @@ INCLUDE(OpenCogMacros)
 INCLUDE(OpenCogGuile)
 INCLUDE(OpenCogCython)
 
+# Set default include paths.
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}
+	${COGUTIL_INCLUDE_DIR} ${ATOMSPACE_INCLUDE_DIR})
+
 # ----------------------------------------------------------
 ADD_SUBDIRECTORY (opencog)
 ADD_SUBDIRECTORY (cmake)

@@ -14,7 +14,7 @@ ADD_DEFINITIONS(-DPROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 SET(GUILE_LOAD_PATH "${PROJECT_BINARY_DIR}/opencog/scm")
 
 # The atom_types.h file is written to the build directory
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 # Perform tests in component-dependency order, as much as possible.
 IF (CXXTEST_FOUND)

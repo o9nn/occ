@@ -29,6 +29,9 @@ ADD_LIBRARY (atom_types
 	NameServer.cc
 	)
 
+# Propagate the build dir include path to downstream targets
+TARGET_INCLUDE_DIRECTORIES(atom_types PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
+
 # Without this, parallel make will race and crap up the generated files.
 # Actually, that's not true ... even with this, compilation of other
 # units might start before the generation has finished.  Ugh.

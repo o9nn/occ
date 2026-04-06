@@ -1,11 +1,18 @@
 @PACKAGE_INIT@
 
-include("@CMAKE_INSTALL_PREFIX@/lib/cmake/AtomSpace/AtomSpaceTargets.cmake")
+# For in-tree monorepo builds, targets are already defined by add_subdirectory.
+# Only include the targets file when AtomSpace was installed separately.
+IF(NOT ATOMSPACE_IN_TREE_BUILD)
+    IF(EXISTS "@CMAKE_INSTALL_PREFIX@/lib/cmake/AtomSpace/AtomSpaceTargets.cmake")
+        include("@CMAKE_INSTALL_PREFIX@/lib/cmake/AtomSpace/AtomSpaceTargets.cmake")
+    ENDIF()
+ENDIF()
 
 # Execution depends on atomspace and atomspace depends on execution,
 # but circular dependencies are forbidden by cmake, so dependancy
 # on execution is omitted in atomspace at build time. It should be set
-# here for proper linking.
+# here for proper linking. Skip for in-tree builds to avoid cycles.
+IF(NOT ATOMSPACE_IN_TREE_BUILD)
 set_property(TARGET execution
 	APPEND PROPERTY INTERFACE_LINK_LIBRARIES
 	atomspace
@@ -26,6 +33,7 @@ set_property(TARGET atom_types
 	APPEND PROPERTY INTERFACE_LINK_LIBRARIES
 	atombase
 )
+ENDIF()
 
 # These names are used in various projects e.g. opencog, as-moses, etc.
 # XXX FIXME ... they probably should not be! It would be best if the all
@@ -80,7 +88,10 @@ IF (HAVE_CYTHON)
 	)
 ENDIF (HAVE_CYTHON)
 
-set(ATOMSPACE_DATA_DIR "@CMAKE_INSTALL_PREFIX@/share/opencog")
-set(ATOMSPACE_INCLUDE_DIR "@CMAKE_INSTALL_PREFIX@/include/")
+# For in-tree builds, use source paths set by the root CMakeLists
+IF(NOT ATOMSPACE_IN_TREE_BUILD)
+    set(ATOMSPACE_DATA_DIR "@CMAKE_INSTALL_PREFIX@/share/opencog")
+    set(ATOMSPACE_INCLUDE_DIR "@CMAKE_INSTALL_PREFIX@/include/")
+ENDIF()
 set(ATOMSPACE_VERSION "@SEMANTIC_VERSION@")
 set(ATOMSPACE_FOUND 1)

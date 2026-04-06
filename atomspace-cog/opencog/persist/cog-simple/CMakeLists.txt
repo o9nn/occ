@@ -21,10 +21,10 @@ TARGET_LINK_LIBRARIES(persist-cog-simple
 
 ADD_DEPENDENCIES(persist-cog-simple persist_cog_atom_types)
 
-ADD_GUILE_EXTENSION(SCM_CONFIG persist-cog-simple
+ADD_GUILE_EXTENSION(COG_SCM_CONFIG persist-cog-simple
 	"opencog-ext-path-persist-cog-simple")
 
-INSTALL (TARGETS persist-cog-simple EXPORT AtomSpaceTargets
+INSTALL (TARGETS persist-cog-simple EXPORT AtomSpaceCogTargets
 	DESTINATION "lib${LIB_DIR_SUFFIX}/opencog"
 )
 

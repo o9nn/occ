@@ -1,6 +1,6 @@
 
 # The atom_types.h file is written to the build directory
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 # Guile configuration target - only needed when Guile is available
 IF (HAVE_GUILE)

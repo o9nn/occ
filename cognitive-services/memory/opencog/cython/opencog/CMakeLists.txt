@@ -30,7 +30,7 @@ CYTHON_ADD_MODULE_PYX(spacetime
 list(APPEND ADDITIONAL_MAKE_CLEAN_FILES "spacetime_types.cpp")
 
 # opencog.spacetime Python bindings
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 ADD_LIBRARY(spacetime_cython SHARED
 	spacetime.cpp

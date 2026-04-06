@@ -16,7 +16,7 @@ ADD_LIBRARY (persist-cog-types SHARED
 )
 
 # The atom_types.h file is written to the build directory
-TARGET_INCLUDE_DIRECTORIES(persist-cog-types PRIVATE ${CMAKE_BINARY_DIR})
+TARGET_INCLUDE_DIRECTORIES(persist-cog-types PRIVATE ${PROJECT_BINARY_DIR})
 
 TARGET_LINK_LIBRARIES(persist-cog-types
 	${ATOMSPACE_STORAGE_LIBRARIES}
@@ -26,7 +26,7 @@ TARGET_LINK_LIBRARIES(persist-cog-types
 ADD_DEPENDENCIES(persist-cog-types persist_cog_atom_types)
 
 # Install targets
-INSTALL (TARGETS persist-cog-types EXPORT AtomSpaceCogStorageTargets
+INSTALL (TARGETS persist-cog-types EXPORT AtomSpaceCogTargets
 	DESTINATION "lib${LIB_DIR_SUFFIX}/opencog"
 )
 
@@ -41,4 +41,4 @@ ADD_GUILE_MODULE (FILES
 	DEPENDS persist_cog_atom_types
 )
 
-ADD_GUILE_EXTENSION(SCM_CONFIG persist-cog-types "opencog-ext-path-persist-cog-types")
+ADD_GUILE_EXTENSION(COG_SCM_CONFIG persist-cog-types "opencog-ext-path-persist-cog-types")

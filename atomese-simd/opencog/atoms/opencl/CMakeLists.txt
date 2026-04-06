@@ -1,6 +1,6 @@
 
 # Auto-generated types files are in the build directory.
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 ADD_LIBRARY (opencl-atoms SHARED
 	GenIDL.cc

@@ -16,7 +16,7 @@ ADD_LIBRARY (persist-sql-types SHARED
 )
 
 # The atom_types.h file is written to the build directory
-TARGET_INCLUDE_DIRECTORIES(persist-sql-types PRIVATE ${CMAKE_BINARY_DIR})
+TARGET_INCLUDE_DIRECTORIES(persist-sql-types PRIVATE ${PROJECT_BINARY_DIR})
 
 TARGET_LINK_LIBRARIES(persist-sql-types
 	${ATOMSPACE_STORAGE_LIBRARIES}

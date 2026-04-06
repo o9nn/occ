@@ -16,7 +16,7 @@ ADD_LIBRARY (persist-rocks-types SHARED
 )
 
 # The atom_types.h file is written to the build directory
-TARGET_INCLUDE_DIRECTORIES(persist-rocks-types PRIVATE ${CMAKE_BINARY_DIR})
+TARGET_INCLUDE_DIRECTORIES(persist-rocks-types PRIVATE ${PROJECT_BINARY_DIR})
 
 TARGET_LINK_LIBRARIES(persist-rocks-types
 	${ATOMSPACE_STORAGE_LIBRARIES}

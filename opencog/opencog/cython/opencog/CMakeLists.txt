@@ -30,7 +30,7 @@ CYTHON_ADD_MODULE_PYX(nlp_oc_types
 list(APPEND ADDITIONAL_MAKE_CLEAN_FILES "nlp_oc_types.cpp")
 
 # opencog.nlp_oc_types Python bindings
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 ADD_LIBRARY(nlp_oc_types_cython SHARED
 	nlp_oc_types.cpp

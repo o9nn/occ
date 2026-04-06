@@ -7,7 +7,9 @@ FIND_PACKAGE(AtomSpace 5.0.3 REQUIRED)
 # Include directories
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${COGUTIL_INCLUDE_DIR}
     ${ATOMSPACE_INCLUDE_DIR}
+    ${ATOMSPACE_STORAGE_INCLUDE_DIR}
 )
 
 # MachSpace storage backend library

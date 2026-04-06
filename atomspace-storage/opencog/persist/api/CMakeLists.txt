@@ -17,7 +17,7 @@ TARGET_LINK_LIBRARIES(persist
 	smob
 )
 
-ADD_GUILE_EXTENSION(SCM_CONFIG persist "opencog-ext-path-persist")
+ADD_GUILE_EXTENSION(STORAGE_SCM_CONFIG persist "opencog-ext-path-persist")
 
 # Need to recompile persist.scm whenever storage_types.scm changes
 # However, no matter what I do, I can't get the rebuild to trigger.

@@ -14,7 +14,7 @@ ADD_CUSTOM_TARGET(opencl_atom_types
 	DEPENDS atom_types.h opencl_types.scm opencl_types.pyx)
 
 # The atom_types.h file is written to the build directory
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 ADD_LIBRARY(opencl-types SHARED
 	opencl_types_init.cc

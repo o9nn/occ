@@ -32,7 +32,7 @@ TARGET_LINK_LIBRARIES(csv-table
 	smob
 )
 
-ADD_GUILE_EXTENSION(SCM_CONFIG csv-table "opencog-ext-path-csv-table")
+ADD_GUILE_EXTENSION(STORAGE_SCM_CONFIG csv-table "opencog-ext-path-csv-table")
 
 INSTALL (TARGETS csv-table EXPORT AtomSpaceStorageTargets
    DESTINATION "lib${LIB_DIR_SUFFIX}/opencog"

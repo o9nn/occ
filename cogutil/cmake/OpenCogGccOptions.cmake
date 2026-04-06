@@ -31,7 +31,8 @@ IF (CMAKE_COMPILER_IS_GNUCXX)
 
 		# -flto is good for performance, but wow is it slow to link...
 		# SET(CMAKE_C_FLAGS_RELEASE "-O3 -g")
-		SET(CMAKE_C_FLAGS_RELEASE "-O3 -g -flto=auto")
+		# Disable LTO for monorepo builds on memory-constrained systems
+		SET(CMAKE_C_FLAGS_RELEASE "-O3 -g")
 
 		# NO_AS_NEEDED is used to resolve circular dependency problems.
 		# Current failure is in libquery, which depends on libexecution

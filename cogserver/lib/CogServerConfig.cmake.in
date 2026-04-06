@@ -1,6 +1,11 @@
 @PACKAGE_INIT@
 
-include("@CMAKE_INSTALL_PREFIX@/lib/cmake/CogServer/CogServerTargets.cmake")
+# For in-tree monorepo builds, targets are already defined by add_subdirectory.
+IF(NOT ATOMSPACE_IN_TREE_BUILD)
+    IF(EXISTS "@CMAKE_INSTALL_PREFIX@/lib/cmake/CogServer/CogServerTargets.cmake")
+        include("@CMAKE_INSTALL_PREFIX@/lib/cmake/CogServer/CogServerTargets.cmake")
+    ENDIF()
+ENDIF()
 
 # libscheme-shell.so is in the modules directory
 link_directories(

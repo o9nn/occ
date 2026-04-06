@@ -13,11 +13,14 @@ ADD_CUSTOM_TARGET(storage_types
 	DEPENDS storage_types.h storage_types.scm storage_types.pyx)
 
 # The atom_types.h file is written to the build directory
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 ADD_LIBRARY(storage-types SHARED
 	storage_types_init.cc
 )
+
+# Propagate include path to downstream targets for generated headers
+TARGET_INCLUDE_DIRECTORIES(storage-types PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
 
 # Without this, parallel make will race and crap up the generated files.
 ADD_DEPENDENCIES(storage-types storage_types)
@@ -42,4 +45,4 @@ ADD_GUILE_MODULE (FILES
 	MODULE_DESTINATION "${GUILE_SITE_DIR}/opencog/persist/types"
 	DEPENDS storage_types
 )
-ADD_GUILE_EXTENSION(SCM_CONFIG storage-types "opencog-ext-path-storage-types")
+ADD_GUILE_EXTENSION(STORAGE_SCM_CONFIG storage-types "opencog-ext-path-storage-types")

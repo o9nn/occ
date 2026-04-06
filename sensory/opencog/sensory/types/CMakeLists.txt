@@ -13,11 +13,13 @@ ADD_CUSTOM_TARGET(sensory_atom_types
 	DEPENDS atom_types.h sensory_types.scm sensory_types.pyx)
 
 # The atom_types.h file is written to the build directory
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 ADD_LIBRARY(sensory-types SHARED
 	sensory_types_init.cc
 )
+
+TARGET_INCLUDE_DIRECTORIES(sensory-types PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
 
 # Without this, parallel make will race and crap up the generated files.
 ADD_DEPENDENCIES(sensory-types sensory_atom_types)

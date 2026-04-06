@@ -1,10 +1,20 @@
 @PACKAGE_INIT@
 
-include("@CMAKE_INSTALL_PREFIX@/lib/cmake/AtomSpaceStorage/AtomSpaceStorageTargets.cmake")
+# For in-tree monorepo builds, targets are already defined by add_subdirectory.
+IF(NOT ATOMSPACE_IN_TREE_BUILD)
+    IF(EXISTS "@CMAKE_INSTALL_PREFIX@/lib/cmake/AtomSpaceStorage/AtomSpaceStorageTargets.cmake")
+        include("@CMAKE_INSTALL_PREFIX@/lib/cmake/AtomSpaceStorage/AtomSpaceStorageTargets.cmake")
+    ENDIF()
+ENDIF()
 
-link_directories(
-	"@CMAKE_INSTALL_PREFIX@/lib/opencog/"
-)
+IF(NOT ATOMSPACE_IN_TREE_BUILD)
+    link_directories(
+	    "@CMAKE_INSTALL_PREFIX@/lib/opencog/"
+    )
+    set(ATOMSPACE_STORAGE_DATA_DIR "@CMAKE_INSTALL_PREFIX@/share/opencog")
+    set(ATOMSPACE_STORAGE_INCLUDE_DIR "@CMAKE_INSTALL_PREFIX@/include/")
+ENDIF()
+
 set(ATOMSPACE_STORAGE_LIBRARIES
 	persist-file
 	persist-flow
@@ -21,7 +31,5 @@ set(ATOMSPACE_STORAGE_LIBRARIES
 	tlb
 )
 
-set(ATOMSPACE_STORAGE_DATA_DIR "@CMAKE_INSTALL_PREFIX@/share/opencog")
-set(ATOMSPACE_STORAGE_INCLUDE_DIR "@CMAKE_INSTALL_PREFIX@/include/")
 set(ATOMSPACE_STORAGE_VERSION "@SEMANTIC_VERSION@")
 set(ATOMSPACE_STORAGE_FOUND 1)

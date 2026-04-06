@@ -27,7 +27,7 @@ TARGET_LINK_LIBRARIES(guile-uuid SHARED
 	${ATOMSPACE_LIBRARIES}
 	${COGUTIL_LIBRARY}
 )
-ADD_GUILE_EXTENSION(SCM_CONFIG guile-uuid "opencog-ext-path-uuid")
+ADD_GUILE_EXTENSION(STORAGE_SCM_CONFIG guile-uuid "opencog-ext-path-uuid")
 
 ADD_GUILE_MODULE (FILES
 	opencog/uuid.scm

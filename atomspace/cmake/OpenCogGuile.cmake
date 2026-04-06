@@ -400,6 +400,12 @@ FUNCTION(WRITE_GUILE_CONFIG OUTPUT_FILE CONFIG_TARGET SCM_IN_BUILD_DIR)
     get_target_property(MODULE_NAME ${CONFIG_TARGET} MODULE_NAME)
 
     FILE(WRITE "${OUTPUT_FILE}" "(define-module (${MODULE_NAME}))\n")
+
+    # Handle case where no extensions have been registered
+    IF ("${SYMBOL_PATH_LIST}" STREQUAL "SYMBOL_PATH_LIST-NOTFOUND" OR "${SYMBOL_PATH_LIST}" STREQUAL "")
+        RETURN()
+    ENDIF()
+
     foreach(PATH_PAIR ${SYMBOL_PATH_LIST})
         string(REPLACE "|" ";" SYMBOL_AND_PATH ${PATH_PAIR})
         list(GET SYMBOL_AND_PATH 0 SYMBOL)

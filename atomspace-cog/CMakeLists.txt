@@ -59,6 +59,12 @@ ADD_DEFINITIONS(-DPROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 # Add the 'lib' dir to cmake's module search path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/lib/")
 
+# Add monorepo-aware module paths
+list(APPEND CMAKE_MODULE_PATH
+	"${CMAKE_SOURCE_DIR}/cogutil/cmake"
+	"${CMAKE_SOURCE_DIR}/atomspace/cmake"
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # Cogutil
 FIND_PACKAGE(CogUtil 2.1.0 CONFIG REQUIRED)
 IF (COGUTIL_FOUND)
@@ -72,10 +78,10 @@ ENDIF (COGUTIL_FOUND)
 # add the 'cmake' directory from cogutil to search path
 list(APPEND CMAKE_MODULE_PATH  ${COGUTIL_DATA_DIR}/cmake)
 
-include(${COGUTIL_DATA_DIR}/cmake/OpenCogGccOptions.cmake)
-include(${COGUTIL_DATA_DIR}/cmake/OpenCogLibOptions.cmake)
-include(${COGUTIL_DATA_DIR}/cmake/OpenCogInstallOptions.cmake)
-include(${COGUTIL_DATA_DIR}/cmake/Summary.cmake)
+include(OpenCogGccOptions)
+include(OpenCogLibOptions)
+include(OpenCogInstallOptions)
+include(Summary)
 
 # ===================================================================
 # Check for existance of various required, optional packages.
@@ -143,7 +149,9 @@ ENDIF (VALGRIND_FOUND)
 
 # Set default include paths.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}
-	${COGUTIL_INCLUDE_DIR} ${ATOMSPACE_INCLUDE_DIR})
+	${COGUTIL_INCLUDE_DIR} ${ATOMSPACE_INCLUDE_DIR}
+	${ATOMSPACE_STORAGE_INCLUDE_DIR}
+	${CMAKE_BINARY_DIR}/atomspace-cog)
 
 INCLUDE(OpenCogMacros)
 INCLUDE(OpenCogGuile)
