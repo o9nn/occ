@@ -1,6 +1,6 @@
 {
-  "cogserver": "5A918C3DCF146036",
-  "cogutil": "0B30E229580F6B36",
   "moses": "2C3AAFFD8354D79D",
+  "cogutil": "0B30E229580F6B36",
+  "cogserver": "5A918C3DCF146036",
   "atomspace": "CC5BE5BCF3F9CD51"
 }
