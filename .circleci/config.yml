@@ -71,7 +71,12 @@ jobs:
           name: Ensure /ws directory exists
           command: mkdir -p /ws
       - restore-ccache
-      - checkout
+      - run:
+          name: Checkout cogutil code
+          command: |
+            mkdir -p /ws/cogutil
+            cd /ws
+            git clone --depth 1 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
       - build-cmake-pkg:
           pkg: cogutil
       - persist_to_workspace:
