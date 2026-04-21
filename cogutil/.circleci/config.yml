@@ -10,6 +10,9 @@ jobs:
     working_directory: /ws/cogutil
     steps:
       - run:
+          name: Ensure working directory exists
+          command: mkdir -p /ws/cogutil
+      - run:
           name: Start restoring ccache
           command: date +%d-%m-%Y > /tmp/date
       - restore_cache:
