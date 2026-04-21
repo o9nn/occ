@@ -69,7 +69,7 @@ jobs:
     steps:
       - run:
           name: Ensure /ws directory exists
-          command: mkdir -p /ws
+          command: mkdir -p /ws/cogutil
       - restore-ccache
       - checkout
       - build-cmake-pkg:
