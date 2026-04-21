@@ -16,7 +16,7 @@ commands:
     steps:
       - run:
           name: Prepare ccache key
-          command: date +%d-%m-%Y > /ws/date
+          command: mkdir -p /ws && date +%d-%m-%Y > /ws/date
       - restore_cache:
           keys:
             - ccache-{{ checksum "/ws/date" }}
@@ -26,7 +26,7 @@ commands:
     steps:
       - run:
           name: Prepare ccache key
-          command: date +%d-%m-%Y > /ws/date
+          command: mkdir -p /ws && date +%d-%m-%Y > /ws/date
       - save_cache:
           key: ccache-{{ checksum "/ws/date" }}
           paths:
