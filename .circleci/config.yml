@@ -65,11 +65,11 @@ jobs:
   # =========================================================================
   cogutil:
     executor: opencog-deps
-    working_directory: /ws/cogutil
+    working_directory: /ws
     steps:
       - run:
           name: Ensure /ws directory exists
-          command: mkdir -p /ws/cogutil
+          command: mkdir -p /ws
       - restore-ccache
       - checkout
       - build-cmake-pkg:
