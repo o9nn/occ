@@ -67,8 +67,9 @@ jobs:
     executor: opencog-deps
     working_directory: /ws/cogutil
     steps:
-      - attach_workspace:
-          at: /ws
+      - run:
+          name: Ensure /ws directory exists
+          command: mkdir -p /ws
       - restore-ccache
       - checkout
       - build-cmake-pkg:
